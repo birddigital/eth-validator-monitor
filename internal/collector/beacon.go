@@ -14,20 +14,46 @@ import (
 
 // BeaconClientImpl implements the BeaconClient interface
 type BeaconClientImpl struct {
-	baseURL    string
-	httpClient *http.Client
-	timeout    time.Duration
+	baseURL       string
+	httpClient    *http.Client
+	retryClient   *RetryableHTTPClient
+	timeout       time.Duration
+	useRetry      bool
 }
 
-// NewBeaconClient creates a new beacon chain client
+// NewBeaconClient creates a new beacon chain client with retry logic
 func NewBeaconClient(baseURL string, timeout time.Duration) *BeaconClientImpl {
+	retryConfig := DefaultRetryConfig()
+
 	return &BeaconClientImpl{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		timeout: timeout,
+		retryClient: NewRetryableHTTPClient(timeout, retryConfig),
+		timeout:     timeout,
+		useRetry:    true,
 	}
+}
+
+// NewBeaconClientWithoutRetry creates a beacon client without retry logic (for testing)
+func NewBeaconClientWithoutRetry(baseURL string, timeout time.Duration) *BeaconClientImpl {
+	return &BeaconClientImpl{
+		baseURL: baseURL,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+		timeout:  timeout,
+		useRetry: false,
+	}
+}
+
+// doRequest executes an HTTP request with optional retry logic
+func (c *BeaconClientImpl) doRequest(req *http.Request) (*http.Response, error) {
+	if c.useRetry && c.retryClient != nil {
+		return c.retryClient.Do(req)
+	}
+	return c.httpClient.Do(req)
 }
 
 // GetValidator retrieves validator information by index
@@ -36,18 +62,18 @@ func (c *BeaconClientImpl) GetValidator(ctx context.Context, index int) (*types.
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request for validator %d: %w", index, err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request for validator %d: %w", index, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("unexpected status code %d for validator %d: %s", resp.StatusCode, index, string(body))
 	}
 
 	var result struct {
@@ -72,18 +98,18 @@ func (c *BeaconClientImpl) GetValidatorBalance(ctx context.Context, index int, e
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request for validator %d balance at epoch %d: %w", index, epoch, err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request for validator %d balance at epoch %d: %w", index, epoch, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("unexpected status code %d for validator %d balance at epoch %d: %s", resp.StatusCode, index, epoch, string(body))
 	}
 
 	var result struct {
@@ -103,18 +129,18 @@ func (c *BeaconClientImpl) GetValidatorByPubkey(ctx context.Context, pubkey stri
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request for validator pubkey %s: %w", pubkey[:10]+"...", err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request for validator pubkey %s: %w", pubkey[:10]+"...", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("unexpected status code %d for validator pubkey %s: %s", resp.StatusCode, pubkey[:10]+"...", string(body))
 	}
 
 	var result struct {
@@ -358,18 +384,18 @@ func (c *BeaconClientImpl) GetCurrentSlot(ctx context.Context) (int, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %w", err)
+		return 0, fmt.Errorf("failed to create request for current slot: %w", err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doRequest(req)
 	if err != nil {
-		return 0, fmt.Errorf("failed to execute request: %w", err)
+		return 0, fmt.Errorf("failed to execute request for current slot: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return 0, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return 0, fmt.Errorf("unexpected status code %d for current slot: %s", resp.StatusCode, string(body))
 	}
 
 	var result struct {
@@ -412,18 +438,18 @@ func (c *BeaconClientImpl) GetNetworkStats(ctx context.Context) (*types.NetworkS
 	url := fmt.Sprintf("%s/eth/v1/beacon/states/head/validators", c.baseURL)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request for network stats: %w", err)
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request for network stats: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("unexpected status code %d for network stats: %s", resp.StatusCode, string(body))
 	}
 
 	var result struct {
