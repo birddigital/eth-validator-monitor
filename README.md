@@ -137,6 +137,10 @@ subscription MonitorValidators {
 
 ## Development
 
+### Development Approach
+
+This project leverages modern AI-assisted development tools to maximize development velocity while maintaining high code quality. The workflow includes automated task management, intelligent code suggestions, and comprehensive testing frameworks.
+
 ### Running Tests
 
 ```bash
