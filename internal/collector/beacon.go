@@ -21,18 +21,69 @@ type BeaconClientImpl struct {
 	useRetry      bool
 }
 
+// BeaconClientConfig configures the beacon client
+type BeaconClientConfig struct {
+	BaseURL        string
+	Timeout        time.Duration
+	EnableRetry    bool
+	RetryConfig    RetryConfig
+	EnableLogging  bool
+	VerboseLogging bool
+}
+
+// DefaultBeaconClientConfig returns default configuration
+func DefaultBeaconClientConfig(baseURL string) BeaconClientConfig {
+	return BeaconClientConfig{
+		BaseURL:        baseURL,
+		Timeout:        30 * time.Second,
+		EnableRetry:    true,
+		RetryConfig:    DefaultRetryConfig(),
+		EnableLogging:  true,
+		VerboseLogging: false,
+	}
+}
+
 // NewBeaconClient creates a new beacon chain client with retry logic
 func NewBeaconClient(baseURL string, timeout time.Duration) *BeaconClientImpl {
-	retryConfig := DefaultRetryConfig()
+	config := BeaconClientConfig{
+		BaseURL:        baseURL,
+		Timeout:        timeout,
+		EnableRetry:    true,
+		RetryConfig:    DefaultRetryConfig(),
+		EnableLogging:  true,
+		VerboseLogging: false,
+	}
+
+	return NewBeaconClientWithConfig(config)
+}
+
+// NewBeaconClientWithConfig creates a beacon client with custom configuration
+func NewBeaconClientWithConfig(config BeaconClientConfig) *BeaconClientImpl {
+	var retryClient *RetryableHTTPClient
+
+	if config.EnableRetry {
+		if config.EnableLogging {
+			retryClient = NewLoggingRetryableHTTPClient(config.Timeout, config.RetryConfig, config.VerboseLogging)
+		} else {
+			retryClient = NewRetryableHTTPClient(config.Timeout, config.RetryConfig)
+		}
+	}
+
+	var httpClient *http.Client
+	if config.EnableLogging {
+		httpClient = NewLoggingHTTPClient(config.Timeout, config.VerboseLogging)
+	} else {
+		httpClient = &http.Client{
+			Timeout: config.Timeout,
+		}
+	}
 
 	return &BeaconClientImpl{
-		baseURL: baseURL,
-		httpClient: &http.Client{
-			Timeout: timeout,
-		},
-		retryClient: NewRetryableHTTPClient(timeout, retryConfig),
-		timeout:     timeout,
-		useRetry:    true,
+		baseURL:     config.BaseURL,
+		httpClient:  httpClient,
+		retryClient: retryClient,
+		timeout:     config.Timeout,
+		useRetry:    config.EnableRetry,
 	}
 }
 
