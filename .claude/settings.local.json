@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(task-master show:*)",
+      "Bash(task-master set-status:*)",
+      "Bash(go:*)",
+      "Bash(task-master list:*)",
+      "Bash(task-master update-task:*)",
+      "Bash(task-master:*)",
+      "SlashCommand(/orchestrate)",
+      "Bash(redis-cli:*)",
+      "Bash(if [ -f \"./scripts/orchestrate.py\" ])",
+      "Bash(then python3 ./scripts/orchestrate.py \"eth-validator-monitor\" --auto --agents 3 elif [ -f \"/Users/bird/sources/bird-command-center/scripts/orchestrate.py\" ])",
+      "Bash(then python3 /Users/bird/sources/bird-command-center/scripts/orchestrate.py \"eth-validator-monitor\" --auto --agents 3 else echo \"ERROR: Orchestrator script not found\" echo \"Trying alternative location...\" ls -la /Users/bird/sources/mcp-unified-config/scripts/)",
+      "Read(//Users/bird/sources/ai-development-monorepo/packages/mcp-core/scripts/**)",
+      "Read(//Users/bird/sources/**)",
+      "Bash(python3:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "task-master-ai"
+  ]
+}

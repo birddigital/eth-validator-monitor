@@ -1,0 +1,203 @@
+# GraphQL schema for eth-validator-monitor
+
+scalar Time
+scalar BigInt
+
+# Enums
+enum ValidatorStatus {
+  PENDING
+  ACTIVE
+  EXITING
+  EXITED
+  SLASHED
+  UNKNOWN
+}
+
+enum AlertSeverity {
+  CRITICAL
+  WARNING
+  INFO
+}
+
+enum RiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+}
+
+# Types
+type Validator {
+  index: Int!
+  pubkey: String!
+  name: String
+  status: ValidatorStatus!
+  activationEpoch: Int
+  exitEpoch: Int
+  slashed: Boolean!
+  balance: Balance!
+  performance: Performance!
+  rewards: Rewards!
+  alerts: [Alert!]!
+  history(from: Time, to: Time): [HistoricalSnapshot!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Balance {
+  current: BigInt!
+  effective: BigInt!
+  withdrawable: BigInt!
+}
+
+type Performance {
+  uptimePercentage: Float!
+  consecutiveMisses: Int!
+  totalMissed: Int!
+  attestationScore: Float!
+  proposalSuccess: Int!
+  proposalMissed: Int!
+  effectiveness: Float!
+  networkAverage: Float!
+  networkPercentile: Float!
+  slashingRisk: RiskLevel!
+  inactivityScore: Int!
+}
+
+type Rewards {
+  expected: BigInt!
+  actual: BigInt!
+  effectiveness: Float!
+}
+
+type HistoricalSnapshot {
+  epoch: Int!
+  slot: Int!
+  timestamp: Time!
+  balance: BigInt!
+  effectiveBalance: BigInt!
+  attestationSuccess: Boolean
+  inclusionDelay: Int
+  proposalSuccess: Boolean
+  performanceScore: Float
+  networkPercentile: Float
+}
+
+type Alert {
+  id: ID!
+  validatorIndex: Int!
+  severity: AlertSeverity!
+  type: String!
+  message: String!
+  acknowledged: Boolean!
+  createdAt: Time!
+}
+
+type NetworkStats {
+  currentEpoch: Int!
+  currentSlot: Int!
+  totalValidators: Int!
+  activeValidators: Int!
+  pendingValidators: Int!
+  exitingValidators: Int!
+  slashedValidators: Int!
+  averageBalance: BigInt!
+  totalStaked: BigInt!
+  participationRate: Float!
+  timestamp: Time!
+}
+
+# Inputs
+input AddValidatorInput {
+  pubkey: String
+  index: Int
+  name: String
+}
+
+input ValidatorFilter {
+  status: ValidatorStatus
+  slashed: Boolean
+  indices: [Int!]
+  pubkeys: [String!]
+  limit: Int
+  offset: Int
+}
+
+input AlertFilter {
+  validatorIndex: Int
+  severity: AlertSeverity
+  acknowledged: Boolean
+  from: Time
+  to: Time
+  limit: Int
+  offset: Int
+}
+
+# Queries
+type Query {
+  """
+  Get a single validator by index or pubkey
+  """
+  validator(index: Int, pubkey: String): Validator
+
+  """
+  Get multiple validators with optional filtering
+  """
+  validators(filter: ValidatorFilter): [Validator!]!
+
+  """
+  Get network-wide statistics
+  """
+  network: NetworkStats!
+
+  """
+  Get alerts with optional filtering
+  """
+  alerts(filter: AlertFilter): [Alert!]!
+
+  """
+  Get a specific alert by ID
+  """
+  alert(id: ID!): Alert
+
+  """
+  Health check
+  """
+  health: String!
+}
+
+# Mutations
+type Mutation {
+  """
+  Add a new validator to monitor
+  """
+  addValidator(input: AddValidatorInput!): Validator!
+
+  """
+  Remove a validator from monitoring
+  """
+  removeValidator(index: Int!): Boolean!
+
+  """
+  Update validator name
+  """
+  updateValidatorName(index: Int!, name: String!): Validator!
+
+  """
+  Acknowledge an alert
+  """
+  acknowledgeAlert(id: ID!): Alert!
+}
+
+# Subscriptions
+type Subscription {
+  """
+  Subscribe to validator updates for specific validators
+  """
+  validatorUpdates(indices: [Int!]): Validator!
+
+  """
+  Subscribe to new alerts
+  """
+  newAlerts(severity: AlertSeverity): Alert!
+}

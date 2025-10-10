@@ -1,0 +1,96 @@
+{
+  "created_at": "2025-10-10T11:12:49.161662",
+  "project_root": "/Users/bird/sources/ai-development-monorepo/projects/ether.fi/eth-validator-monitor",
+  "current_context": {
+    "project_name": "MCP Unified Configuration",
+    "description": "Unified configuration system for Model Context Protocol servers",
+    "current_branch": "main",
+    "working_directory": "/Users/bird/sources/ai-development-monorepo/projects/ether.fi/eth-validator-monitor",
+    "claude_instructions": "# Claude Code Instructions\n\n## Task Master AI Instructions\n**Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**\n@./.taskmaster/CLAUDE.md\n"
+  },
+  "active_tasks": [],
+  "recent_changes": {
+    "recent_commits": [
+      "76dbca81 feat(orchestration): complete experimental PRDs and prototype framework",
+      "decb19ae feat: add wave orchestration slash commands",
+      "89ae4f7d feat: enhance NightShift CLI with advanced AI capabilities",
+      "a006f23d feat: separate wave orchestration tools",
+      "3c8f8656 feat: complete AI Development Monorepo infrastructure with 4-wave agent system",
+      "20c35cab fix: add remaining chimera voice enhancements and website cloner updates",
+      "7bcd906a feat: comprehensive monorepo enhancement with NightShift v3, testing framework, and new projects",
+      "0338301a chore: update CloudRouter package name for monorepo workspace",
+      "3bac5362 feat: add CloudRouter - intelligent cloud request routing system",
+      "768c01b4 feat(fl-backroom): add puppeteer dependency and deployment scripts"
+    ],
+    "uncommitted_changes": [
+      "M .orchestration/alerts.json",
+      " M .taskmaster/state.json",
+      " M .taskmaster/tasks/tasks.json",
+      " M packages/claude-dashboard-10x/src/core/dashboard.py",
+      " M packages/claude-dashboard-10x/src/widgets/git_status.py",
+      " M packages/claude-dashboard-10x/src/widgets/project_tree.py",
+      " M packages/claude-dashboard-10x/src/widgets/task_monitor.py",
+      " M projects/active-projects/brooke-belmont-ai-twin/.env.example",
+      " M projects/active-projects/brooke-belmont-ai-twin/README.md",
+      " M projects/active-projects/brooke-belmont-ai-twin/package.json",
+      " M projects/active-projects/terminal-ai-ios/.taskmaster/tasks/tasks.json",
+      "?? client-projects/",
+      "?? packages/claude-dashboard-10x/TERMINAL_CLEANUP_FIX.md",
+      "?? packages/claude-dashboard-10x/cleanup_terminal.py",
+      "?? packages/claude-dashboard-10x/cleanup_terminal.sh",
+      "?? packages/claude-dashboard-10x/test_terminal_cleanup.py",
+      "?? packages/message-broker/SESSION_SUMMARY.md",
+      "?? packages/pattern-orchestration-engine/",
+      "?? packages/wave-intelligence/",
+      "?? projects/active-projects/brooke-belmont-ai-twin/PROJECT-SETUP-COMPLETE.md",
+      "?? projects/active-projects/brooke-belmont-ai-twin/TASKMASTER.md",
+      "?? projects/active-projects/brooke-belmont-ai-twin/docs/personality.md",
+      "?? projects/active-projects/brooke-belmont-ai-twin/docs/project-instructions.md",
+      "?? projects/ether.fi/"
+    ]
+  },
+  "key_files": [
+    {
+      "path": "README.md",
+      "size": 6088,
+      "modified": "2025-10-09T16:36:30.082055"
+    },
+    {
+      "path": "CLAUDE.md",
+      "size": 205,
+      "modified": "2025-10-09T07:47:22.030712"
+    }
+  ],
+  "dependencies": {},
+  "configuration": {
+    "version": "1.0.0",
+    "servers": [
+      "filesystem",
+      "puppeteer",
+      "github",
+      "memory",
+      "context-7",
+      "chroma",
+      "taskmaster-ai",
+      "desktop-commander",
+      "ai-logging",
+      "railway-mcp",
+      "applescript_execute"
+    ],
+    "targets": [],
+    "sync_enabled": false
+  },
+  "next_steps": [
+    "Commit uncommitted changes"
+  ],
+  "orchestration_analysis": {
+    "mode_recommendation": "single_agent",
+    "reasoning": [
+      "24 files changed - high complexity",
+      "Low complexity - single agent sufficient"
+    ],
+    "complexity_score": 1,
+    "dependencies_found": [],
+    "next_agent": "claude-code"
+  }
+}

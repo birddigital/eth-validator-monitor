@@ -1,0 +1,89 @@
+# gqlgen configuration file
+# See https://gqlgen.com/config/ for detailed documentation
+
+# Where to find the GraphQL schema
+schema:
+  - graph/schema/*.graphql
+
+# Where to generate the GraphQL server code
+exec:
+  filename: graph/generated/generated.go
+  package: generated
+
+# Where to generate the model code
+model:
+  filename: graph/model/models_gen.go
+  package: model
+
+# Where to write the resolver stubs
+resolver:
+  layout: follow-schema
+  dir: graph/resolver
+  package: resolver
+  filename_template: "{name}.resolvers.go"
+
+# Models to skip generation for (using existing types)
+models:
+  # Map GraphQL ID to Go string
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+
+  # Map custom scalars to Go types
+  Time:
+    model:
+      - github.com/birddigital/eth-validator-monitor/pkg/types.Time
+
+  BigInt:
+    model:
+      - github.com/birddigital/eth-validator-monitor/pkg/types.BigInt
+
+  Hash:
+    model:
+      - github.com/birddigital/eth-validator-monitor/pkg/types.Hash
+
+  # Map GraphQL types to existing database models
+  Validator:
+    model:
+      - github.com/birddigital/eth-validator-monitor/internal/database/models.Validator
+    fields:
+      latestSnapshot:
+        resolver: true
+      snapshots:
+        resolver: true
+      alerts:
+        resolver: true
+      performanceMetrics:
+        resolver: true
+
+  ValidatorSnapshot:
+    model:
+      - github.com/birddigital/eth-validator-monitor/internal/database/models.ValidatorSnapshot
+    fields:
+      validator:
+        resolver: true
+
+  Alert:
+    model:
+      - github.com/birddigital/eth-validator-monitor/internal/database/models.Alert
+    fields:
+      validator:
+        resolver: true
+
+  # Input types will be auto-generated
+
+# Automatically bind all unmapped types from these packages
+autobind:
+  - "github.com/birddigital/eth-validator-monitor/internal/database/models"
+  - "github.com/birddigital/eth-validator-monitor/pkg/types"
+
+# Skip running `go mod tidy` when generating
+skip_mod_tidy: false
+
+# Enable federation support
+# federation:
+#   filename: graph/generated/federation.go
+#   package: generated
+
+# Struct tag configuration
+struct_tag: json

@@ -1,0 +1,123 @@
+# eth-validator-monitor Configuration
+
+ethereum:
+  # Beacon chain node URL (e.g., Infura, Alchemy, or local node)
+  beacon_node: ${BEACON_NODE_URL}
+
+  # Execution layer node URL
+  execution_node: ${EXECUTION_NODE_URL}
+
+  # Network to monitor (mainnet, sepolia, holesky)
+  network: sepolia
+
+  # Request timeout in seconds
+  timeout: 30
+
+  # Max retries for failed requests
+  max_retries: 3
+
+database:
+  host: ${DB_HOST:-localhost}
+  port: ${DB_PORT:-5432}
+  user: ${DB_USER:-postgres}
+  password: ${DB_PASSWORD}
+  name: ${DB_NAME:-validator_monitor}
+
+  # Connection pool settings
+  pool_size: 10
+  max_idle_conns: 5
+  conn_max_lifetime: 300 # seconds
+
+  # Enable SSL
+  ssl_mode: ${DB_SSL_MODE:-disable}
+
+redis:
+  host: ${REDIS_HOST:-localhost}
+  port: ${REDIS_PORT:-6379}
+  password: ${REDIS_PASSWORD}
+  db: ${REDIS_DB:-0}
+
+  # TTL for cached data in seconds
+  cache_ttl: 300 # 5 minutes
+
+api:
+  # Server port
+  port: ${API_PORT:-8080}
+
+  # Enable CORS
+  cors_enabled: true
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:8080
+
+  # Rate limiting (requests per minute)
+  rate_limit: 100
+
+  # API key authentication (optional)
+  require_api_key: false
+
+  # GraphQL settings
+  graphql:
+    playground_enabled: ${GRAPHQL_PLAYGROUND:-true}
+    introspection_enabled: true
+    query_complexity_limit: 1000
+
+monitoring:
+  # Prometheus metrics port
+  prometheus_port: ${PROMETHEUS_PORT:-9090}
+
+  # Logging configuration
+  log_level: ${LOG_LEVEL:-info}  # debug, info, warn, error
+  log_format: json  # json or console
+
+  # Enable pprof profiling endpoints
+  pprof_enabled: ${PPROF_ENABLED:-false}
+
+collector:
+  # Collection intervals
+  status_check_interval: 12  # seconds (per epoch)
+  balance_check_interval: 384  # seconds (per slot)
+
+  # Concurrent collectors per validator
+  worker_pool_size: 10
+
+  # Buffer sizes
+  channel_buffer_size: 100
+
+alerting:
+  # Enable alerting system
+  enabled: true
+
+  # Alert channels configuration
+  webhook:
+    enabled: ${ALERT_WEBHOOK_ENABLED:-false}
+    url: ${ALERT_WEBHOOK_URL}
+
+  email:
+    enabled: ${ALERT_EMAIL_ENABLED:-false}
+    smtp_host: ${SMTP_HOST}
+    smtp_port: ${SMTP_PORT:-587}
+    from: ${SMTP_FROM}
+    to: ${SMTP_TO}
+
+  slack:
+    enabled: ${ALERT_SLACK_ENABLED:-false}
+    webhook_url: ${SLACK_WEBHOOK_URL}
+
+  # Alert thresholds
+  thresholds:
+    critical_offline_epochs: 3
+    warning_attestation_effectiveness: 0.95
+    performance_degradation: 0.05  # 5% drop
+
+performance:
+  # Network baseline calculation
+  baseline_update_interval: 86400  # 24 hours in seconds
+
+  # Percentile calculation
+  percentile_buckets: [50, 75, 90, 95, 99]
+
+  # Historical data retention
+  retention:
+    epoch_snapshots_days: 90
+    daily_aggregates_days: 365

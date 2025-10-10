@@ -1,0 +1,457 @@
+# GraphQL schema for Ethereum Validator Monitor
+# Defines types, queries, and mutations for validator monitoring data
+
+# Custom scalar types
+scalar Time
+scalar BigInt
+scalar Hash
+
+# Validator status enum
+enum ValidatorStatus {
+  PENDING_INITIALIZED
+  PENDING_QUEUED
+  ACTIVE_ONGOING
+  ACTIVE_EXITING
+  ACTIVE_SLASHED
+  EXITED_UNSLASHED
+  EXITED_SLASHED
+  WITHDRAWAL_POSSIBLE
+  WITHDRAWAL_DONE
+  UNKNOWN
+}
+
+# Alert severity levels
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+# Alert types
+enum AlertType {
+  OFFLINE
+  BALANCE_DROP
+  MISSED_ATTESTATION
+  SLASHING
+  PERFORMANCE_DEGRADATION
+  SYNC_COMMITTEE_MISS
+  PROPOSAL_MISS
+}
+
+# Sort direction
+enum SortDirection {
+  ASC
+  DESC
+}
+
+# Validator sort fields
+enum ValidatorSortField {
+  INDEX
+  PUBKEY
+  BALANCE
+  EFFECTIVE_BALANCE
+  STATUS
+  ACTIVATION_EPOCH
+}
+
+# Snapshot sort fields
+enum SnapshotSortField {
+  TIME
+  VALIDATOR_INDEX
+  BALANCE
+  EFFECTIVENESS
+}
+
+# Alert sort fields
+enum AlertSortField {
+  CREATED_AT
+  SEVERITY
+  TYPE
+}
+
+# Pagination input
+input PaginationInput {
+  """Number of items per page (max 100)"""
+  limit: Int = 20
+  """Cursor for pagination"""
+  cursor: String
+}
+
+# Validator filter input
+input ValidatorFilterInput {
+  """Filter by validator indices"""
+  indices: [Int!]
+  """Filter by public keys"""
+  pubkeys: [String!]
+  """Filter by status"""
+  status: ValidatorStatus
+  """Filter by monitored flag"""
+  monitored: Boolean
+  """Filter by minimum balance (in Gwei)"""
+  minBalance: BigInt
+  """Filter by maximum balance (in Gwei)"""
+  maxBalance: BigInt
+  """Filter by activation epoch range"""
+  activationEpochFrom: Int
+  activationEpochTo: Int
+}
+
+# Validator sort input
+input ValidatorSortInput {
+  field: ValidatorSortField!
+  direction: SortDirection = ASC
+}
+
+# Snapshot filter input
+input SnapshotFilterInput {
+  """Filter by validator index"""
+  validatorIndex: Int
+  """Filter by time range"""
+  timeFrom: Time
+  timeTo: Time
+  """Filter by epoch range"""
+  epochFrom: Int
+  epochTo: Int
+  """Filter by minimum effectiveness score"""
+  minEffectiveness: Float
+  """Only include online validators"""
+  onlineOnly: Boolean
+}
+
+# Snapshot sort input
+input SnapshotSortInput {
+  field: SnapshotSortField!
+  direction: SortDirection = DESC
+}
+
+# Alert filter input
+input AlertFilterInput {
+  """Filter by validator index"""
+  validatorIndex: Int
+  """Filter by alert type"""
+  type: AlertType
+  """Filter by severity"""
+  severity: AlertSeverity
+  """Filter by resolved status"""
+  resolved: Boolean
+  """Filter by time range"""
+  createdFrom: Time
+  createdTo: Time
+}
+
+# Alert sort input
+input AlertSortInput {
+  field: AlertSortField!
+  direction: SortDirection = DESC
+}
+
+# Validator type
+type Validator {
+  """Validator index on the beacon chain"""
+  validatorIndex: Int!
+  """Validator public key (hex string)"""
+  pubkey: String!
+  """Current validator status"""
+  status: ValidatorStatus!
+  """Withdrawal credentials"""
+  withdrawalCredentials: String!
+  """Effective balance in Gwei"""
+  effectiveBalance: BigInt!
+  """Activation eligibility epoch"""
+  activationEligibilityEpoch: Int!
+  """Activation epoch"""
+  activationEpoch: Int!
+  """Exit epoch"""
+  exitEpoch: Int
+  """Withdrawable epoch"""
+  withdrawableEpoch: Int
+  """Whether this validator is actively monitored"""
+  monitored: Boolean!
+  """Latest snapshot for this validator"""
+  latestSnapshot: ValidatorSnapshot
+  """Snapshots for this validator"""
+  snapshots(
+    filter: SnapshotFilterInput
+    sort: SnapshotSortInput
+    pagination: PaginationInput
+  ): SnapshotConnection!
+  """Alerts for this validator"""
+  alerts(
+    filter: AlertFilterInput
+    sort: AlertSortInput
+    pagination: PaginationInput
+  ): AlertConnection!
+  """Performance metrics for this validator"""
+  performanceMetrics(
+    epochFrom: Int
+    epochTo: Int
+  ): [PerformanceMetrics!]!
+}
+
+# Validator snapshot type
+type ValidatorSnapshot {
+  """Snapshot timestamp"""
+  time: Time!
+  """Validator index"""
+  validatorIndex: Int!
+  """Epoch when snapshot was taken"""
+  epoch: Int!
+  """Slot when snapshot was taken"""
+  slot: Int!
+  """Validator balance in Gwei"""
+  balance: BigInt!
+  """Effective balance in Gwei"""
+  effectiveBalance: BigInt!
+  """Whether validator was online"""
+  isOnline: Boolean!
+  """Whether validator proposed in this snapshot"""
+  proposed: Boolean
+  """Head vote correctness"""
+  attestationHeadVote: Boolean
+  """Source vote correctness"""
+  attestationSourceVote: Boolean
+  """Target vote correctness"""
+  attestationTargetVote: Boolean
+  """Attestation inclusion delay"""
+  attestationInclusionDelay: Int
+  """Overall attestation effectiveness score (0-100)"""
+  attestationEffectiveness: Float
+  """Validator entity for this snapshot"""
+  validator: Validator!
+}
+
+# Performance metrics type
+type PerformanceMetrics {
+  """Validator index"""
+  validatorIndex: Int!
+  """Epoch for these metrics"""
+  epoch: Int!
+  """Number of attestations made"""
+  attestationsCount: Int!
+  """Number of correct head votes"""
+  correctHeadVotes: Int!
+  """Number of correct source votes"""
+  correctSourceVotes: Int!
+  """Number of correct target votes"""
+  correctTargetVotes: Int!
+  """Total inclusion delay"""
+  totalInclusionDelay: Int!
+  """Number of proposals"""
+  proposalCount: Int!
+  """Number of sync committee participations"""
+  syncCommitteeCount: Int!
+  """Overall effectiveness score (0-100)"""
+  effectivenessScore: Float!
+  """Calculated at timestamp"""
+  calculatedAt: Time!
+}
+
+# Alert type
+type Alert {
+  """Alert ID"""
+  id: ID!
+  """Validator index"""
+  validatorIndex: Int!
+  """Alert type"""
+  type: AlertType!
+  """Alert severity"""
+  severity: AlertSeverity!
+  """Alert message"""
+  message: String!
+  """Alert metadata (JSON)"""
+  metadata: String
+  """Whether alert is resolved"""
+  resolved: Boolean!
+  """When alert was created"""
+  createdAt: Time!
+  """When alert was resolved"""
+  resolvedAt: Time
+  """Validator entity for this alert"""
+  validator: Validator!
+}
+
+# Network statistics type
+type NetworkStats {
+  """Current epoch"""
+  currentEpoch: Int!
+  """Current slot"""
+  currentSlot: Int!
+  """Total number of active validators"""
+  totalActiveValidators: Int!
+  """Total staked ETH (in Gwei)"""
+  totalStake: BigInt!
+  """Average attestation effectiveness across all validators"""
+  avgAttestationEffectiveness: Float!
+  """Network participation rate"""
+  participationRate: Float!
+  """Last updated timestamp"""
+  lastUpdated: Time!
+}
+
+# Page info for cursor-based pagination
+type PageInfo {
+  """Whether there are more items"""
+  hasNextPage: Boolean!
+  """Whether there are previous items"""
+  hasPreviousPage: Boolean!
+  """Cursor to the start of the page"""
+  startCursor: String
+  """Cursor to the end of the page"""
+  endCursor: String
+}
+
+# Validator connection (paginated)
+type ValidatorConnection {
+  """List of validators"""
+  edges: [ValidatorEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+  """Total count of items"""
+  totalCount: Int!
+}
+
+# Validator edge
+type ValidatorEdge {
+  """Cursor for this item"""
+  cursor: String!
+  """Validator node"""
+  node: Validator!
+}
+
+# Snapshot connection (paginated)
+type SnapshotConnection {
+  """List of snapshots"""
+  edges: [SnapshotEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+  """Total count of items"""
+  totalCount: Int!
+}
+
+# Snapshot edge
+type SnapshotEdge {
+  """Cursor for this item"""
+  cursor: String!
+  """Snapshot node"""
+  node: ValidatorSnapshot!
+}
+
+# Alert connection (paginated)
+type AlertConnection {
+  """List of alerts"""
+  edges: [AlertEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+  """Total count of items"""
+  totalCount: Int!
+}
+
+# Alert edge
+type AlertEdge {
+  """Cursor for this item"""
+  cursor: String!
+  """Alert node"""
+  node: Alert!
+}
+
+# Query root type
+type Query {
+  """Get a single validator by index"""
+  validator(index: Int!): Validator
+
+  """Get a single validator by public key"""
+  validatorByPubkey(pubkey: String!): Validator
+
+  """List validators with filtering, sorting, and pagination"""
+  validators(
+    filter: ValidatorFilterInput
+    sort: ValidatorSortInput
+    pagination: PaginationInput
+  ): ValidatorConnection!
+
+  """Get a single snapshot by validator index and time"""
+  snapshot(validatorIndex: Int!, time: Time!): ValidatorSnapshot
+
+  """List snapshots with filtering, sorting, and pagination"""
+  snapshots(
+    filter: SnapshotFilterInput
+    sort: SnapshotSortInput
+    pagination: PaginationInput
+  ): SnapshotConnection!
+
+  """Get a single alert by ID"""
+  alert(id: ID!): Alert
+
+  """List alerts with filtering, sorting, and pagination"""
+  alerts(
+    filter: AlertFilterInput
+    sort: AlertSortInput
+    pagination: PaginationInput
+  ): AlertConnection!
+
+  """Get current network statistics"""
+  networkStats: NetworkStats!
+
+  """Get performance metrics for a validator"""
+  validatorPerformance(
+    validatorIndex: Int!
+    epochFrom: Int
+    epochTo: Int
+  ): [PerformanceMetrics!]!
+
+  """Get aggregate performance across multiple validators"""
+  aggregatePerformance(
+    validatorIndices: [Int!]!
+    epochFrom: Int
+    epochTo: Int
+  ): PerformanceMetrics
+}
+
+# Mutation root type
+type Mutation {
+  """Add a validator to monitoring"""
+  addValidator(
+    pubkey: String!
+    validatorIndex: Int!
+  ): Validator!
+
+  """Remove a validator from monitoring"""
+  removeValidator(validatorIndex: Int!): Boolean!
+
+  """Update validator monitoring status"""
+  updateValidatorMonitoring(
+    validatorIndex: Int!
+    monitored: Boolean!
+  ): Validator!
+
+  """Resolve an alert"""
+  resolveAlert(id: ID!): Alert!
+
+  """Bulk resolve alerts by filter"""
+  bulkResolveAlerts(filter: AlertFilterInput!): Int!
+
+  """Trigger manual data collection for a validator"""
+  triggerCollection(validatorIndex: Int!): Boolean!
+
+  """Trigger manual collection for all monitored validators"""
+  triggerBulkCollection: Int!
+}
+
+# Subscription root type (for real-time updates)
+type Subscription {
+  """Subscribe to new snapshots for a validator"""
+  validatorSnapshotAdded(validatorIndex: Int!): ValidatorSnapshot!
+
+  """Subscribe to new alerts"""
+  alertCreated(
+    validatorIndex: Int
+    severity: AlertSeverity
+  ): Alert!
+
+  """Subscribe to alert resolutions"""
+  alertResolved(validatorIndex: Int): Alert!
+
+  """Subscribe to network statistics updates"""
+  networkStatsUpdated: NetworkStats!
+}

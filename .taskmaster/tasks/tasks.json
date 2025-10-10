@@ -1,0 +1,692 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Set up Go project structure with modules and dependencies",
+        "description": "Initialize Go module, set up directory structure (cmd/, pkg/, internal/), and install core dependencies (go-ethereum, gqlgen, PostgreSQL driver, Redis client, Prometheus client)",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Go module and create basic project structure",
+            "description": "Set up the Go module with proper naming and create the standard directory structure including cmd/, pkg/, and internal/ folders.",
+            "dependencies": [],
+            "details": "Run 'go mod init' with appropriate module name, create the directory structure following Go project conventions (cmd/ for entry points, pkg/ for public packages, internal/ for private implementation), and set up a basic .gitignore file for Go projects.",
+            "status": "done",
+            "testStrategy": "Verify module initialization with 'go list -m' and ensure directory structure exists and follows conventions."
+          },
+          {
+            "id": 2,
+            "title": "Install go-ethereum dependency and set up Ethereum client interfaces",
+            "description": "Add go-ethereum as a dependency and create the necessary interfaces for interacting with Ethereum networks.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run 'go get github.com/ethereum/go-ethereum', create interface definitions for Ethereum client interactions in internal/ethereum/, and implement basic connection configuration for both mainnet and testnet environments.",
+            "status": "done",
+            "testStrategy": "Create unit tests to verify go-ethereum dependency is correctly imported and interfaces are properly defined."
+          },
+          {
+            "id": 3,
+            "title": "Install and configure GraphQL dependencies with gqlgen",
+            "description": "Set up gqlgen for GraphQL API development including schema definition and resolver structure.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run 'go get github.com/99designs/gqlgen', initialize gqlgen with 'go run github.com/99designs/gqlgen init', create a basic schema.graphqls file with placeholder types, and generate the initial resolver code. Configure gqlgen.yml for the project's specific needs.",
+            "status": "done",
+            "testStrategy": "Verify gqlgen installation and configuration by running the code generation and ensuring it produces the expected files."
+          },
+          {
+            "id": 4,
+            "title": "Install and configure database dependencies",
+            "description": "Add PostgreSQL driver and set up database connection configuration and basic repository interfaces.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run 'go get github.com/lib/pq' for PostgreSQL driver, create database connection configuration in internal/database/, implement connection pooling, define repository interfaces for data access, and create migration scripts for initial schema setup.",
+            "status": "done",
+            "testStrategy": "Create integration tests that verify database connection can be established and basic queries can be executed."
+          },
+          {
+            "id": 5,
+            "title": "Install monitoring and caching dependencies",
+            "description": "Add Redis client for caching and Prometheus client for metrics collection and configure their basic setup.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run 'go get github.com/go-redis/redis/v8' for Redis client and 'go get github.com/prometheus/client_golang' for Prometheus, create configuration for both in internal/cache/ and internal/metrics/, implement basic client wrappers, and set up health check endpoints for both services.",
+            "status": "done",
+            "testStrategy": "Create unit tests to verify Redis and Prometheus clients can be initialized with mock configurations."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Beacon Chain client wrapper for validator data fetching",
+        "description": "Create BeaconClient interface and implementation using go-ethereum to fetch validator data, balances, attestations, and subscribe to head events from Ethereum Beacon Chain",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define BeaconClient interface with required methods",
+            "description": "Create a Go interface that defines all necessary methods for interacting with the Ethereum Beacon Chain.",
+            "dependencies": [],
+            "details": "Define a BeaconClient interface with methods for fetching validator data, balances, attestations, and subscribing to head events. Include method signatures with appropriate parameter and return types. Document each method with clear comments explaining its purpose, parameters, and return values.",
+            "status": "done",
+            "testStrategy": "Write unit tests with mock implementations to verify interface design meets all requirements."
+          },
+          {
+            "id": 2,
+            "title": "Implement validator data fetching functionality",
+            "description": "Create methods to fetch validator information including public keys, indices, and status from the Beacon Chain.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement functions to retrieve validator details using the go-ethereum library. Handle API responses, error cases, and data transformation. Include pagination support for fetching multiple validators. Ensure proper error handling and logging for failed requests.",
+            "status": "done",
+            "testStrategy": "Create integration tests with a test Beacon Chain endpoint to verify correct data retrieval."
+          },
+          {
+            "id": 3,
+            "title": "Implement balance and attestation fetching",
+            "description": "Create methods to fetch validator balances and attestation history from the Beacon Chain.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement functions to retrieve current and historical validator balances. Add methods to fetch attestation records and participation data. Calculate effective balance and rewards. Handle epoch-based queries and implement proper error handling for network issues or invalid responses.",
+            "status": "done",
+            "testStrategy": "Test with both valid and invalid validator indices, verify correct balance calculations and attestation data parsing."
+          },
+          {
+            "id": 4,
+            "title": "Implement head event subscription mechanism",
+            "description": "Create a subscription system to receive real-time updates when new blocks are added to the Beacon Chain.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement WebSocket connection to the Beacon Chain for subscribing to head events. Create event handlers and callback mechanisms for processing new blocks. Implement reconnection logic for handling disconnections. Design a clean API for consumers to register and unregister for notifications.",
+            "status": "done",
+            "testStrategy": "Test subscription lifecycle including connection, event reception, and disconnection scenarios."
+          },
+          {
+            "id": 5,
+            "title": "Create concrete BeaconClient implementation with configuration",
+            "description": "Implement the BeaconClient interface with a concrete struct that connects to an actual Beacon Chain endpoint.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Create a production-ready implementation of the BeaconClient interface. Include configuration options for endpoint URLs, API keys, timeout settings, and retry policies. Implement connection pooling and request throttling to prevent overloading the Beacon Chain API. Add comprehensive logging and metrics collection for monitoring client performance.",
+            "status": "done",
+            "testStrategy": "End-to-end testing with actual Beacon Chain endpoints (mainnet or testnet) to verify full functionality."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Design and implement PostgreSQL database schema",
+        "description": "Create database schema for validators, validator_snapshots, alerts tables with proper indexes, implement migrations, and set up connection pooling",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design TimescaleDB hypertable schema for validator data",
+            "description": "Create the database schema design for validators and validator_snapshots tables using TimescaleDB hypertables for efficient time-series data storage.",
+            "dependencies": [],
+            "details": "Design the validators table with fields for validator public key, index, name, and other metadata. Design validator_snapshots hypertable with time-based partitioning, including fields for balance, effectiveness, missed attestations, and performance metrics. Document the schema with entity relationship diagrams and data type specifications.",
+            "status": "done",
+            "testStrategy": "Verify schema design with sample queries to ensure it meets performance requirements for high-throughput time-series data."
+          },
+          {
+            "id": 2,
+            "title": "Design alerts table schema and indexing strategy",
+            "description": "Create the database schema for the alerts table and determine optimal indexing strategy for all tables to support efficient querying patterns.",
+            "dependencies": [
+              1
+            ],
+            "details": "Design alerts table with fields for alert type, severity, timestamp, validator reference, message, and resolution status. Implement appropriate indexes on all tables focusing on query patterns: time-range queries, validator-specific lookups, and alert filtering. Document index choices with justification for each based on expected query patterns.",
+            "status": "done",
+            "testStrategy": "Benchmark query performance with and without indexes using representative data volumes to validate indexing strategy."
+          },
+          {
+            "id": 3,
+            "title": "Implement database migration system",
+            "description": "Set up a database migration tool and create initial migration scripts for schema creation and updates.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Evaluate and implement a Go-compatible migration tool (e.g., golang-migrate, goose, or atlas). Create initial migration scripts for creating tables, indexes, and constraints. Implement versioning system for migrations. Document the migration process including how to apply and rollback migrations.",
+            "status": "done",
+            "testStrategy": "Test migration scripts in a staging environment to verify they apply and rollback correctly without data loss."
+          },
+          {
+            "id": 4,
+            "title": "Configure connection pooling with pgx",
+            "description": "Implement connection pooling using pgx library to efficiently manage database connections for high-throughput workloads.",
+            "dependencies": [
+              3
+            ],
+            "details": "Set up pgx connection pool with appropriate configuration for concurrent connections. Implement connection pool metrics and monitoring. Configure optimal pool size based on expected workload. Create helper functions for common database operations. Document connection pooling strategy and configuration parameters.",
+            "status": "done",
+            "testStrategy": "Load test the connection pool to verify it handles concurrent requests efficiently and recovers from connection failures."
+          },
+          {
+            "id": 5,
+            "title": "Optimize database for high write throughput",
+            "description": "Implement database optimizations for handling high-frequency writes from 12-second validator snapshots across thousands of validators.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Configure TimescaleDB chunk intervals appropriate for 12-second snapshots. Implement batch insert operations for validator snapshots. Optimize VACUUM and maintenance settings. Configure appropriate WAL (Write-Ahead Logging) settings. Document performance tuning parameters and their rationale.",
+            "status": "done",
+            "testStrategy": "Benchmark write performance under load simulating production conditions with thousands of validators reporting every 12 seconds."
+          },
+          {
+            "id": 6,
+            "title": "Create database access layer and query utilities",
+            "description": "Implement a Go package with database access methods and query utilities for the application to interact with the database.",
+            "dependencies": [
+              4,
+              5
+            ],
+            "details": "Create a database access layer with CRUD operations for validators, snapshots, and alerts. Implement query utilities for common data access patterns including time-series aggregations. Create helper functions for transaction management. Document the API for the database access layer with usage examples.",
+            "status": "done",
+            "testStrategy": "Unit test database access methods with a test database. Integration test with realistic data volumes to verify query performance."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Build data collection service with goroutines",
+        "description": "Implement multi-goroutine data collector that monitors validators every 12 seconds, calculates performance scores, and stores snapshots to database",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          2,
+          3
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design goroutine pool architecture for data collection",
+            "description": "Create a robust goroutine pool architecture that efficiently manages worker goroutines for validator data collection.",
+            "dependencies": [],
+            "details": "Implement a worker pool pattern with configurable number of goroutines. Include queue management for validator tasks, worker lifecycle management, and communication channels between workers and the main process. Design should handle backpressure and prevent resource exhaustion under high load.",
+            "status": "done",
+            "testStrategy": "Unit tests for pool creation, worker allocation, and task distribution. Benchmark tests to determine optimal pool size for different validator counts."
+          },
+          {
+            "id": 2,
+            "title": "Implement validator data collection logic",
+            "description": "Create the core data collection functionality that fetches validator data from the Beacon Chain every 12 seconds.",
+            "dependencies": [
+              1
+            ],
+            "details": "Utilize the BeaconClient interface from Task 2 to fetch validator statuses, balances, and attestation data. Implement retry logic with exponential backoff for failed requests. Ensure collection is synchronized with Ethereum's 12-second epoch timing. Include logging of collection statistics and error rates.",
+            "status": "done",
+            "testStrategy": "Unit tests with mocked BeaconClient. Integration tests with test beacon node. Stress tests simulating network latency and outages."
+          },
+          {
+            "id": 3,
+            "title": "Develop performance scoring algorithm implementation",
+            "description": "Implement Jim McDonald's attestation effectiveness formula and other performance metrics for validators.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create scoring functions that calculate attestation effectiveness, missed attestations, and overall validator health. Implement percentile calculations to rank validators against peers. Include time-weighted scoring to emphasize recent performance. Optimize calculations for minimal CPU usage during high-frequency updates.",
+            "status": "done",
+            "testStrategy": "Unit tests with known validator performance data and expected scores. Benchmark tests for calculation performance with large validator sets."
+          },
+          {
+            "id": 4,
+            "title": "Build database storage and snapshot management",
+            "description": "Implement concurrent database operations to store validator snapshots efficiently without blocking collection.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create a database writer service that batches validator snapshots for efficient PostgreSQL inserts. Implement connection pooling to handle concurrent writes. Add data validation before storage and handle database errors gracefully. Include cleanup logic for old snapshots based on configurable retention policy.",
+            "status": "done",
+            "testStrategy": "Unit tests for data validation and transformation. Integration tests with test database. Performance tests for write throughput under load."
+          },
+          {
+            "id": 5,
+            "title": "Implement graceful shutdown and error recovery",
+            "description": "Ensure the data collection service can shut down gracefully and recover from errors without data loss.",
+            "dependencies": [
+              1,
+              2,
+              4
+            ],
+            "details": "Add signal handling for graceful shutdown that completes in-progress collections and database writes. Implement error boundaries that prevent individual validator failures from affecting the entire system. Create a recovery mechanism that can resume collection after service restarts. Include comprehensive logging for operational visibility.",
+            "status": "done",
+            "testStrategy": "Unit tests for shutdown sequence. Integration tests simulating crashes and restarts. Chaos testing with random failures injected."
+          },
+          {
+            "id": 6,
+            "title": "Optimize for production performance and monitoring",
+            "description": "Tune the data collection service for production-level performance and add internal monitoring capabilities.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "Profile and optimize CPU/memory usage for handling thousands of validators. Implement internal metrics collection for operation rates, latencies, and error counts. Add health check endpoints for external monitoring. Create configuration options for tuning performance parameters based on deployment environment. Prepare for integration with Prometheus metrics (Task 7).",
+            "status": "done",
+            "testStrategy": "Load testing with simulated production validator counts. Benchmark comparisons before/after optimizations. Integration testing with monitoring systems."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement GraphQL API with gqlgen",
+        "description": "Define GraphQL schema, generate resolvers with gqlgen, implement queries for validators/snapshots/alerts, add pagination and filtering",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          3,
+          4
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define GraphQL schema for validators, snapshots, and alerts",
+            "description": "Create a comprehensive GraphQL schema that defines types, queries, mutations, and interfaces for validators, snapshots, and alerts data.",
+            "dependencies": [],
+            "details": "Design schema following GraphQL best practices with proper type definitions for Validator, ValidatorSnapshot, and Alert entities. Include scalar types for custom data formats. Define relationships between entities. Create input types for filtering and sorting. Design pagination interfaces using cursor-based approach for optimal performance.",
+            "status": "done",
+            "testStrategy": "Validate schema against GraphQL specification. Ensure all required fields and relationships are properly defined."
+          },
+          {
+            "id": 2,
+            "title": "Generate and customize gqlgen code",
+            "description": "Set up gqlgen configuration, generate initial code from schema, and customize the generated code to fit project requirements.",
+            "dependencies": [
+              1
+            ],
+            "details": "Initialize gqlgen.yml configuration file with appropriate settings. Run code generation to create resolver stubs and models. Customize generated models to match database entities. Configure resolver structure for optimal organization. Implement custom scalar types if needed. Set up directory structure following best practices for maintainability.",
+            "status": "done",
+            "testStrategy": "Verify generated code compiles without errors. Ensure customizations maintain compatibility with gqlgen framework."
+          },
+          {
+            "id": 3,
+            "title": "Implement DataLoader pattern to prevent N+1 query problems",
+            "description": "Create DataLoader implementations for efficient batch loading of related entities to prevent N+1 query performance issues.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement DataLoader pattern using go-dataloader library. Create batch loading functions for validators, snapshots, and alerts. Set up per-request DataLoader caching with appropriate context handling. Implement efficient batch database queries that minimize database round trips. Configure DataLoader with appropriate batch sizes and cache expiration settings.",
+            "status": "done",
+            "testStrategy": "Benchmark performance with and without DataLoader to verify query reduction. Test with high-volume related entity requests to ensure batching works correctly."
+          },
+          {
+            "id": 4,
+            "title": "Implement query resolvers with pagination and filtering",
+            "description": "Develop resolver implementations for all queries with cursor-based pagination and comprehensive filtering options.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement resolver functions for validators, snapshots, and alerts queries. Create cursor-based pagination logic with first/after/last/before parameters. Develop filtering system that translates GraphQL input types to database queries. Implement sorting functionality with multiple sort fields. Optimize database queries using appropriate indexes. Use DataLoaders for related entity fetching.",
+            "status": "done",
+            "testStrategy": "Test pagination with large datasets to verify cursor functionality. Test complex filtering scenarios to ensure correct results are returned."
+          },
+          {
+            "id": 5,
+            "title": "Add authentication, authorization and security middleware",
+            "description": "Implement middleware for authentication, authorization, rate limiting, and query complexity analysis.",
+            "dependencies": [
+              4
+            ],
+            "details": "Develop authentication middleware using JWT tokens. Implement role-based authorization for different GraphQL operations. Create rate limiting middleware to prevent API abuse. Implement query complexity analysis to reject expensive queries. Add request logging for audit purposes. Configure timeouts to prevent long-running queries. Set up proper error handling that doesn't expose sensitive information.",
+            "status": "done",
+            "testStrategy": "Test authentication with valid and invalid credentials. Verify rate limiting blocks excessive requests. Test query complexity analyzer with complex nested queries."
+          },
+          {
+            "id": 6,
+            "title": "Create comprehensive API documentation and examples",
+            "description": "Generate GraphQL API documentation, create usage examples, and implement GraphQL Playground for interactive testing.",
+            "dependencies": [
+              5
+            ],
+            "details": "Set up GraphQL Playground or GraphiQL for interactive API exploration. Generate schema documentation with descriptions for all types and fields. Create example queries and mutations for common operations. Document pagination patterns with examples. Create usage guides for filtering and sorting. Document authentication requirements and error codes. Provide performance best practices for API consumers.",
+            "status": "done",
+            "testStrategy": "Verify documentation accuracy by testing all example queries. Ensure playground works correctly with authentication."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Set up Redis caching layer",
+        "description": "Implement Redis client for caching validator data, implement TTL strategies, add cache invalidation logic",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          3
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up Redis client configuration and connection pooling",
+            "description": "Configure Redis client with proper connection settings, implement connection pooling, and establish error handling patterns",
+            "dependencies": [],
+            "details": "Implement Redis client configuration with environment variables for host, port, password, and database number. Set up connection pooling with appropriate max connections and idle timeout settings. Implement robust error handling and reconnection logic. Create a singleton Redis client instance that can be used throughout the application.",
+            "status": "done",
+            "testStrategy": "Unit tests with redis-mock to verify connection handling, integration tests with actual Redis instance to validate connection pooling behavior"
+          },
+          {
+            "id": 2,
+            "title": "Design cache key structure and implement caching functions",
+            "description": "Create a consistent cache key naming convention and implement core caching functions for different validator data types",
+            "dependencies": [
+              1
+            ],
+            "details": "Design hierarchical key structure (e.g., 'validator:{id}:metadata', 'validator:{id}:snapshot:{timestamp}'). Implement Get/Set/Delete functions with proper serialization/deserialization of validator data structures. Create batch operations using Redis pipelining for efficient multi-key operations. Implement helper functions for common validator data access patterns.",
+            "status": "done",
+            "testStrategy": "Unit tests for key generation logic, integration tests for serialization/deserialization, benchmark tests to verify performance improvements"
+          },
+          {
+            "id": 3,
+            "title": "Implement TTL strategies for different data types",
+            "description": "Define and implement appropriate TTL (Time-To-Live) strategies for different types of validator data based on update frequency and importance",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement sliding window TTL for frequently accessed validator metadata (longer TTL, e.g., 1 hour). Use shorter TTLs for validator snapshots (e.g., 15 minutes) to balance freshness and performance. Create configuration options for TTL values that can be adjusted based on system load. Implement TTL extension logic for frequently accessed keys to optimize cache hit rates.",
+            "status": "done",
+            "testStrategy": "Integration tests to verify TTL behavior over time, unit tests for TTL extension logic"
+          },
+          {
+            "id": 4,
+            "title": "Develop cache invalidation patterns and consistency mechanisms",
+            "description": "Implement cache invalidation logic to ensure data consistency between Redis and the PostgreSQL database",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create event-based cache invalidation triggers for database updates. Implement version-based invalidation using Redis hash fields to track data versions. Add bulk invalidation capabilities for system-wide updates. Ensure atomic operations for critical data updates to maintain consistency. Implement background job for periodic cache cleanup of stale entries.",
+            "status": "done",
+            "testStrategy": "Integration tests with simulated database updates to verify invalidation, chaos testing to ensure consistency during failure scenarios"
+          },
+          {
+            "id": 5,
+            "title": "Add cache monitoring and performance metrics",
+            "description": "Implement monitoring for cache hit rates, memory usage, and performance metrics to optimize caching strategy",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Implement cache hit/miss counters for different data types. Add Redis memory usage monitoring. Create performance timing metrics for cache operations. Implement logging for cache-related errors and warnings. Set up alerting for low hit rates or high memory usage. Prepare integration with Task 7 (Prometheus metrics) by defining metric collection points.",
+            "status": "done",
+            "testStrategy": "Integration tests to verify metric collection accuracy, load testing to validate metrics under high traffic conditions"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Prometheus metrics and Grafana dashboard",
+        "description": "Add Prometheus metrics exposition, create custom metrics for validator performance, design and export Grafana dashboard JSON",
+        "details": "",
+        "testStrategy": "",
+        "status": "in-progress",
+        "dependencies": [
+          4,
+          5
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up Prometheus metrics exposition in the application",
+            "description": "Configure the application to expose Prometheus metrics via an HTTP endpoint and implement standard Go runtime metrics collection.",
+            "dependencies": [],
+            "details": "Integrate the Prometheus Go client library, set up an HTTP endpoint (typically /metrics), configure standard Go runtime metrics (memory, goroutines, GC stats), and ensure metrics are properly exposed. Include appropriate middleware for HTTP request metrics and implement proper error handling for the metrics endpoint.",
+            "status": "in-progress",
+            "testStrategy": "Verify metrics endpoint returns 200 OK with appropriate content-type. Check that standard Go runtime metrics are present in the response."
+          },
+          {
+            "id": 2,
+            "title": "Implement custom validator performance metrics",
+            "description": "Create and expose custom Prometheus metrics for validator performance, effectiveness, and operational status.",
+            "dependencies": [
+              1
+            ],
+            "details": "Define and implement custom metrics including: validator effectiveness score (gauge), snapshot lag time (gauge), missed attestations (counter), validator balance changes (gauge), proposal success rate (gauge), and validator status (gauge with labels). Configure appropriate histogram buckets for latency metrics to support SLO monitoring. Ensure all metrics have proper naming, documentation, and label consistency.",
+            "status": "pending",
+            "testStrategy": "Unit test each metric to ensure proper registration and value updates. Verify metrics appear correctly in the /metrics endpoint with expected types and labels."
+          },
+          {
+            "id": 3,
+            "title": "Add API performance and system metrics",
+            "description": "Implement metrics for API latency percentiles, database query performance, and system resource utilization.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create histogram metrics for GraphQL API endpoint latency with appropriate percentile buckets (p50, p90, p95, p99). Add database query performance metrics including query duration histograms and error counters. Implement system metrics for CPU, memory, disk I/O, and network traffic. Add metrics for goroutine counts and data collection service performance. Ensure all metrics follow Prometheus naming conventions.",
+            "status": "pending",
+            "testStrategy": "Load test API endpoints and verify latency metrics are recorded correctly. Check database metrics during query operations. Verify system metrics reflect actual resource usage."
+          },
+          {
+            "id": 4,
+            "title": "Design and create Grafana dashboard for validator monitoring",
+            "description": "Design a comprehensive Grafana dashboard with panels for validator health, system performance, and key metrics visualization.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create a professional Grafana dashboard with multiple panels including: validator effectiveness overview, individual validator performance, system resource utilization, API latency percentiles, database performance, and error rates. Implement proper time range controls, templating variables for filtering by validator, and consistent styling. Organize panels into logical sections with appropriate visualization types (graphs, gauges, heatmaps) for each metric type.",
+            "status": "pending",
+            "testStrategy": "Verify dashboard loads correctly in Grafana. Check all panels display expected data. Test templating variables and time range controls."
+          },
+          {
+            "id": 5,
+            "title": "Configure alerting rules and export dashboard JSON",
+            "description": "Set up Prometheus alerting rules for critical conditions and export the complete Grafana dashboard as JSON for version control.",
+            "dependencies": [
+              4
+            ],
+            "details": "Define alerting rules for critical conditions including: low validator effectiveness, extended snapshot lag, high API latency, system resource exhaustion, and database connection issues. Configure appropriate thresholds and alert severity levels. Test alert triggering and notification channels. Export the complete Grafana dashboard as JSON, document the import process, and store in version control. Include provisioning scripts for automated dashboard deployment.",
+            "status": "pending",
+            "testStrategy": "Test alert triggering by simulating alert conditions. Verify exported JSON can be successfully imported into a fresh Grafana instance. Check all dashboard features work after import."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Write comprehensive tests (unit + integration)",
+        "description": "Create unit tests for all packages with 80%+ coverage, write integration tests for API endpoints, add end-to-end tests for data collection flow",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up unit testing framework and coverage reporting",
+            "description": "Configure Go testing framework with testify, set up code coverage reporting tools, and establish testing patterns for the project",
+            "dependencies": [],
+            "details": "Install and configure testify for assertions and mocking, set up code coverage reporting with go test -cover, create helper functions for common test operations, and establish patterns for table-driven tests. Configure CI pipeline to enforce 80%+ coverage requirements.",
+            "status": "done",
+            "testStrategy": "Verify configuration by creating sample tests that demonstrate all testing patterns and confirm coverage reporting works correctly"
+          },
+          {
+            "id": 2,
+            "title": "Implement unit tests for database layer",
+            "description": "Create comprehensive unit tests for database models, repositories, and query functions with proper mocking of external dependencies",
+            "dependencies": [
+              1
+            ],
+            "details": "Write unit tests for all database models and repositories using gomock to mock database connections. Implement table-driven tests for query functions covering normal, edge, and error cases. Focus on validator, validator_snapshots, and alerts tables with proper test fixtures and assertions.",
+            "status": "done",
+            "testStrategy": "Verify tests with go test -cover to ensure 80%+ coverage of database layer code"
+          },
+          {
+            "id": 3,
+            "title": "Create integration tests for database operations",
+            "description": "Implement integration tests for database operations using dockertest to spin up real PostgreSQL instances",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Set up dockertest to create temporary PostgreSQL containers for testing. Write integration tests that verify database migrations, connection pooling, and complex query operations against real database instances. Include tests for indexes and performance-critical queries with appropriate fixtures.",
+            "status": "done",
+            "testStrategy": "Run tests against temporary database containers to verify actual database behavior matches expected outcomes"
+          },
+          {
+            "id": 4,
+            "title": "Develop unit and integration tests for Redis caching layer",
+            "description": "Create unit tests for Redis client functions and integration tests for cache operations using dockertest",
+            "dependencies": [
+              1
+            ],
+            "details": "Write unit tests for Redis client functions with mocked Redis connections. Implement integration tests using dockertest to spin up temporary Redis instances. Test TTL strategies, cache invalidation logic, and error handling scenarios. Verify cache hit/miss behavior and performance characteristics.",
+            "status": "done",
+            "testStrategy": "Use both mocked Redis for unit tests and real Redis instances via dockertest for integration tests"
+          },
+          {
+            "id": 5,
+            "title": "Implement GraphQL API endpoint tests",
+            "description": "Create comprehensive tests for GraphQL resolvers, queries, and mutations with both unit and integration approaches",
+            "dependencies": [
+              1,
+              2,
+              4
+            ],
+            "details": "Write unit tests for GraphQL resolvers with mocked dependencies. Create integration tests that execute GraphQL queries against test server instances. Test pagination, filtering, error handling, and response validation. Include performance tests for complex queries and verify proper caching behavior.",
+            "status": "done",
+            "testStrategy": "Use gqlgen test utilities for resolver unit tests and http test server for integration tests of full GraphQL endpoints"
+          },
+          {
+            "id": 6,
+            "title": "Create end-to-end tests for data collection flow",
+            "description": "Implement end-to-end tests that verify the complete data collection, processing, and API serving pipeline",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "Develop end-to-end tests that simulate the entire data flow from collection to storage to API responses. Set up test fixtures that represent real-world validator data. Verify data is correctly processed, stored in PostgreSQL, cached in Redis, and retrievable via GraphQL API. Include tests for error recovery and edge cases in the data collection process.",
+            "status": "done",
+            "testStrategy": "Use dockertest to create a complete test environment with PostgreSQL and Redis, then execute full data collection flow and verify results through API endpoints"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Create deployment configuration and documentation",
+        "description": "Write Dockerfile, docker-compose.yml for local dev, create deployment scripts, write comprehensive README with setup instructions",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          5,
+          6,
+          7
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create multi-stage Dockerfile with security best practices",
+            "description": "Develop a multi-stage Dockerfile that optimizes image size and implements security best practices for the ether.fi application",
+            "dependencies": [],
+            "details": "Create a multi-stage Dockerfile that separates build and runtime environments. Include security measures like non-root user, minimal base images (Alpine/distroless), vulnerability scanning, proper permission settings, and removal of build tools in final stage. Optimize for small image size and include health checks.",
+            "status": "pending",
+            "testStrategy": "Verify build process completes successfully, check image size optimization, run security scanning tools (Trivy/Clair), and validate application functionality in containerized environment"
+          },
+          {
+            "id": 2,
+            "title": "Develop docker-compose.yml for local development environment",
+            "description": "Create a comprehensive docker-compose.yml file that sets up the complete local development environment with all required services",
+            "dependencies": [
+              1
+            ],
+            "details": "Configure docker-compose.yml with services for the API, PostgreSQL database, Redis cache, and any other required components. Include volume mounts for code and data persistence, environment variable configuration, network setup, and health checks. Add development-specific configurations like hot-reloading and debugging support.",
+            "status": "pending",
+            "testStrategy": "Test complete local environment startup, verify service connectivity, validate development workflows like code changes with hot-reloading, and ensure data persistence across container restarts"
+          },
+          {
+            "id": 3,
+            "title": "Create Kubernetes manifests for production deployment",
+            "description": "Develop Kubernetes configuration files for deploying the application in a production environment with proper resource management and scaling",
+            "dependencies": [
+              1
+            ],
+            "details": "Create Kubernetes manifests including Deployments, Services, ConfigMaps, Secrets, PersistentVolumeClaims, and Ingress resources. Configure resource requests/limits, health probes, horizontal pod autoscaling, and update strategies. Implement proper secret management and environment-specific configurations. Include network policies and service mesh integration if applicable.",
+            "status": "pending",
+            "testStrategy": "Deploy to a staging Kubernetes environment, verify all components start correctly, test scaling behavior, validate resource utilization, and ensure proper network connectivity between services"
+          },
+          {
+            "id": 4,
+            "title": "Write comprehensive README with architecture diagrams",
+            "description": "Create detailed README documentation with architecture diagrams, setup instructions, and API documentation",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Develop a comprehensive README.md with project overview, architecture diagrams (using tools like PlantUML or Mermaid), detailed setup instructions for both local development and production deployment. Include environment variable documentation, API endpoints with examples, and integration points with external systems. Add badges for build status and code quality.",
+            "status": "pending",
+            "testStrategy": "Validate documentation accuracy by having team members follow setup instructions from scratch, verify API documentation matches implementation, and ensure architecture diagrams reflect the actual system design"
+          },
+          {
+            "id": 5,
+            "title": "Create troubleshooting guide and operational documentation",
+            "description": "Develop a detailed troubleshooting guide and operational documentation for maintenance and support",
+            "dependencies": [
+              4
+            ],
+            "details": "Create documentation covering common issues and their solutions, logging and monitoring setup, backup and restore procedures, scaling guidelines, and performance tuning recommendations. Include runbooks for operational tasks, disaster recovery procedures, and security incident response. Document metrics, alerts, and dashboards for operational visibility.",
+            "status": "pending",
+            "testStrategy": "Review documentation with operations team, validate troubleshooting steps for common scenarios, and ensure monitoring setup instructions are accurate and comprehensive"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-09T11:58:01.336Z",
+      "description": "Default tasks context",
+      "updated": "2025-10-10T15:12:23.954Z"
+    }
+  }
+}
