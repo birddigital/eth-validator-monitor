@@ -19,6 +19,7 @@ type BeaconClientImpl struct {
 	retryClient   *RetryableHTTPClient
 	timeout       time.Duration
 	useRetry      bool
+	metrics       *HTTPMetrics
 }
 
 // BeaconClientConfig configures the beacon client
@@ -29,6 +30,7 @@ type BeaconClientConfig struct {
 	RetryConfig    RetryConfig
 	EnableLogging  bool
 	VerboseLogging bool
+	EnableMetrics  bool
 }
 
 // DefaultBeaconClientConfig returns default configuration
@@ -40,6 +42,7 @@ func DefaultBeaconClientConfig(baseURL string) BeaconClientConfig {
 		RetryConfig:    DefaultRetryConfig(),
 		EnableLogging:  true,
 		VerboseLogging: false,
+		EnableMetrics:  true,
 	}
 }
 
@@ -52,6 +55,7 @@ func NewBeaconClient(baseURL string, timeout time.Duration) *BeaconClientImpl {
 		RetryConfig:    DefaultRetryConfig(),
 		EnableLogging:  true,
 		VerboseLogging: false,
+		EnableMetrics:  true,
 	}
 
 	return NewBeaconClientWithConfig(config)
@@ -59,8 +63,12 @@ func NewBeaconClient(baseURL string, timeout time.Duration) *BeaconClientImpl {
 
 // NewBeaconClientWithConfig creates a beacon client with custom configuration
 func NewBeaconClientWithConfig(config BeaconClientConfig) *BeaconClientImpl {
-	var retryClient *RetryableHTTPClient
+	var metrics *HTTPMetrics
+	if config.EnableMetrics {
+		metrics = NewHTTPMetrics()
+	}
 
+	var retryClient *RetryableHTTPClient
 	if config.EnableRetry {
 		if config.EnableLogging {
 			retryClient = NewLoggingRetryableHTTPClient(config.Timeout, config.RetryConfig, config.VerboseLogging)
@@ -70,8 +78,22 @@ func NewBeaconClientWithConfig(config BeaconClientConfig) *BeaconClientImpl {
 	}
 
 	var httpClient *http.Client
-	if config.EnableLogging {
+	if config.EnableLogging && config.EnableMetrics {
+		// Both logging and metrics
+		httpClient = &http.Client{
+			Transport: &LoggingTransport{
+				Transport: &MetricsTransport{
+					Transport: http.DefaultTransport,
+					Metrics:   metrics,
+				},
+				Verbose: config.VerboseLogging,
+			},
+			Timeout: config.Timeout,
+		}
+	} else if config.EnableLogging {
 		httpClient = NewLoggingHTTPClient(config.Timeout, config.VerboseLogging)
+	} else if config.EnableMetrics {
+		httpClient = NewMetricsHTTPClient(config.Timeout, metrics)
 	} else {
 		httpClient = &http.Client{
 			Timeout: config.Timeout,
@@ -84,6 +106,7 @@ func NewBeaconClientWithConfig(config BeaconClientConfig) *BeaconClientImpl {
 		retryClient: retryClient,
 		timeout:     config.Timeout,
 		useRetry:    config.EnableRetry,
+		metrics:     metrics,
 	}
 }
 
@@ -105,6 +128,15 @@ func (c *BeaconClientImpl) doRequest(req *http.Request) (*http.Response, error) 
 		return c.retryClient.Do(req)
 	}
 	return c.httpClient.Do(req)
+}
+
+// GetMetrics returns the HTTP metrics snapshot if metrics are enabled
+func (c *BeaconClientImpl) GetMetrics() *HTTPMetricsSnapshot {
+	if c.metrics == nil {
+		return nil
+	}
+	snapshot := c.metrics.GetSnapshot()
+	return &snapshot
 }
 
 // GetValidator retrieves validator information by index
