@@ -1,34 +1,75 @@
+# Multi-stage Dockerfile with security best practices
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.22-alpine3.19 AS builder
+
+# Add metadata
+LABEL maintainer="Adrien Bird <contact@adrienbird.com>" \
+      description="Ethereum Validator Monitor - Production-grade validator performance tracking" \
+      version="1.0.0"
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    make \
+    ca-certificates
 
 WORKDIR /build
 
-# Install dependencies
-RUN apk add --no-cache git make
-
-# Copy go mod files
+# Copy dependency files first for better caching
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod download && go mod verify
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o validator-monitor ./cmd/server
+# Build with security-hardened flags
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    go build \
+    -a \
+    -trimpath \
+    -ldflags="-s -w -X main.Version=$(git describe --tags --always --dirty 2>/dev/null || echo 'dev') -X main.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ) -extldflags '-static'" \
+    -o validator-monitor \
+    ./cmd/server
 
-# Runtime stage
-FROM alpine:latest
+# Verify the binary
+RUN chmod +x validator-monitor && ./validator-monitor --version 2>&1 || true
 
-RUN apk --no-cache add ca-certificates tzdata
+# Runtime stage - minimal attack surface
+FROM alpine:3.19
+
+# Add metadata
+LABEL maintainer="Adrien Bird <contact@adrienbird.com>" \
+      description="Ethereum Validator Monitor - Runtime container" \
+      version="1.0.0"
+
+# Install runtime dependencies and security updates
+RUN apk --no-cache add \
+    ca-certificates \
+    tzdata \
+    && apk upgrade --no-cache
+
+# Create non-root user and group
+RUN addgroup -g 10001 -S validator && \
+    adduser -u 10001 -S -G validator -h /app validator
 
 WORKDIR /app
 
-# Copy binary from builder
-COPY --from=builder /build/validator-monitor .
-COPY --from=builder /build/config.yaml .
+# Copy binary and config from builder
+COPY --from=builder --chown=validator:validator /build/validator-monitor .
+COPY --from=builder --chown=validator:validator /build/config.yaml .
 
-# Expose ports
+# Switch to non-root user
+USER validator
+
+# Expose application and metrics ports
 EXPOSE 8080 9090
 
+# Health check - verify API responds
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
 # Run the application
-CMD ["./validator-monitor"]
+ENTRYPOINT ["./validator-monitor"]
+CMD []

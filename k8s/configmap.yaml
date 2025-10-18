@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: validator-monitor-config
+  namespace: validator-monitor
+data:
+  config.yaml: |
+    beacon:
+      url: ${BEACON_NODE_URL}
+      timeout: 30s
+
+    execution:
+      url: ${EXECUTION_NODE_URL}
+      timeout: 30s
+
+    database:
+      host: postgres
+      port: 5432
+      user: postgres
+      database: validator_monitor
+      max_connections: 25
+      max_idle_connections: 5
+
+    redis:
+      host: redis
+      port: 6379
+
+    api:
+      port: 8080
+      rate_limit: 100
+
+    prometheus:
+      port: 9090
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: validator-monitor
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      - '/etc/prometheus/alerts.yml'
+
+    scrape_configs:
+      - job_name: 'validator-monitor'
+        static_configs:
+          - targets: ['validator-monitor:9090']
+        metrics_path: '/metrics'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts
+  namespace: validator-monitor
+data:
+  alerts.yml: |
+    # Full alerts.yml content from docker/prometheus/alerts.yml
+    # Note: In production, consider using a ConfigMap generator or external config management
+    groups:
+      - name: validator_health
+        interval: 30s
+        rules:
+          - alert: ValidatorEffectivenessLow
+            expr: validator_effectiveness_score < 95
+            for: 5m
+            labels:
+              severity: warning
+              component: validator
+            annotations:
+              summary: "Low validator effectiveness score"
+              description: "Validator {{ $labels.validator_index }} has effectiveness score {{ $value }}%"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasource
+  namespace: validator-monitor
+data:
+  prometheus.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: false

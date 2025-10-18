@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: validator-monitor
+  labels:
+    name: validator-monitor
+    app: eth-validator-monitor

@@ -1,0 +1,289 @@
+groups:
+  - name: validator_health
+    interval: 30s
+    rules:
+      # Critical validator effectiveness
+      - alert: ValidatorEffectivenessLow
+        expr: validator_effectiveness_score < 95
+        for: 5m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Low validator effectiveness score"
+          description: "Validator {{ $labels.validator_index }} has effectiveness score {{ $value }}% (threshold: 95%)"
+
+      - alert: ValidatorEffectivenessCritical
+        expr: validator_effectiveness_score < 90
+        for: 2m
+        labels:
+          severity: critical
+          component: validator
+        annotations:
+          summary: "Critical validator effectiveness score"
+          description: "Validator {{ $labels.validator_index }} has critically low effectiveness score {{ $value }}% (threshold: 90%)"
+
+      # Attestation participation issues
+      - alert: LowAttestationParticipation
+        expr: validator_attestation_participation_rate < 0.98
+        for: 10m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Low attestation participation rate"
+          description: "Validator {{ $labels.validator_index }} attestation rate {{ $value | humanizePercentage }} is below 98%"
+
+      - alert: MissedAttestations
+        expr: increase(validator_missed_attestations_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Missed attestations detected"
+          description: "Validator {{ $labels.validator_index }} missed {{ $value }} attestations in the last 5 minutes"
+
+      # Validator balance issues
+      - alert: ValidatorBalanceDecreasing
+        expr: rate(validator_balance[1h]) < 0
+        for: 30m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Validator balance decreasing"
+          description: "Validator {{ $labels.validator_index }} balance is decreasing at {{ $value }} gwei/hour"
+
+  - name: beacon_api_health
+    interval: 30s
+    rules:
+      # API latency issues
+      - alert: BeaconAPIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="validator-monitor"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: beacon_api
+        annotations:
+          summary: "High beacon API latency"
+          description: "95th percentile API latency is {{ $value }}s (threshold: 2s) for endpoint {{ $labels.endpoint }}"
+
+      - alert: BeaconAPICriticalLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="validator-monitor"}[5m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: beacon_api
+        annotations:
+          summary: "Critical beacon API latency"
+          description: "95th percentile API latency is {{ $value }}s (threshold: 5s) for endpoint {{ $labels.endpoint }}"
+
+      # API error rates
+      - alert: BeaconAPIHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: beacon_api
+        annotations:
+          summary: "High beacon API error rate"
+          description: "API error rate is {{ $value | humanizePercentage }} (threshold: 5%) for endpoint {{ $labels.endpoint }}"
+
+      - alert: BeaconAPIDown
+        expr: up{job="validator-monitor"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: beacon_api
+        annotations:
+          summary: "Beacon API is down"
+          description: "Validator monitor API has been down for more than 1 minute"
+
+      # API retry exhaustion
+      - alert: BeaconAPIRetryExhaustion
+        expr: rate(http_retry_exhausted_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: beacon_api
+        annotations:
+          summary: "High rate of API retry exhaustion"
+          description: "API is exhausting retries at {{ $value }} requests/sec"
+
+  - name: data_freshness
+    interval: 30s
+    rules:
+      # Snapshot lag issues
+      - alert: ExtendedSnapshotLag
+        expr: snapshot_lag_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: data_collection
+        annotations:
+          summary: "Extended snapshot lag detected"
+          description: "Snapshot lag is {{ $value }}s (threshold: 300s, ~2.5 epochs)"
+
+      - alert: CriticalSnapshotLag
+        expr: snapshot_lag_seconds > 600
+        for: 2m
+        labels:
+          severity: critical
+          component: data_collection
+        annotations:
+          summary: "Critical snapshot lag detected"
+          description: "Snapshot lag is {{ $value }}s (threshold: 600s, ~5 epochs)"
+
+      # Data collection failures
+      - alert: ValidatorSnapshotCollectionFailing
+        expr: rate(validator_snapshots_collected_total[10m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: data_collection
+        annotations:
+          summary: "Validator snapshot collection has stopped"
+          description: "No validator snapshots collected in the last 10 minutes"
+
+  - name: database_health
+    interval: 30s
+    rules:
+      # Database connection issues
+      - alert: DatabaseConnectionPoolExhausted
+        expr: database_pool_connections{state="in_use"} / database_pool_connections{state="max"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connection pool is {{ $value | humanizePercentage }} full (threshold: 90%)"
+
+      - alert: DatabaseHighConnectionUsage
+        expr: database_pool_connections{state="in_use"} > 20
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connection usage"
+          description: "{{ $value }} database connections in use (threshold: 20)"
+
+      # Database query performance
+      - alert: DatabaseSlowQueries
+        expr: histogram_quantile(0.95, rate(database_query_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile query duration is {{ $value }}s (threshold: 1s)"
+
+      # Database write issues
+      - alert: DatabaseWriteFailures
+        expr: rate(database_write_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database write failures detected"
+          description: "{{ $value }} database write errors per second"
+
+  - name: system_resources
+    interval: 30s
+    rules:
+      # Memory exhaustion
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / 1e9) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Application memory usage is {{ $value }}GB (threshold: 2GB)"
+
+      - alert: CriticalMemoryUsage
+        expr: (process_resident_memory_bytes / 1e9) > 4
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical memory usage"
+          description: "Application memory usage is {{ $value }}GB (threshold: 4GB)"
+
+      # Goroutine leaks
+      - alert: GoroutineLeakSuspected
+        expr: go_goroutines > 1000
+        for: 15m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Possible goroutine leak"
+          description: "{{ $value }} goroutines active (threshold: 1000)"
+
+      # CPU usage
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      # File descriptor exhaustion
+      - alert: FileDescriptorExhaustion
+        expr: process_open_fds / process_max_fds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "File descriptor usage high"
+          description: "{{ $value | humanizePercentage }} of file descriptors in use (threshold: 80%)"
+
+  - name: cache_performance
+    interval: 30s
+    rules:
+      # Redis cache issues
+      - alert: LowCacheHitRate
+        expr: rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 70%)"
+
+      # Cache operations failures
+      - alert: CacheOperationFailures
+        expr: rate(cache_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Cache operation failures detected"
+          description: "{{ $value }} cache errors per second"
+
+  - name: metrics_export
+    interval: 30s
+    rules:
+      # Prometheus metrics export issues
+      - alert: MetricsCollectionStalled
+        expr: rate(prometheus_metrics_exported_total[5m]) == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: metrics
+        annotations:
+          summary: "Metrics collection appears stalled"
+          description: "No metrics exported in the last 5 minutes"

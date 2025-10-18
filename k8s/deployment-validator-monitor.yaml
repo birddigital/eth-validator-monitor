@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validator-monitor
+  namespace: validator-monitor
+  labels:
+    app: validator-monitor
+spec:
+  replicas: 2  # For high availability
+  selector:
+    matchLabels:
+      app: validator-monitor
+  template:
+    metadata:
+      labels:
+        app: validator-monitor
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+      - name: validator-monitor
+        image: your-registry/validator-monitor:latest  # Replace with actual image
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: BEACON_NODE_URL
+          valueFrom:
+            secretKeyRef:
+              name: validator-monitor-secrets
+              key: BEACON_NODE_URL
+        - name: EXECUTION_NODE_URL
+          valueFrom:
+            secretKeyRef:
+              name: validator-monitor-secrets
+              key: EXECUTION_NODE_URL
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: validator-monitor-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: validator-monitor-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          value: "validator_monitor"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: API_PORT
+          value: "8080"
+        - name: PROMETHEUS_PORT
+          value: "9090"
+        - name: LOG_LEVEL
+          value: "info"
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config
+        configMap:
+          name: validator-monitor-config
