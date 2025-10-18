@@ -250,6 +250,7 @@ func TestCalculateEffectivenessScore(t *testing.T) {
 		inclusionDelay int32
 		expected       float64
 	}{
+		// CATEGORY 1: Happy Path - Standard Participation Rates
 		{
 			name:           "perfect attestation",
 			headVote:       true,
@@ -259,7 +260,7 @@ func TestCalculateEffectivenessScore(t *testing.T) {
 			expected:       100.0,
 		},
 		{
-			name:           "all votes correct, delayed inclusion",
+			name:           "standard_95pct_effectiveness",
 			headVote:       true,
 			sourceVote:     true,
 			targetVote:     true,
@@ -267,7 +268,143 @@ func TestCalculateEffectivenessScore(t *testing.T) {
 			expected:       93.75, // 75 + 18.75 (delayed by 1 slot)
 		},
 		{
-			name:           "missed head vote",
+			name:           "good_attestation_moderate_delay",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 3,
+			expected:       87.5, // 75 + 12.5 (delayed by 2 slots)
+		},
+		{
+			name:           "all_correct_delay_3_slots",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 4,
+			expected:       81.25, // 75 + 6.25 (delayed by 3 slots)
+		},
+
+		// CATEGORY 2: Boundary Conditions
+		{
+			name:           "perfect_100pct_effectiveness",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 1,
+			expected:       100.0,
+		},
+		{
+			name:           "zero_0pct_effectiveness_all_missed",
+			headVote:       false,
+			sourceVote:     false,
+			targetVote:     false,
+			inclusionDelay: 5, // Max penalty
+			expected:       0.0,
+		},
+		{
+			name:           "zero_effectiveness_extreme_delay",
+			headVote:       false,
+			sourceVote:     false,
+			targetVote:     false,
+			inclusionDelay: 100,
+			expected:       0.0,
+		},
+		{
+			name:           "minimum_effectiveness_delay_at_threshold",
+			headVote:       false,
+			sourceVote:     false,
+			targetVote:     false,
+			inclusionDelay: 5, // Exactly at penalty threshold
+			expected:       0.0,
+		},
+
+		// CATEGORY 3: Edge Cases - Division by Zero and Invalid Inputs
+		{
+			name:           "zero_inclusion_delay",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 0, // Edge case: no inclusion score
+			expected:       75.0, // Only vote scores
+		},
+		{
+			name:           "negative_delay_treated_as_invalid",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: -1, // Invalid input
+			expected:       75.0, // Only vote scores (delay ignored)
+		},
+		{
+			name:           "max_int32_delay",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 2147483647, // Max int32
+			expected:       75.0, // Votes only, delay penalty maxed out
+		},
+
+		// CATEGORY 4: Data Integrity - Floating Point Precision
+		{
+			name:           "precise_calculation_delay_2",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     false,
+			inclusionDelay: 2,
+			expected:       68.75, // 50 + 18.75
+		},
+		{
+			name:           "precise_calculation_delay_3",
+			headVote:       true,
+			sourceVote:     false,
+			targetVote:     true,
+			inclusionDelay: 3,
+			expected:       62.5, // 50 + 12.5
+		},
+		{
+			name:           "floating_point_boundary",
+			headVote:       false,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 4,
+			expected:       56.25, // 50 + 6.25
+		},
+
+		// CATEGORY 5: State Transitions & Partial Activity
+		{
+			name:           "partial_vote_head_only",
+			headVote:       true,
+			sourceVote:     false,
+			targetVote:     false,
+			inclusionDelay: 1,
+			expected:       50.0, // 25 (head) + 25 (inclusion)
+		},
+		{
+			name:           "partial_vote_source_target_only",
+			headVote:       false,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 1,
+			expected:       75.0, // 50 (source+target) + 25 (inclusion)
+		},
+		{
+			name:           "partial_vote_single_correct",
+			headVote:       false,
+			sourceVote:     true,
+			targetVote:     false,
+			inclusionDelay: 1,
+			expected:       50.0, // 25 (source) + 25 (inclusion)
+		},
+		{
+			name:           "partial_activity_with_delay",
+			headVote:       true,
+			sourceVote:     false,
+			targetVote:     true,
+			inclusionDelay: 3,
+			expected:       62.5, // 50 (head+target) + 12.5 (delay)
+		},
+		{
+			name:           "missed_head_vote",
 			headVote:       false,
 			sourceVote:     true,
 			targetVote:     true,
@@ -275,7 +412,7 @@ func TestCalculateEffectivenessScore(t *testing.T) {
 			expected:       75.0,
 		},
 		{
-			name:           "all votes missed",
+			name:           "all_votes_missed",
 			headVote:       false,
 			sourceVote:     false,
 			targetVote:     false,
@@ -283,19 +420,37 @@ func TestCalculateEffectivenessScore(t *testing.T) {
 			expected:       25.0, // Only inclusion delay score
 		},
 		{
-			name:           "extreme delay",
+			name:           "extreme_delay",
 			headVote:       true,
 			sourceVote:     true,
 			targetVote:     true,
 			inclusionDelay: 10,
 			expected:       75.0, // 75 from votes, 0 from delay (maxed out)
 		},
+
+		// Additional edge cases
+		{
+			name:           "all_correct_delay_at_max_threshold",
+			headVote:       true,
+			sourceVote:     true,
+			targetVote:     true,
+			inclusionDelay: 5,
+			expected:       75.0, // Delay penalty maxed out at 5
+		},
+		{
+			name:           "single_vote_no_delay",
+			headVote:       false,
+			sourceVote:     false,
+			targetVote:     true,
+			inclusionDelay: 1,
+			expected:       50.0, // 25 (target) + 25 (inclusion)
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := CalculateEffectivenessScore(tt.headVote, tt.sourceVote, tt.targetVote, tt.inclusionDelay)
-			assert.InDelta(t, tt.expected, score, 0.01)
+			assert.InDelta(t, tt.expected, score, 0.01, "effectiveness score mismatch for case: %s", tt.name)
 		})
 	}
 }
