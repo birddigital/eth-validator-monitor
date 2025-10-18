@@ -141,6 +141,65 @@ subscription MonitorValidators {
 
 This project leverages modern AI-assisted development tools to maximize development velocity while maintaining high code quality. The workflow includes automated task management, intelligent code suggestions, and comprehensive testing frameworks.
 
+### Task Master AI Setup
+
+The project uses [Task Master AI](https://github.com/kkhaulinsoft/taskmaster-ai) for intelligent task management and autonomous development workflows.
+
+#### Free AI Provider Configuration
+
+Task Master supports multiple free AI providers to avoid API costs:
+
+**Recommended Free Providers:**
+- **Gemini-CLI** (Google) - Free tier with generous limits
+- **Grok-CLI** (X.AI) - Free access for X Premium+ subscribers
+- **Codex-CLI** (Anthropic) - Uses Claude Code Max subscription
+
+**Setup Gemini-CLI (Recommended):**
+
+```bash
+# Install Gemini CLI globally
+npm install -g gemini-cli
+
+# Configure Gemini as the AI provider
+task-master models --gemini-cli \
+  --set-main gemini-2.5-pro \
+  --set-research gemini-2.5-pro \
+  --set-fallback gemini-2.5-flash
+
+# Verify configuration
+task-master models
+```
+
+**Setup Alternative Providers:**
+
+```bash
+# Grok-CLI (X.AI)
+npm install -g grok-cli
+task-master models --grok-cli --set-main grok-3-beta
+
+# Codex-CLI (uses Claude Code Max auth token)
+npm install -g codex-cli
+task-master models --codex-cli --set-main claude-sonnet-4-5
+```
+
+**Using Task Master:**
+
+```bash
+# Add a new task with AI assistance
+task-master add-task --prompt="Implement validator rewards tracking" --research
+
+# Expand task into subtasks
+task-master expand --id=11 --research
+
+# View next available task
+task-master next
+
+# Mark task complete
+task-master set-status --id=11 --status=done
+```
+
+All Task Master commands with `--research` flag now use the free Gemini provider at zero cost.
+
 ### Running Tests
 
 ```bash

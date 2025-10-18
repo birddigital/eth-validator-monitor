@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "1",
+        "id": 1,
         "title": "Set up Go project structure with modules and dependencies",
         "description": "Initialize Go module, set up directory structure (cmd/, pkg/, internal/), and install core dependencies (go-ethereum, gqlgen, PostgreSQL driver, Redis client, Prometheus client)",
         "details": "",
@@ -72,7 +72,7 @@
         ]
       },
       {
-        "id": "2",
+        "id": 2,
         "title": "Implement Beacon Chain client wrapper for validator data fetching",
         "description": "Create BeaconClient interface and implementation using go-ethereum to fetch validator data, balances, attestations, and subscribe to head events from Ethereum Beacon Chain",
         "details": "",
@@ -148,7 +148,7 @@
         ]
       },
       {
-        "id": "3",
+        "id": 3,
         "title": "Design and implement PostgreSQL database schema",
         "description": "Create database schema for validators, validator_snapshots, alerts tables with proper indexes, implement migrations, and set up connection pooling",
         "details": "",
@@ -235,7 +235,7 @@
         ]
       },
       {
-        "id": "4",
+        "id": 4,
         "title": "Build data collection service with goroutines",
         "description": "Implement multi-goroutine data collector that monitors validators every 12 seconds, calculates performance scores, and stores snapshots to database",
         "details": "",
@@ -327,7 +327,7 @@
         ]
       },
       {
-        "id": "5",
+        "id": 5,
         "title": "Implement GraphQL API with gqlgen",
         "description": "Define GraphQL schema, generate resolvers with gqlgen, implement queries for validators/snapshots/alerts, add pagination and filtering",
         "details": "",
@@ -412,7 +412,7 @@
         ]
       },
       {
-        "id": "6",
+        "id": 6,
         "title": "Set up Redis caching layer",
         "description": "Implement Redis client for caching validator data, implement TTL strategies, add cache invalidation logic",
         "details": "",
@@ -488,7 +488,7 @@
         ]
       },
       {
-        "id": "7",
+        "id": 7,
         "title": "Implement Prometheus metrics and Grafana dashboard",
         "description": "Add Prometheus metrics exposition, create custom metrics for validator performance, design and export Grafana dashboard JSON",
         "details": "",
@@ -567,7 +567,7 @@
         "updatedAt": "2025-10-18T17:23:21.148Z"
       },
       {
-        "id": "8",
+        "id": 8,
         "title": "Write comprehensive tests (unit + integration)",
         "description": "Create unit tests for all packages with 80%+ coverage, write integration tests for API endpoints, add end-to-end tests for data collection flow",
         "details": "",
@@ -661,7 +661,7 @@
         ]
       },
       {
-        "id": "9",
+        "id": 9,
         "title": "Create deployment configuration and documentation",
         "description": "Write Dockerfile, docker-compose.yml for local dev, create deployment scripts, write comprehensive README with setup instructions",
         "details": "",
@@ -741,16 +741,46 @@
           }
         ],
         "updatedAt": "2025-10-18T17:28:16.292Z"
+      },
+      {
+        "id": 10,
+        "title": "Implement comprehensive performance benchmarking suite",
+        "description": "Create benchmark tests for critical performance paths including validator data collection, database operations, GraphQL queries, and Redis caching to ensure system performance under load.",
+        "details": "Implement Go benchmark tests covering all performance-critical code paths. Create benchmarks for: (1) Validator data collection goroutines to measure throughput and latency under various validator counts (2) Database operations including batch inserts for validator snapshots, complex queries for performance metrics, and connection pool efficiency (3) GraphQL resolver performance with large datasets and pagination (4) Redis cache operations including get/set operations and invalidation patterns (5) Beacon Chain API client performance with retry logic and rate limiting. Use `go test -bench=.` and `make benchmark` for execution. Implement table-driven benchmarks with realistic data volumes (1000, 5000, 10000 validators). Add memory profiling with `-benchmem` flag to track allocations. Create benchmark comparison tooling to track performance regressions over time. Document benchmark results and performance targets in README.md.",
+        "testStrategy": "Verify benchmarks run successfully with `make benchmark`. Compare results against baseline performance targets. Test with different validator counts to ensure linear scaling. Validate memory allocation patterns don't show excessive garbage collection. Run benchmarks in CI to catch performance regressions.",
+        "status": "done",
+        "dependencies": [
+          "8"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2025-10-18T17:56:58.620Z"
+      },
+      {
+        "id": 11,
+        "title": "Write Unit Tests for Validator Effectiveness Calculation",
+        "description": "Develop a comprehensive suite of unit tests for the validator effectiveness calculation logic, ensuring its accuracy, reliability, and correct handling of edge cases and boundary conditions.",
+        "details": "Implement table-driven tests using Go's standard `testing` package and the `stretchr/testify` assertion library to cover a wide range of scenarios for the effectiveness calculation function. Test cases must include:\n1. **Happy Path:** Validators with standard participation rates (e.g., 95% attestation inclusion) resulting in an expected effectiveness score.\n2. **Boundary Conditions:** Validators with perfect performance (100% effectiveness) and zero performance (0% effectiveness).\n3. **Edge Cases:** Scenarios involving division by zero (e.g., a validator had zero expected attestations), handling of `nil` or empty input data structures, and calculations for validators that were active for only a portion of the measurement window.\n4. **Data Integrity:** Test with various data types and large input values to check for potential integer overflows or floating-point inaccuracies.\n5. **State Transitions:** Test scenarios where a validator's status changes during the period being analyzed.\nAll tests should be self-contained within the relevant package (e.g., `pkg/analysis/effectiveness_test.go`) and should not require external service connections.",
+        "testStrategy": "Execute the newly created tests via `go test ./... -cover`. All test cases must pass successfully. Verify that the code coverage for the validator effectiveness calculation package meets or exceeds 95%. Manually review the test cases to ensure all logical paths, including error conditions and edge cases identified in the details, are adequately covered. The CI pipeline should automatically run these tests on every commit.",
+        "status": "pending",
+        "dependencies": [
+          8
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-10-18T17:28:16.293Z",
-      "taskCount": 9,
-      "completedCount": 9,
+      "lastModified": "2025-10-18T17:56:58.620Z",
+      "taskCount": 10,
+      "completedCount": 10,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2025-10-18T18:04:04.357Z",
+      "description": "Tasks for master context",
+      "updated": "2025-10-18T18:04:24.428Z"
     }
   }
 }
