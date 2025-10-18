@@ -41,9 +41,53 @@ test-coverage: ## Generate detailed coverage report
 	@echo "Coverage report: coverage.html"
 	@go tool cover -func=coverage.out
 
-benchmark: ## Run benchmarks
-	@echo "Running benchmarks..."
-	@go test -bench=. -benchmem ./...
+benchmark: ## Run all benchmarks with memory tracking
+	@echo "Running comprehensive benchmarks..."
+	@mkdir -p benchmarks/results
+	@go test -bench=. -benchmem -benchtime=10s ./benchmarks/... | tee benchmarks/results/$(shell date +%Y%m%d_%H%M%S).txt
+	@echo "Benchmark results saved to benchmarks/results/"
+
+benchmark-quick: ## Run quick benchmarks (shorter duration)
+	@echo "Running quick benchmarks..."
+	@go test -bench=. -benchmem -benchtime=1s ./benchmarks/...
+
+benchmark-compare: ## Compare with baseline (usage: make benchmark-compare)
+	@echo "Comparing with baseline..."
+	@if [ -f benchmarks/results/baseline.txt ]; then \
+		benchstat benchmarks/results/baseline.txt benchmarks/results/latest.txt; \
+	else \
+		echo "Error: baseline.txt not found. Run 'make benchmark-baseline' first."; \
+	fi
+
+benchmark-baseline: ## Set current benchmarks as baseline
+	@echo "Setting baseline benchmarks..."
+	@mkdir -p benchmarks/results
+	@go test -bench=. -benchmem -benchtime=10s ./benchmarks/... > benchmarks/results/baseline.txt
+	@echo "Baseline saved to benchmarks/results/baseline.txt"
+
+benchmark-mem: ## Run benchmarks with memory profiling
+	@echo "Running memory profiling..."
+	@mkdir -p benchmarks/profiles
+	@go test -bench=. -benchmem -memprofile=benchmarks/profiles/mem.prof -benchtime=10s ./benchmarks/...
+	@echo "Memory profile saved. View with: go tool pprof benchmarks/profiles/mem.prof"
+
+benchmark-cpu: ## Run benchmarks with CPU profiling
+	@echo "Running CPU profiling..."
+	@mkdir -p benchmarks/profiles
+	@go test -bench=. -cpuprofile=benchmarks/profiles/cpu.prof -benchtime=10s ./benchmarks/...
+	@echo "CPU profile saved. View with: go tool pprof benchmarks/profiles/cpu.prof"
+
+benchmark-view-mem: ## View memory profile in browser
+	@go tool pprof -http=:8080 benchmarks/profiles/mem.prof
+
+benchmark-view-cpu: ## View CPU profile in browser
+	@go tool pprof -http=:8080 benchmarks/profiles/cpu.prof
+
+benchmark-ci: ## Run benchmarks for CI with multiple iterations
+	@echo "Running CI benchmarks..."
+	@mkdir -p benchmarks/results
+	@go test -bench=. -benchmem -count=5 -benchtime=5s ./benchmarks/... > benchmarks/results/ci_$(shell git rev-parse --short HEAD 2>/dev/null || echo "local").txt
+	@echo "CI benchmark results saved"
 
 run: ## Run the server
 	@echo "Running server..."
@@ -100,5 +144,7 @@ install-tools: ## Install development tools
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@go install github.com/99designs/gqlgen@latest
 	@go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	@go install golang.org/x/perf/cmd/benchstat@latest
+	@echo "All development tools installed successfully"
 
 .DEFAULT_GOAL := help

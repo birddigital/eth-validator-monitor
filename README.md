@@ -180,6 +180,108 @@ make migrate-up
 make migrate-down
 ```
 
+### Performance Benchmarking
+
+The project includes a comprehensive benchmarking suite to ensure system performance under load and track regressions over time.
+
+#### Quick Start
+
+```bash
+# Install benchmarking tools
+make install-tools
+
+# Run all benchmarks
+make benchmark
+
+# Run quick benchmarks (1s duration)
+make benchmark-quick
+```
+
+#### Benchmark Components
+
+The benchmark suite covers all performance-critical paths:
+
+1. **Database Operations** (`database_bench_test.go`)
+   - Batch insert performance (100-10,000 snapshots)
+   - Complex query performance with realistic filters
+   - Connection pool efficiency under concurrent load
+   - TimescaleDB hypertable optimizations
+
+2. **Redis Caching** (`redis_bench_test.go`)
+   - Get/set operations with serialization
+   - Batch operations using pipelines
+   - Cache invalidation patterns
+   - TTL management
+
+3. **Beacon Client** (`beacon_client_bench_test.go`)
+   - Retry logic under various failure rates
+   - Concurrent request handling
+   - Latency simulation (10ms-200ms)
+   - Memory usage patterns
+
+#### Advanced Benchmarking
+
+```bash
+# Set baseline for comparisons
+make benchmark-baseline
+
+# Compare with baseline
+make benchmark-compare
+
+# Memory profiling
+make benchmark-mem
+make benchmark-view-mem
+
+# CPU profiling
+make benchmark-cpu
+make benchmark-view-cpu
+
+# CI benchmarks (5 iterations)
+make benchmark-ci
+```
+
+#### Performance Targets
+
+| Component | Target | Validator Count |
+|-----------|--------|-----------------|
+| Validator Collection | < 5s | 10,000 |
+| Database Batch Insert | < 2s | 10,000 snapshots |
+| GraphQL Query (p95) | < 100ms | 100 results |
+| Redis Cache Get | < 1ms | Single operation |
+| Beacon API Call (p95) | < 500ms | With retry logic |
+
+#### Interpreting Results
+
+Benchmark output format:
+```
+BenchmarkBatchInserts/snapshots_10000-8    50   23412340 ns/op   4280.0 inserts/sec   1245630 B/op   12340 allocs/op
+```
+
+- `50` - Number of iterations
+- `23412340 ns/op` - Nanoseconds per operation
+- `4280.0 inserts/sec` - Custom throughput metric
+- `1245630 B/op` - Bytes allocated per operation
+- `12340 allocs/op` - Number of allocations per operation
+
+#### Regression Detection
+
+Use `benchstat` to detect performance regressions:
+
+```bash
+# Compare two benchmark runs
+benchstat benchmarks/results/baseline.txt benchmarks/results/latest.txt
+```
+
+Output shows statistical significance:
+```
+name                          old time/op    new time/op    delta
+BenchmarkBatchInserts/10000   2.34ms ± 2%    2.12ms ± 3%   -9.40%  (p=0.000)
+```
+
+#### Continuous Benchmarking
+
+Benchmarks run in CI on every pull request to catch performance regressions early. Results are compared against the baseline and fail if performance degrades by more than 10%.
+
 ## Configuration
 
 Configuration is managed via environment variables and `config.yaml`:

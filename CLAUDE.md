@@ -26,13 +26,27 @@ Use `/go-crypto` for:
 /go-crypto How should I structure Prometheus metrics for attestation rates?
 ```
 
-**NightShift Autonomous Mode:**
+**Autonomous Implementation Protocol:**
 
-When NightShift is working autonomously, it MUST:
-1. Invoke `/go-crypto` before implementing Go code or crypto features
-2. Use the specialized agent's recommendations for architecture decisions
-3. Apply Go best practices and Ethereum domain knowledge
-4. Follow security patterns for validator monitoring
+When working on Go code or Ethereum features (both NightShift and interactive sessions):
+
+1. **Consultation Phase:**
+   - Invoke `/go-crypto` before implementing Go code or crypto features
+   - Wait for specialized agent's response with recommendations
+
+2. **Automatic Implementation Phase:**
+   - **IMMEDIATELY** implement the `/go-crypto` agent's recommendations
+   - **DO NOT** pause or wait for user confirmation after receiving `/go-crypto` response
+   - Follow the recommended architecture, patterns, and code structure exactly
+   - Apply all Go best practices and Ethereum domain knowledge from the response
+   - Implement security patterns and performance optimizations as specified
+
+3. **Implementation Requirements:**
+   - Use the specialized agent's code examples as templates
+   - Follow the file structure and naming conventions recommended
+   - Implement all suggested benchmarks, tests, and helpers
+   - Apply memory optimization tips and performance targets
+   - Add Makefile targets and CI/CD integration as recommended
 
 ## Task Master AI Instructions
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
