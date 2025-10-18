@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/your-org/eth-validator-monitor/benchmarks/fixtures"
+	"github.com/birddigital/eth-validator-monitor/benchmarks/fixtures"
 )
 
 // BenchmarkBeaconClientRetryLogic tests retry performance under different failure scenarios

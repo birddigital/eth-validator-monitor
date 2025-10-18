@@ -9,8 +9,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/your-org/eth-validator-monitor/benchmarks/fixtures"
-	"github.com/your-org/eth-validator-monitor/benchmarks/helpers"
+	"github.com/birddigital/eth-validator-monitor/benchmarks/fixtures"
+	"github.com/birddigital/eth-validator-monitor/benchmarks/helpers"
 )
 
 // BenchmarkRedisCacheOperations tests get/set performance

@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/your-org/eth-validator-monitor/benchmarks/fixtures"
-	"github.com/your-org/eth-validator-monitor/benchmarks/helpers"
+	"github.com/birddigital/eth-validator-monitor/benchmarks/fixtures"
+	"github.com/birddigital/eth-validator-monitor/benchmarks/helpers"
 )
 
 // BenchmarkBatchInserts tests PostgreSQL batch insert performance
