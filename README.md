@@ -208,14 +208,261 @@ See `.env.example` for all available configuration options.
 
 ## Monitoring
 
-Prometheus metrics are exposed at `/metrics`:
+### Prometheus Metrics
 
-- `validator_monitor_validators_total` - Number of monitored validators
-- `validator_monitor_api_request_duration_seconds` - API latency
-- `validator_monitor_rpc_calls_total` - RPC calls made
-- `validator_monitor_cache_hit_rate` - Cache hit ratio
+Comprehensive metrics are exposed at `http://localhost:9090/metrics`:
 
-Grafana dashboards are available in `docker/grafana/dashboards/`
+**Validator Performance Metrics:**
+- `validator_effectiveness_score` - Validator effectiveness score (0-100)
+- `validator_attestation_participation_rate` - Attestation participation rate (0-1)
+- `validator_proposal_success_rate` - Block proposal success rate (0-1)
+- `validator_balance_wei` - Current validator balance in Wei
+- `validator_missed_attestations_total` - Total missed attestations per validator
+- `validator_snapshot_lag_seconds` - Time lag between current time and last snapshot
+
+**API & System Metrics:**
+- `api_request_duration_seconds` - API request latency histogram
+- `api_requests_total` - Total API requests by endpoint and status
+- `api_request_errors_total` - Total API errors by type
+- `db_query_duration_seconds` - Database query execution time histogram
+- `db_connections_active` - Active database connections
+- `system_goroutines_count` - Running goroutines
+- `system_memory_alloc_bytes` - Allocated memory in bytes
+
+**Cache Metrics:**
+- `cache_hit_rate` - Cache hit rate percentage
+- `cache_hits_total` - Total cache hits by type
+- `cache_misses_total` - Total cache misses by type
+
+See full metrics list at `internal/metrics/` for complete metric definitions.
+
+### Grafana Dashboard
+
+A comprehensive Grafana dashboard is automatically provisioned when using Docker Compose.
+
+**Access:** `http://localhost:3000` (default credentials: `admin/admin`)
+
+**Dashboard Structure:**
+
+1. **Validator Health Overview**
+   - Overall validator effectiveness gauge (with color thresholds)
+   - Active validator count
+   - Attestation success rate over 24h
+
+2. **Validator Performance Details**
+   - Performance table by validator (filterable)
+   - Block proposal success rate trends
+   - Balance tracking over time (in ETH)
+
+3. **System Health & API Performance**
+   - API latency percentiles (p50, p95, p99)
+   - API error rate monitoring
+   - Database query performance
+   - Connection pool status
+   - Goroutine health tracking
+   - Memory usage trends
+   - Cache performance metrics
+
+4. **Alerts & Recent Issues**
+   - Recent missed attestations (last 1h)
+   - Total rewards and penalties
+
+**Features:**
+- Template variable for filtering by validator index
+- Auto-refresh every 30 seconds
+- Multiple time range options (6h default)
+- Color-coded thresholds (green: healthy, yellow: warning, red: critical)
+
+**Dashboard Files:**
+- Dashboard JSON: `docker/grafana/dashboards/validator-monitoring.json`
+- Provisioning config: `docker/grafana/provisioning/dashboards/default.yml`
+- Datasource config: `docker/grafana/provisioning/datasources/prometheus.yml`
+
+**Exporting/Importing Dashboards:**
+
+To export the dashboard:
+1. Navigate to the dashboard in Grafana
+2. Click the share icon → Export → Save to file
+3. The JSON is already version-controlled at `docker/grafana/dashboards/validator-monitoring.json`
+
+To import a dashboard:
+1. Copy JSON file to `docker/grafana/dashboards/`
+2. Restart Grafana: `docker-compose restart grafana`
+3. Dashboard will be auto-provisioned
+
+### Alerting Rules
+
+Comprehensive alerting rules are configured in `docker/prometheus/alerts.yml` covering:
+
+#### 1. Validator Health Alerts
+
+**ValidatorEffectivenessLow** (Warning)
+- Triggers when effectiveness score < 95%
+- Duration: 5 minutes
+- Action: Investigate validator performance and sync status
+
+**ValidatorEffectivenessCritical** (Critical)
+- Triggers when effectiveness score < 90%
+- Duration: 2 minutes
+- Action: Immediate investigation required
+
+**LowAttestationParticipation** (Warning)
+- Triggers when participation rate < 98%
+- Duration: 10 minutes
+- Action: Check beacon node connectivity
+
+**MissedAttestations** (Warning)
+- Triggers on any missed attestations in 5 minutes
+- Duration: 1 minute
+- Action: Review validator client logs
+
+**ValidatorBalanceDecreasing** (Warning)
+- Triggers when balance trend is negative
+- Duration: 30 minutes
+- Action: Check for slashing or excessive penalties
+
+#### 2. Beacon API Health Alerts
+
+**BeaconAPIHighLatency** (Warning)
+- Triggers when p95 latency > 2 seconds
+- Duration: 5 minutes
+- Action: Check beacon node load and network
+
+**BeaconAPICriticalLatency** (Critical)
+- Triggers when p95 latency > 5 seconds
+- Duration: 2 minutes
+- Action: Immediate investigation, consider failover
+
+**BeaconAPIHighErrorRate** (Warning)
+- Triggers when error rate > 5%
+- Duration: 5 minutes
+- Action: Check beacon node status and logs
+
+**BeaconAPIDown** (Critical)
+- Triggers when API is unreachable
+- Duration: 1 minute
+- Action: Restart service or investigate crash
+
+#### 3. Data Freshness Alerts
+
+**ExtendedSnapshotLag** (Warning)
+- Triggers when lag > 300 seconds (~2.5 epochs)
+- Duration: 5 minutes
+- Action: Check data collection service
+
+**CriticalSnapshotLag** (Critical)
+- Triggers when lag > 600 seconds (~5 epochs)
+- Duration: 2 minutes
+- Action: Immediate investigation, may indicate stale data
+
+**ValidatorSnapshotCollectionFailing** (Critical)
+- Triggers when no snapshots collected in 10 minutes
+- Duration: 5 minutes
+- Action: Restart collector or check beacon node
+
+#### 4. Database Health Alerts
+
+**DatabaseConnectionPoolExhausted** (Warning)
+- Triggers when connection pool > 90% full
+- Duration: 5 minutes
+- Action: Increase pool size or investigate connection leaks
+
+**DatabaseSlowQueries** (Warning)
+- Triggers when p95 query time > 1 second
+- Duration: 5 minutes
+- Action: Review query performance and indexes
+
+**DatabaseWriteFailures** (Critical)
+- Triggers on any write errors
+- Duration: 2 minutes
+- Action: Check database connectivity and disk space
+
+#### 5. System Resource Alerts
+
+**HighMemoryUsage** (Warning)
+- Triggers when memory > 2GB
+- Duration: 10 minutes
+- Action: Monitor for memory leaks
+
+**CriticalMemoryUsage** (Critical)
+- Triggers when memory > 4GB
+- Duration: 5 minutes
+- Action: Investigate memory leak or restart service
+
+**GoroutineLeakSuspected** (Warning)
+- Triggers when goroutines > 1000
+- Duration: 15 minutes
+- Action: Check for goroutine leaks in code
+
+**HighCPUUsage** (Warning)
+- Triggers when CPU > 80%
+- Duration: 10 minutes
+- Action: Profile application for hot paths
+
+#### 6. Cache Performance Alerts
+
+**LowCacheHitRate** (Warning)
+- Triggers when hit rate < 70%
+- Duration: 10 minutes
+- Action: Review cache strategy and TTL settings
+
+**Alert Management:**
+
+View active alerts in Prometheus:
+```bash
+# View alerts in browser
+open http://localhost:9090/alerts
+
+# Check alert rules are loaded
+curl http://localhost:9090/api/v1/rules | jq
+```
+
+Reload configuration without restart:
+```bash
+# Hot-reload Prometheus config
+curl -X POST http://localhost:9090/-/reload
+```
+
+**Integrating with Alertmanager (Optional):**
+
+To send alerts to Slack, PagerDuty, email, etc:
+
+1. Add Alertmanager to `docker-compose.yml`:
+```yaml
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: validator-monitor-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./docker/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    networks:
+      - validator-monitor
+```
+
+2. Uncomment alertmanager section in `docker/prometheus/prometheus.yml`
+
+3. Create `docker/prometheus/alertmanager.yml` with your notification config
+
+4. Restart services: `docker-compose up -d`
+
+Example Alertmanager config for Slack:
+```yaml
+route:
+  receiver: 'slack-notifications'
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: 'slack-notifications'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#validator-alerts'
+        title: 'Validator Monitor Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}: {{ .Annotations.description }}{{ end }}'
+```
 
 ## Contributing
 
