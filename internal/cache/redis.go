@@ -108,28 +108,29 @@ func (c *RedisCache) Close() error {
 }
 
 // Key generation helpers with namespacing
+// Using string concatenation for better performance than fmt.Sprintf
 func (c *RedisCache) validatorKey(index int) string {
-	return fmt.Sprintf("%s:validator:%d", c.prefix, index)
+	return c.prefix + ":validator:" + fmt.Sprint(index)
 }
 
 func (c *RedisCache) validatorSnapshotKey(index int) string {
-	return fmt.Sprintf("%s:snapshot:%d", c.prefix, index)
+	return c.prefix + ":snapshot:" + fmt.Sprint(index)
 }
 
 func (c *RedisCache) networkStatsKey() string {
-	return fmt.Sprintf("%s:network:stats", c.prefix)
+	return c.prefix + ":network:stats"
 }
 
 func (c *RedisCache) performanceKey(index int, epoch int) string {
-	return fmt.Sprintf("%s:performance:%d:%d", c.prefix, index, epoch)
+	return c.prefix + ":performance:" + fmt.Sprint(index) + ":" + fmt.Sprint(epoch)
 }
 
 func (c *RedisCache) alertsKey(index int) string {
-	return fmt.Sprintf("%s:alerts:%d", c.prefix, index)
+	return c.prefix + ":alerts:" + fmt.Sprint(index)
 }
 
 func (c *RedisCache) headEventKey() string {
-	return fmt.Sprintf("%s:head:event", c.prefix)
+	return c.prefix + ":head:event"
 }
 
 // GetValidator retrieves a cached validator

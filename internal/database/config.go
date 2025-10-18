@@ -48,6 +48,32 @@ func DefaultConfig() *Config {
 	}
 }
 
+// Validate checks if the configuration is valid
+func (c *Config) Validate() error {
+	if c.Host == "" {
+		return fmt.Errorf("database host cannot be empty")
+	}
+	if c.Port <= 0 || c.Port > 65535 {
+		return fmt.Errorf("database port must be between 1 and 65535")
+	}
+	if c.User == "" {
+		return fmt.Errorf("database user cannot be empty")
+	}
+	if c.Database == "" {
+		return fmt.Errorf("database name cannot be empty")
+	}
+	if c.MaxConnections < c.MinConnections {
+		return fmt.Errorf("max connections (%d) must be >= min connections (%d)", c.MaxConnections, c.MinConnections)
+	}
+	if c.MaxConnections <= 0 {
+		return fmt.Errorf("max connections must be positive")
+	}
+	if c.ConnectTimeout <= 0 {
+		return fmt.Errorf("connect timeout must be positive")
+	}
+	return nil
+}
+
 // BuildDSN creates a database connection string
 func (c *Config) BuildDSN() string {
 	return fmt.Sprintf(
