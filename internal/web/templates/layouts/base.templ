@@ -1,0 +1,139 @@
+package layouts
+
+// Base is the main HTML layout template that wraps all pages
+templ Base(title string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="description" content="Ethereum Validator Performance Monitoring Dashboard"/>
+			<title>{ title } - Ethereum Validator Monitor</title>
+			<!-- TailwindCSS + DaisyUI -->
+			<link rel="stylesheet" href="/static/css/output.css"/>
+			<!-- HTMX for dynamic updates -->
+			<script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+		</head>
+		<body class="bg-base-100 text-base-content min-h-screen flex flex-col">
+			<header class="sticky top-0 z-50 bg-base-100 shadow-sm">
+				@Nav()
+			</header>
+			<main class="flex-1">
+				@content
+			</main>
+			<footer class="mt-auto">
+				@Footer()
+			</footer>
+			<!-- Static JS -->
+			<script src="/static/js/app.js" defer></script>
+		</body>
+	</html>
+}
+
+// Nav renders the responsive navigation bar with mobile hamburger menu
+templ Nav() {
+	<nav class="navbar bg-base-100 border-b border-base-300">
+		<div class="container mx-auto px-4">
+			<!-- Mobile: Logo on left, hamburger on right -->
+			<div class="navbar-start">
+				<a href="/" class="btn btn-ghost text-lg lg:text-xl font-bold text-eth-primary">
+					<span class="hidden sm:inline">Ethereum Validator Monitor</span>
+					<span class="inline sm:hidden">ETH Monitor</span>
+				</a>
+			</div>
+
+			<!-- Desktop: Navigation links (hidden on mobile) -->
+			<div class="navbar-center hidden lg:flex">
+				<ul class="menu menu-horizontal px-1 gap-2">
+					<li><a href="/" class="nav-link">Home</a></li>
+					<li><a href="/validators" class="nav-link">Validators</a></li>
+					<li><a href="/metrics" class="nav-link">Metrics</a></li>
+					<li><a href="/graphql" class="nav-link">GraphQL</a></li>
+				</ul>
+			</div>
+
+			<!-- Desktop: Login button (hidden on mobile) -->
+			<div class="navbar-end hidden lg:flex">
+				<a href="/login" class="btn btn-primary btn-sm">Login</a>
+			</div>
+
+			<!-- Mobile: Hamburger dropdown menu (visible on mobile/tablet only) -->
+			<div class="navbar-end lg:hidden">
+				<div class="dropdown dropdown-end">
+					<button
+						tabindex="0"
+						class="btn btn-ghost btn-square"
+						aria-label="Open menu"
+						aria-haspopup="true"
+						aria-expanded="false"
+					>
+						<!-- Hamburger icon (3 horizontal lines) -->
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							class="inline-block w-6 h-6 stroke-current"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 6h16M4 12h16M4 18h16"
+							></path>
+						</svg>
+					</button>
+					<!-- Dropdown menu content -->
+					<ul
+						tabindex="0"
+						class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300"
+					>
+						<li><a href="/" class="nav-link">Home</a></li>
+						<li><a href="/validators" class="nav-link">Validators</a></li>
+						<li><a href="/metrics" class="nav-link">Metrics</a></li>
+						<li><a href="/graphql" class="nav-link">GraphQL</a></li>
+						<li class="mt-2 pt-2 border-t border-base-300">
+							<a href="/login" class="btn btn-primary btn-sm btn-block">Login</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</nav>
+}
+
+// Footer renders the page footer with multi-column navigation sections
+templ Footer() {
+	<footer class="footer bg-neutral text-neutral-content p-10">
+		<!-- Services Column -->
+		<nav aria-labelledby="footer-services">
+			<h6 id="footer-services" class="footer-title">Services</h6>
+			<a href="/" class="link link-hover">Dashboard</a>
+			<a href="/validators" class="link link-hover">Validators</a>
+			<a href="/metrics" class="link link-hover">Metrics</a>
+			<a href="/graphql" class="link link-hover">GraphQL API</a>
+		</nav>
+
+		<!-- Company Column -->
+		<nav aria-labelledby="footer-company">
+			<h6 id="footer-company" class="footer-title">Company</h6>
+			<a href="/about" class="link link-hover">About Us</a>
+			<a href="/contact" class="link link-hover">Contact</a>
+			<a href="https://github.com/ethereum/consensus-specs" class="link link-hover" target="_blank" rel="noopener noreferrer">Documentation</a>
+		</nav>
+
+		<!-- Legal Column -->
+		<nav aria-labelledby="footer-legal">
+			<h6 id="footer-legal" class="footer-title">Legal</h6>
+			<a href="/terms" class="link link-hover">Terms of Service</a>
+			<a href="/privacy" class="link link-hover">Privacy Policy</a>
+			<a href="/cookies" class="link link-hover">Cookie Policy</a>
+		</nav>
+
+		<!-- Branding & Copyright -->
+		<aside>
+			<p class="font-semibold">Ethereum Validator Monitor</p>
+			<p>Beacon Chain Performance Tracking</p>
+			<p class="text-sm opacity-70">&copy; 2025 - All rights reserved</p>
+		</aside>
+	</footer>
+}
