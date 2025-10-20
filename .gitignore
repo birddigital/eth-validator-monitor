@@ -9,6 +9,7 @@ dev-debug.log
 # Dependency directories
 node_modules/
 vendor/
+package-lock.json
 
 # Environment variables
 .env
@@ -45,6 +46,9 @@ coverage.txt
 coverage.html
 go.work
 
+# Templ generated files
+*_templ.go
+
 # Database
 *.db
 *.sqlite
@@ -57,3 +61,11 @@ temp/
 # Build artifacts
 *.prof
 *.bench
+
+# Generated CSS
+web/static/css/output.css
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/

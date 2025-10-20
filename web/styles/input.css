@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom component styles */
+@layer components {
+  .stat-card {
+    @apply rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
+  }
+
+  .nav-link {
+    @apply transition-colors duration-200;
+  }
+
+  .page-container {
+    @apply container mx-auto px-4 py-8;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

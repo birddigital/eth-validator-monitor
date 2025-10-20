@@ -6,9 +6,7 @@ package resolver
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"strconv"
 
 	"github.com/birddigital/eth-validator-monitor/graph/generated"
 	"github.com/birddigital/eth-validator-monitor/graph/model"
@@ -21,24 +19,19 @@ func (r *alertResolver) ID(ctx context.Context, obj *models.Alert) (string, erro
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
-// Type is the resolver for the type field.
-func (r *alertResolver) Type(ctx context.Context, obj *models.Alert) (types.AlertType, error) {
-	panic(fmt.Errorf("not implemented: Type - type"))
-}
-
 // Severity is the resolver for the severity field.
 func (r *alertResolver) Severity(ctx context.Context, obj *models.Alert) (types.AlertSeverity, error) {
 	panic(fmt.Errorf("not implemented: Severity - severity"))
 }
 
-// Metadata is the resolver for the metadata field.
-func (r *alertResolver) Metadata(ctx context.Context, obj *models.Alert) (*string, error) {
-	panic(fmt.Errorf("not implemented: Metadata - metadata"))
+// Type is the resolver for the type field.
+func (r *alertResolver) Type(ctx context.Context, obj *models.Alert) (string, error) {
+	panic(fmt.Errorf("not implemented: Type - type"))
 }
 
-// Resolved is the resolver for the resolved field.
-func (r *alertResolver) Resolved(ctx context.Context, obj *models.Alert) (bool, error) {
-	panic(fmt.Errorf("not implemented: Resolved - resolved"))
+// Acknowledged is the resolver for the acknowledged field.
+func (r *alertResolver) Acknowledged(ctx context.Context, obj *models.Alert) (bool, error) {
+	panic(fmt.Errorf("not implemented: Acknowledged - acknowledged"))
 }
 
 // CreatedAt is the resolver for the createdAt field.
@@ -46,229 +39,59 @@ func (r *alertResolver) CreatedAt(ctx context.Context, obj *models.Alert) (*type
 	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
 }
 
-// ResolvedAt is the resolver for the resolvedAt field.
-func (r *alertResolver) ResolvedAt(ctx context.Context, obj *models.Alert) (*types.Time, error) {
-	panic(fmt.Errorf("not implemented: ResolvedAt - resolvedAt"))
-}
-
-// Validator is the resolver for the validator field.
-func (r *alertResolver) Validator(ctx context.Context, obj *models.Alert) (*models.Validator, error) {
-	panic(fmt.Errorf("not implemented: Validator - validator"))
-}
-
 // AddValidator is the resolver for the addValidator field.
-func (r *mutationResolver) AddValidator(ctx context.Context, pubkey string, validatorIndex int) (*models.Validator, error) {
+func (r *mutationResolver) AddValidator(ctx context.Context, input model.AddValidatorInput) (*models.Validator, error) {
 	panic(fmt.Errorf("not implemented: AddValidator - addValidator"))
 }
 
 // RemoveValidator is the resolver for the removeValidator field.
-func (r *mutationResolver) RemoveValidator(ctx context.Context, validatorIndex int) (bool, error) {
+func (r *mutationResolver) RemoveValidator(ctx context.Context, index int) (bool, error) {
 	panic(fmt.Errorf("not implemented: RemoveValidator - removeValidator"))
 }
 
-// UpdateValidatorMonitoring is the resolver for the updateValidatorMonitoring field.
-func (r *mutationResolver) UpdateValidatorMonitoring(ctx context.Context, validatorIndex int, monitored bool) (*models.Validator, error) {
-	panic(fmt.Errorf("not implemented: UpdateValidatorMonitoring - updateValidatorMonitoring"))
+// UpdateValidatorName is the resolver for the updateValidatorName field.
+func (r *mutationResolver) UpdateValidatorName(ctx context.Context, index int, name string) (*models.Validator, error) {
+	panic(fmt.Errorf("not implemented: UpdateValidatorName - updateValidatorName"))
 }
 
-// ResolveAlert is the resolver for the resolveAlert field.
-func (r *mutationResolver) ResolveAlert(ctx context.Context, id string) (*models.Alert, error) {
-	panic(fmt.Errorf("not implemented: ResolveAlert - resolveAlert"))
+// AcknowledgeAlert is the resolver for the acknowledgeAlert field.
+func (r *mutationResolver) AcknowledgeAlert(ctx context.Context, id string) (*models.Alert, error) {
+	panic(fmt.Errorf("not implemented: AcknowledgeAlert - acknowledgeAlert"))
 }
 
-// BulkResolveAlerts is the resolver for the bulkResolveAlerts field.
-func (r *mutationResolver) BulkResolveAlerts(ctx context.Context, filter model.AlertFilterInput) (int, error) {
-	panic(fmt.Errorf("not implemented: BulkResolveAlerts - bulkResolveAlerts"))
+// AverageBalance is the resolver for the averageBalance field.
+func (r *networkStatsResolver) AverageBalance(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error) {
+	panic(fmt.Errorf("not implemented: AverageBalance - averageBalance"))
 }
 
-// TriggerCollection is the resolver for the triggerCollection field.
-func (r *mutationResolver) TriggerCollection(ctx context.Context, validatorIndex int) (bool, error) {
-	panic(fmt.Errorf("not implemented: TriggerCollection - triggerCollection"))
+// TotalStaked is the resolver for the totalStaked field.
+func (r *networkStatsResolver) TotalStaked(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error) {
+	panic(fmt.Errorf("not implemented: TotalStaked - totalStaked"))
 }
 
-// TriggerBulkCollection is the resolver for the triggerBulkCollection field.
-func (r *mutationResolver) TriggerBulkCollection(ctx context.Context) (int, error) {
-	panic(fmt.Errorf("not implemented: TriggerBulkCollection - triggerBulkCollection"))
-}
-
-// TotalActiveValidators is the resolver for the totalActiveValidators field.
-func (r *networkStatsResolver) TotalActiveValidators(ctx context.Context, obj *types.NetworkStats) (int, error) {
-	panic(fmt.Errorf("not implemented: TotalActiveValidators - totalActiveValidators"))
-}
-
-// TotalStake is the resolver for the totalStake field.
-func (r *networkStatsResolver) TotalStake(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error) {
-	panic(fmt.Errorf("not implemented: TotalStake - totalStake"))
-}
-
-// AvgAttestationEffectiveness is the resolver for the avgAttestationEffectiveness field.
-func (r *networkStatsResolver) AvgAttestationEffectiveness(ctx context.Context, obj *types.NetworkStats) (float64, error) {
-	panic(fmt.Errorf("not implemented: AvgAttestationEffectiveness - avgAttestationEffectiveness"))
-}
-
-// LastUpdated is the resolver for the lastUpdated field.
-func (r *networkStatsResolver) LastUpdated(ctx context.Context, obj *types.NetworkStats) (*types.Time, error) {
-	panic(fmt.Errorf("not implemented: LastUpdated - lastUpdated"))
-}
-
-// AttestationsCount is the resolver for the attestationsCount field.
-func (r *performanceMetricsResolver) AttestationsCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: AttestationsCount - attestationsCount"))
-}
-
-// CorrectHeadVotes is the resolver for the correctHeadVotes field.
-func (r *performanceMetricsResolver) CorrectHeadVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: CorrectHeadVotes - correctHeadVotes"))
-}
-
-// CorrectSourceVotes is the resolver for the correctSourceVotes field.
-func (r *performanceMetricsResolver) CorrectSourceVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: CorrectSourceVotes - correctSourceVotes"))
-}
-
-// CorrectTargetVotes is the resolver for the correctTargetVotes field.
-func (r *performanceMetricsResolver) CorrectTargetVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: CorrectTargetVotes - correctTargetVotes"))
-}
-
-// TotalInclusionDelay is the resolver for the totalInclusionDelay field.
-func (r *performanceMetricsResolver) TotalInclusionDelay(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: TotalInclusionDelay - totalInclusionDelay"))
-}
-
-// ProposalCount is the resolver for the proposalCount field.
-func (r *performanceMetricsResolver) ProposalCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: ProposalCount - proposalCount"))
-}
-
-// SyncCommitteeCount is the resolver for the syncCommitteeCount field.
-func (r *performanceMetricsResolver) SyncCommitteeCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: SyncCommitteeCount - syncCommitteeCount"))
-}
-
-// EffectivenessScore is the resolver for the effectivenessScore field.
-func (r *performanceMetricsResolver) EffectivenessScore(ctx context.Context, obj *types.PerformanceMetrics) (float64, error) {
-	panic(fmt.Errorf("not implemented: EffectivenessScore - effectivenessScore"))
-}
-
-// CalculatedAt is the resolver for the calculatedAt field.
-func (r *performanceMetricsResolver) CalculatedAt(ctx context.Context, obj *types.PerformanceMetrics) (*types.Time, error) {
-	panic(fmt.Errorf("not implemented: CalculatedAt - calculatedAt"))
+// Timestamp is the resolver for the timestamp field.
+func (r *networkStatsResolver) Timestamp(ctx context.Context, obj *types.NetworkStats) (*types.Time, error) {
+	panic(fmt.Errorf("not implemented: Timestamp - timestamp"))
 }
 
 // Validator is the resolver for the validator field.
-func (r *queryResolver) Validator(ctx context.Context, index int) (*models.Validator, error) {
-	// Use DataLoader to batch load validators
-	thunk := r.DataLoaders.ValidatorByIndex.Load(ctx, index)
-	return thunk()
-}
-
-// ValidatorByPubkey is the resolver for the validatorByPubkey field.
-func (r *queryResolver) ValidatorByPubkey(ctx context.Context, pubkey string) (*models.Validator, error) {
-	// Use DataLoader to batch load validators by pubkey
-	thunk := r.DataLoaders.ValidatorByPubkey.Load(ctx, pubkey)
-	return thunk()
+func (r *queryResolver) Validator(ctx context.Context, index *int, pubkey *string) (*models.Validator, error) {
+	panic(fmt.Errorf("not implemented: Validator - validator"))
 }
 
 // Validators is the resolver for the validators field.
-func (r *queryResolver) Validators(ctx context.Context, filter *model.ValidatorFilterInput, sort *model.ValidatorSortInput, pagination *model.PaginationInput) (*model.ValidatorConnection, error) {
-	// Build filter for repository
-	repoFilter := &models.ValidatorFilter{}
-
-	if filter != nil {
-		if filter.Indices != nil && len(filter.Indices) > 0 {
-			indices := make([]int64, len(filter.Indices))
-			for i, idx := range filter.Indices {
-				indices[i] = int64(idx)
-			}
-			repoFilter.ValidatorIndices = indices
-		}
-		if filter.Pubkeys != nil && len(filter.Pubkeys) > 0 {
-			repoFilter.Pubkeys = filter.Pubkeys
-		}
-		if filter.Monitored != nil {
-			repoFilter.Monitored = filter.Monitored
-		}
-	}
-
-	// Handle pagination
-	limit := 50 // default
-	offset := 0
-
-	if pagination != nil {
-		if pagination.Limit != nil {
-			limit = *pagination.Limit
-		}
-		if pagination.Cursor != nil {
-			// Decode cursor (base64 encoded offset)
-			decoded, err := base64.StdEncoding.DecodeString(*pagination.Cursor)
-			if err == nil {
-				if o, err := strconv.Atoi(string(decoded)); err == nil {
-					offset = o
-				}
-			}
-		}
-	}
-
-	repoFilter.Limit = limit + 1 // Fetch one extra to determine hasNextPage
-	repoFilter.Offset = offset
-
-	// Fetch validators
-	validators, err := r.ValidatorRepo.ListValidators(ctx, repoFilter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch validators: %w", err)
-	}
-
-	// Determine if there are more pages
-	hasNextPage := len(validators) > limit
-	if hasNextPage {
-		validators = validators[:limit]
-	}
-
-	// Build edges and cursors
-	edges := make([]*model.ValidatorEdge, len(validators))
-	for i, v := range validators {
-		cursor := base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(offset + i + 1)))
-		edges[i] = &model.ValidatorEdge{
-			Node:   v,
-			Cursor: cursor,
-		}
-	}
-
-	// Build page info
-	pageInfo := &model.PageInfo{
-		HasNextPage: hasNextPage,
-	}
-
-	if len(edges) > 0 {
-		pageInfo.StartCursor = &edges[0].Cursor
-		pageInfo.EndCursor = &edges[len(edges)-1].Cursor
-		hasPrevPage := offset > 0
-		pageInfo.HasPreviousPage = hasPrevPage
-	}
-
-	// Get total count
-	totalCount, err := r.ValidatorRepo.CountValidators(ctx, repoFilter)
-	if err != nil {
-		// Log error but don't fail the query
-		totalCount = 0
-	}
-
-	return &model.ValidatorConnection{
-		Edges:      edges,
-		PageInfo:   pageInfo,
-		TotalCount: totalCount,
-	}, nil
+func (r *queryResolver) Validators(ctx context.Context, filter *models.ValidatorFilter) ([]*models.Validator, error) {
+	panic(fmt.Errorf("not implemented: Validators - validators"))
 }
 
-// Snapshot is the resolver for the snapshot field.
-func (r *queryResolver) Snapshot(ctx context.Context, validatorIndex int, time types.Time) (*models.ValidatorSnapshot, error) {
-	panic(fmt.Errorf("not implemented: Snapshot - snapshot"))
+// Network is the resolver for the network field.
+func (r *queryResolver) Network(ctx context.Context) (*types.NetworkStats, error) {
+	panic(fmt.Errorf("not implemented: Network - network"))
 }
 
-// Snapshots is the resolver for the snapshots field.
-func (r *queryResolver) Snapshots(ctx context.Context, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) (*model.SnapshotConnection, error) {
-	panic(fmt.Errorf("not implemented: Snapshots - snapshots"))
+// Alerts is the resolver for the alerts field.
+func (r *queryResolver) Alerts(ctx context.Context, filter *models.AlertFilter) ([]*models.Alert, error) {
+	panic(fmt.Errorf("not implemented: Alerts - alerts"))
 }
 
 // Alert is the resolver for the alert field.
@@ -276,44 +99,24 @@ func (r *queryResolver) Alert(ctx context.Context, id string) (*models.Alert, er
 	panic(fmt.Errorf("not implemented: Alert - alert"))
 }
 
-// Alerts is the resolver for the alerts field.
-func (r *queryResolver) Alerts(ctx context.Context, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) (*model.AlertConnection, error) {
-	panic(fmt.Errorf("not implemented: Alerts - alerts"))
+// Health is the resolver for the health field.
+func (r *queryResolver) Health(ctx context.Context) (string, error) {
+	panic(fmt.Errorf("not implemented: Health - health"))
 }
 
-// NetworkStats is the resolver for the networkStats field.
-func (r *queryResolver) NetworkStats(ctx context.Context) (*types.NetworkStats, error) {
-	panic(fmt.Errorf("not implemented: NetworkStats - networkStats"))
+// ValidatorUpdates is the resolver for the validatorUpdates field.
+func (r *subscriptionResolver) ValidatorUpdates(ctx context.Context, indices []int) (<-chan *models.Validator, error) {
+	panic(fmt.Errorf("not implemented: ValidatorUpdates - validatorUpdates"))
 }
 
-// ValidatorPerformance is the resolver for the validatorPerformance field.
-func (r *queryResolver) ValidatorPerformance(ctx context.Context, validatorIndex int, epochFrom *int, epochTo *int) ([]*types.PerformanceMetrics, error) {
-	panic(fmt.Errorf("not implemented: ValidatorPerformance - validatorPerformance"))
+// NewAlerts is the resolver for the newAlerts field.
+func (r *subscriptionResolver) NewAlerts(ctx context.Context, severity *types.AlertSeverity) (<-chan *models.Alert, error) {
+	panic(fmt.Errorf("not implemented: NewAlerts - newAlerts"))
 }
 
-// AggregatePerformance is the resolver for the aggregatePerformance field.
-func (r *queryResolver) AggregatePerformance(ctx context.Context, validatorIndices []int, epochFrom *int, epochTo *int) (*types.PerformanceMetrics, error) {
-	panic(fmt.Errorf("not implemented: AggregatePerformance - aggregatePerformance"))
-}
-
-// ValidatorSnapshotAdded is the resolver for the validatorSnapshotAdded field.
-func (r *subscriptionResolver) ValidatorSnapshotAdded(ctx context.Context, validatorIndex int) (<-chan *models.ValidatorSnapshot, error) {
-	panic(fmt.Errorf("not implemented: ValidatorSnapshotAdded - validatorSnapshotAdded"))
-}
-
-// AlertCreated is the resolver for the alertCreated field.
-func (r *subscriptionResolver) AlertCreated(ctx context.Context, validatorIndex *int, severity *types.AlertSeverity) (<-chan *models.Alert, error) {
-	panic(fmt.Errorf("not implemented: AlertCreated - alertCreated"))
-}
-
-// AlertResolved is the resolver for the alertResolved field.
-func (r *subscriptionResolver) AlertResolved(ctx context.Context, validatorIndex *int) (<-chan *models.Alert, error) {
-	panic(fmt.Errorf("not implemented: AlertResolved - alertResolved"))
-}
-
-// NetworkStatsUpdated is the resolver for the networkStatsUpdated field.
-func (r *subscriptionResolver) NetworkStatsUpdated(ctx context.Context) (<-chan *types.NetworkStats, error) {
-	panic(fmt.Errorf("not implemented: NetworkStatsUpdated - networkStatsUpdated"))
+// Index is the resolver for the index field.
+func (r *validatorResolver) Index(ctx context.Context, obj *models.Validator) (int, error) {
+	panic(fmt.Errorf("not implemented: Index - index"))
 }
 
 // Status is the resolver for the status field.
@@ -321,128 +124,69 @@ func (r *validatorResolver) Status(ctx context.Context, obj *models.Validator) (
 	panic(fmt.Errorf("not implemented: Status - status"))
 }
 
-// EffectiveBalance is the resolver for the effectiveBalance field.
-func (r *validatorResolver) EffectiveBalance(ctx context.Context, obj *models.Validator) (*types.BigInt, error) {
-	panic(fmt.Errorf("not implemented: EffectiveBalance - effectiveBalance"))
-}
-
-// LatestSnapshot is the resolver for the latestSnapshot field.
-func (r *validatorResolver) LatestSnapshot(ctx context.Context, obj *models.Validator) (*models.ValidatorSnapshot, error) {
-	// Use DataLoader to batch load latest snapshots
-	thunk := r.DataLoaders.LatestSnapshotByValidator.Load(ctx, int(obj.ValidatorIndex))
-	return thunk()
-}
-
-// Snapshots is the resolver for the snapshots field.
-func (r *validatorResolver) Snapshots(ctx context.Context, obj *models.Validator, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) (*model.SnapshotConnection, error) {
-	// Use DataLoader to get snapshots for this validator
-	thunk := r.DataLoaders.SnapshotsByValidator.Load(ctx, int(obj.ValidatorIndex))
-	snapshots, err := thunk()
-	if err != nil {
-		return nil, err
-	}
-
-	// Build edges
-	edges := make([]*model.SnapshotEdge, len(snapshots))
-	for i, snapshot := range snapshots {
-		cursor := base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(i)))
-		edges[i] = &model.SnapshotEdge{
-			Node:   snapshot,
-			Cursor: cursor,
-		}
-	}
-
-	// Build page info
-	pageInfo := &model.PageInfo{
-		HasNextPage: false,
-	}
-	if len(edges) > 0 {
-		pageInfo.StartCursor = &edges[0].Cursor
-		pageInfo.EndCursor = &edges[len(edges)-1].Cursor
-		pageInfo.HasPreviousPage = false
-	}
-
-	return &model.SnapshotConnection{
-		Edges:      edges,
-		PageInfo:   pageInfo,
-		TotalCount: len(snapshots),
-	}, nil
-}
-
-// Alerts is the resolver for the alerts field.
-func (r *validatorResolver) Alerts(ctx context.Context, obj *models.Validator, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) (*model.AlertConnection, error) {
-	// Use DataLoader to get alerts for this validator
-	thunk := r.DataLoaders.AlertsByValidator.Load(ctx, int(obj.ValidatorIndex))
-	alerts, err := thunk()
-	if err != nil {
-		return nil, err
-	}
-
-	// Build edges
-	edges := make([]*model.AlertEdge, len(alerts))
-	for i, alert := range alerts {
-		cursor := base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(i)))
-		edges[i] = &model.AlertEdge{
-			Node:   alert,
-			Cursor: cursor,
-		}
-	}
-
-	// Build page info
-	pageInfo := &model.PageInfo{
-		HasNextPage: false,
-	}
-	if len(edges) > 0 {
-		pageInfo.StartCursor = &edges[0].Cursor
-		pageInfo.EndCursor = &edges[len(edges)-1].Cursor
-		pageInfo.HasPreviousPage = false
-	}
-
-	return &model.AlertConnection{
-		Edges:      edges,
-		PageInfo:   pageInfo,
-		TotalCount: len(alerts),
-	}, nil
-}
-
-// PerformanceMetrics is the resolver for the performanceMetrics field.
-func (r *validatorResolver) PerformanceMetrics(ctx context.Context, obj *models.Validator, epochFrom *int, epochTo *int) ([]*types.PerformanceMetrics, error) {
-	panic(fmt.Errorf("not implemented: PerformanceMetrics - performanceMetrics"))
-}
-
-// Time is the resolver for the time field.
-func (r *validatorSnapshotResolver) Time(ctx context.Context, obj *models.ValidatorSnapshot) (*types.Time, error) {
-	panic(fmt.Errorf("not implemented: Time - time"))
-}
-
-// Epoch is the resolver for the epoch field.
-func (r *validatorSnapshotResolver) Epoch(ctx context.Context, obj *models.ValidatorSnapshot) (int, error) {
-	panic(fmt.Errorf("not implemented: Epoch - epoch"))
-}
-
-// Slot is the resolver for the slot field.
-func (r *validatorSnapshotResolver) Slot(ctx context.Context, obj *models.ValidatorSnapshot) (int, error) {
-	panic(fmt.Errorf("not implemented: Slot - slot"))
-}
-
 // Balance is the resolver for the balance field.
-func (r *validatorSnapshotResolver) Balance(ctx context.Context, obj *models.ValidatorSnapshot) (*types.BigInt, error) {
+func (r *validatorResolver) Balance(ctx context.Context, obj *models.Validator) (*model.Balance, error) {
 	panic(fmt.Errorf("not implemented: Balance - balance"))
 }
 
-// EffectiveBalance is the resolver for the effectiveBalance field.
-func (r *validatorSnapshotResolver) EffectiveBalance(ctx context.Context, obj *models.ValidatorSnapshot) (*types.BigInt, error) {
-	panic(fmt.Errorf("not implemented: EffectiveBalance - effectiveBalance"))
+// Performance is the resolver for the performance field.
+func (r *validatorResolver) Performance(ctx context.Context, obj *models.Validator) (*model.Performance, error) {
+	panic(fmt.Errorf("not implemented: Performance - performance"))
 }
 
-// Proposed is the resolver for the proposed field.
-func (r *validatorSnapshotResolver) Proposed(ctx context.Context, obj *models.ValidatorSnapshot) (*bool, error) {
-	panic(fmt.Errorf("not implemented: Proposed - proposed"))
+// Rewards is the resolver for the rewards field.
+func (r *validatorResolver) Rewards(ctx context.Context, obj *models.Validator) (*model.Rewards, error) {
+	panic(fmt.Errorf("not implemented: Rewards - rewards"))
 }
 
-// Validator is the resolver for the validator field.
-func (r *validatorSnapshotResolver) Validator(ctx context.Context, obj *models.ValidatorSnapshot) (*models.Validator, error) {
-	panic(fmt.Errorf("not implemented: Validator - validator"))
+// Alerts is the resolver for the alerts field.
+func (r *validatorResolver) Alerts(ctx context.Context, obj *models.Validator) ([]*models.Alert, error) {
+	panic(fmt.Errorf("not implemented: Alerts - alerts"))
+}
+
+// History is the resolver for the history field.
+func (r *validatorResolver) History(ctx context.Context, obj *models.Validator, from *types.Time, to *types.Time) ([]*model.HistoricalSnapshot, error) {
+	panic(fmt.Errorf("not implemented: History - history"))
+}
+
+// CreatedAt is the resolver for the createdAt field.
+func (r *validatorResolver) CreatedAt(ctx context.Context, obj *models.Validator) (*types.Time, error) {
+	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
+}
+
+// UpdatedAt is the resolver for the updatedAt field.
+func (r *validatorResolver) UpdatedAt(ctx context.Context, obj *models.Validator) (*types.Time, error) {
+	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
+}
+
+// Severity is the resolver for the severity field.
+func (r *alertFilterResolver) Severity(ctx context.Context, obj *models.AlertFilter, data *types.AlertSeverity) error {
+	panic(fmt.Errorf("not implemented: Severity - severity"))
+}
+
+// Acknowledged is the resolver for the acknowledged field.
+func (r *alertFilterResolver) Acknowledged(ctx context.Context, obj *models.AlertFilter, data *bool) error {
+	panic(fmt.Errorf("not implemented: Acknowledged - acknowledged"))
+}
+
+// From is the resolver for the from field.
+func (r *alertFilterResolver) From(ctx context.Context, obj *models.AlertFilter, data *types.Time) error {
+	panic(fmt.Errorf("not implemented: From - from"))
+}
+
+// To is the resolver for the to field.
+func (r *alertFilterResolver) To(ctx context.Context, obj *models.AlertFilter, data *types.Time) error {
+	panic(fmt.Errorf("not implemented: To - to"))
+}
+
+// Status is the resolver for the status field.
+func (r *validatorFilterResolver) Status(ctx context.Context, obj *models.ValidatorFilter, data *types.ValidatorStatus) error {
+	panic(fmt.Errorf("not implemented: Status - status"))
+}
+
+// Indices is the resolver for the indices field.
+func (r *validatorFilterResolver) Indices(ctx context.Context, obj *models.ValidatorFilter, data []int) error {
+	panic(fmt.Errorf("not implemented: Indices - indices"))
 }
 
 // Alert returns generated.AlertResolver implementation.
@@ -454,11 +198,6 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // NetworkStats returns generated.NetworkStatsResolver implementation.
 func (r *Resolver) NetworkStats() generated.NetworkStatsResolver { return &networkStatsResolver{r} }
 
-// PerformanceMetrics returns generated.PerformanceMetricsResolver implementation.
-func (r *Resolver) PerformanceMetrics() generated.PerformanceMetricsResolver {
-	return &performanceMetricsResolver{r}
-}
-
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
@@ -468,16 +207,19 @@ func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subsc
 // Validator returns generated.ValidatorResolver implementation.
 func (r *Resolver) Validator() generated.ValidatorResolver { return &validatorResolver{r} }
 
-// ValidatorSnapshot returns generated.ValidatorSnapshotResolver implementation.
-func (r *Resolver) ValidatorSnapshot() generated.ValidatorSnapshotResolver {
-	return &validatorSnapshotResolver{r}
+// AlertFilter returns generated.AlertFilterResolver implementation.
+func (r *Resolver) AlertFilter() generated.AlertFilterResolver { return &alertFilterResolver{r} }
+
+// ValidatorFilter returns generated.ValidatorFilterResolver implementation.
+func (r *Resolver) ValidatorFilter() generated.ValidatorFilterResolver {
+	return &validatorFilterResolver{r}
 }
 
 type alertResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type networkStatsResolver struct{ *Resolver }
-type performanceMetricsResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type validatorResolver struct{ *Resolver }
-type validatorSnapshotResolver struct{ *Resolver }
+type alertFilterResolver struct{ *Resolver }
+type validatorFilterResolver struct{ *Resolver }

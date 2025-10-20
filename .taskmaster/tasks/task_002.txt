@@ -1,0 +1,43 @@
+# Task ID: 2
+# Title: Implement Beacon Chain client wrapper for validator data fetching
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create BeaconClient interface and implementation using go-ethereum to fetch validator data, balances, attestations, and subscribe to head events from Ethereum Beacon Chain
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Define BeaconClient interface with required methods [done]
+### Dependencies: None
+### Description: Create a Go interface that defines all necessary methods for interacting with the Ethereum Beacon Chain.
+### Details:
+Define a BeaconClient interface with methods for fetching validator data, balances, attestations, and subscribing to head events. Include method signatures with appropriate parameter and return types. Document each method with clear comments explaining its purpose, parameters, and return values.
+
+## 2. Implement validator data fetching functionality [done]
+### Dependencies: 2.1
+### Description: Create methods to fetch validator information including public keys, indices, and status from the Beacon Chain.
+### Details:
+Implement functions to retrieve validator details using the go-ethereum library. Handle API responses, error cases, and data transformation. Include pagination support for fetching multiple validators. Ensure proper error handling and logging for failed requests.
+
+## 3. Implement balance and attestation fetching [done]
+### Dependencies: 2.1, 2.2
+### Description: Create methods to fetch validator balances and attestation history from the Beacon Chain.
+### Details:
+Implement functions to retrieve current and historical validator balances. Add methods to fetch attestation records and participation data. Calculate effective balance and rewards. Handle epoch-based queries and implement proper error handling for network issues or invalid responses.
+
+## 4. Implement head event subscription mechanism [done]
+### Dependencies: 2.1
+### Description: Create a subscription system to receive real-time updates when new blocks are added to the Beacon Chain.
+### Details:
+Implement WebSocket connection to the Beacon Chain for subscribing to head events. Create event handlers and callback mechanisms for processing new blocks. Implement reconnection logic for handling disconnections. Design a clean API for consumers to register and unregister for notifications.
+
+## 5. Create concrete BeaconClient implementation with configuration [done]
+### Dependencies: 2.1, 2.2, 2.3, 2.4
+### Description: Implement the BeaconClient interface with a concrete struct that connects to an actual Beacon Chain endpoint.
+### Details:
+Create a production-ready implementation of the BeaconClient interface. Include configuration options for endpoint URLs, API keys, timeout settings, and retry policies. Implement connection pooling and request throttling to prevent overloading the Beacon Chain API. Add comprehensive logging and metrics collection for monitoring client performance.
+

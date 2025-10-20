@@ -1,0 +1,54 @@
+# Task ID: 12
+# Title: Update validator database schema migration to match Go model
+# Status: done
+# Dependencies: 3
+# Priority: medium
+# Description: Implemented a comprehensive database migration (000002_fix_validator_schema) to correct a schema discrepancy and fully align the `validators` table with the `internal/database/models/validator.go` structure. This involved a complex data migration, foreign key updates, and adherence to production-safe migration practices.
+# Details:
+A detailed analysis revealed a critical discrepancy where the initial migration used `index INTEGER PRIMARY KEY` while the Go model required `id SERIAL PRIMARY KEY` + `validator_index BIGINT UNIQUE`. A new migration, `000002_fix_validator_schema`, was created to resolve this.
+
+The implementation followed production-safe guidelines (`/go-crypto` agent recommendations) and included:
+1.  **Transactional Execution**: The entire migration is wrapped in a `BEGIN/COMMIT` block to ensure atomicity.
+2.  **Schema Transformation**: Added a new `id SERIAL PRIMARY KEY` and a `validator_index BIGINT UNIQUE` column.
+3.  **Data Migration**: Safely copied data from the old `index` column to the new `validator_index` column before dropping the old one.
+4.  **Column Additions**: Added missing columns required by the Go model, including `withdrawal_credentials`, `effective_balance`, `activation_eligibility_epoch`, `withdrawable_epoch`, `tags`, and `monitored`.
+5.  **Type Upgrade**: Upgraded `TIMESTAMP` columns to `TIMESTAMPTZ` for proper timezone handling.
+6.  **Foreign Key Updates**: Updated foreign key references to `validators(id)` in the `validator_snapshots`, `alerts`, and `validator_performance` tables.
+7.  **Trigger Implementation**: Added a trigger function to automatically update the `updated_at` column on modifications.
+8.  **Cleanup**: Dropped the legacy `index` and `status` columns after all data and references were migrated.
+9.  **Safe Guards**: Used `IF NOT EXISTS` and `IF EXISTS` to ensure the migration is re-runnable and robust.
+
+A comprehensive `down` migration was also created to ensure a safe rollback path.
+
+# Test Strategy:
+1.  **Local Migration Testing**: The `up` and `down` migration scripts were executed repeatedly on a local development database to ensure idempotency and correctness. The process was tested against a schema with existing data.
+2.  **Data Preservation Verification**: Verified that data from the old `index` column was successfully migrated to `validator_index` before the old column was dropped. Foreign key relationships were confirmed to be intact after the migration.
+3.  **Schema Validation**: The final schema of the `validators` table and related tables was inspected using `psql` commands (`\d`) to confirm it perfectly matched the `internal/database/models/validator.go` struct, including all columns, data types, constraints, and the new primary key.
+4.  **Go Model Integration**: Confirmed that the Go application could start and interact with the migrated database schema without errors, validating that the ORM mappings align with the new structure.
+5.  **Rollback Test**: The `down` migration was executed to ensure it could safely revert the database to its previous state without data loss.
+
+# Subtasks:
+## 1. Analyze Schema Discrepancy and Plan Migration Strategy [done]
+### Dependencies: None
+### Description: Investigated and documented the differences between the initial `validators` table schema (`index INTEGER PRIMARY KEY`) and the required schema from the Go model (`id SERIAL PRIMARY KEY`, `validator_index BIGINT UNIQUE`).
+### Details:
+Identified that a simple column rename would be insufficient. The plan was updated to involve creating a new primary key, a new unique index column, migrating data, and then updating all foreign key references across the database before dropping the old primary key.
+
+## 2. Implement `000002_fix_validator_schema.up.sql` Migration [done]
+### Dependencies: 12.1
+### Description: Created the `up` migration script to safely transform the `validators` table and related tables to the new schema.
+### Details:
+The 18-step migration script was written to be transactional. It adds the `id` and `validator_index` columns, migrates data from the old `index` column, adds all other missing columns (e.g., `withdrawal_credentials`, `tags`), upgrades timestamps to `TIMESTAMPTZ`, updates foreign keys in `validator_snapshots`, `alerts`, and `validator_performance` tables, and finally drops the old `index` and `status` columns.
+
+## 3. Implement `000002_fix_validator_schema.down.sql` Migration [done]
+### Dependencies: 12.1
+### Description: Created a comprehensive `down` migration script to allow for safe rollback of the schema changes.
+### Details:
+The `down` script was carefully crafted to reverse all changes from the `up` script, including recreating the old `index` column, migrating data back, reverting foreign key constraints, and dropping the new columns. This ensures data integrity is maintained if a rollback is necessary.
+
+## 4. Test and Verify Migration Locally [done]
+### Dependencies: 12.2, 12.3
+### Description: Executed and validated the up and down migrations in a development environment to ensure correctness, data preservation, and safety.
+### Details:
+The migration was tested by running it up and down to ensure idempotency. Schema was verified using psql commands. Data integrity was checked by ensuring data was correctly copied before columns were dropped. Foreign key cascade updates were specifically tested to prevent breaking relationships with other tables. Production-safe practices like `BEGIN/COMMIT` and `IF EXISTS` guards were used and verified.
+

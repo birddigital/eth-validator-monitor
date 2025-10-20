@@ -43,11 +43,11 @@ type ResolverRoot interface {
 	Alert() AlertResolver
 	Mutation() MutationResolver
 	NetworkStats() NetworkStatsResolver
-	PerformanceMetrics() PerformanceMetricsResolver
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
 	Validator() ValidatorResolver
-	ValidatorSnapshot() ValidatorSnapshotResolver
+	AlertFilter() AlertFilterResolver
+	ValidatorFilter() ValidatorFilterResolver
 }
 
 type DirectiveRoot struct {
@@ -55,225 +55,188 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Alert struct {
+		Acknowledged   func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Message        func(childComplexity int) int
-		Metadata       func(childComplexity int) int
-		Resolved       func(childComplexity int) int
-		ResolvedAt     func(childComplexity int) int
 		Severity       func(childComplexity int) int
 		Type           func(childComplexity int) int
-		Validator      func(childComplexity int) int
 		ValidatorIndex func(childComplexity int) int
 	}
 
-	AlertConnection struct {
-		Edges      func(childComplexity int) int
-		PageInfo   func(childComplexity int) int
-		TotalCount func(childComplexity int) int
+	AuthPayload struct {
+		AccessToken  func(childComplexity int) int
+		ExpiresAt    func(childComplexity int) int
+		RefreshToken func(childComplexity int) int
+		User         func(childComplexity int) int
 	}
 
-	AlertEdge struct {
-		Cursor func(childComplexity int) int
-		Node   func(childComplexity int) int
+	Balance struct {
+		Current      func(childComplexity int) int
+		Effective    func(childComplexity int) int
+		Withdrawable func(childComplexity int) int
+	}
+
+	HistoricalSnapshot struct {
+		AttestationSuccess func(childComplexity int) int
+		Balance            func(childComplexity int) int
+		EffectiveBalance   func(childComplexity int) int
+		Epoch              func(childComplexity int) int
+		InclusionDelay     func(childComplexity int) int
+		NetworkPercentile  func(childComplexity int) int
+		PerformanceScore   func(childComplexity int) int
+		ProposalSuccess    func(childComplexity int) int
+		Slot               func(childComplexity int) int
+		Timestamp          func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AddValidator              func(childComplexity int, pubkey string, validatorIndex int) int
-		BulkResolveAlerts         func(childComplexity int, filter model.AlertFilterInput) int
-		RemoveValidator           func(childComplexity int, validatorIndex int) int
-		ResolveAlert              func(childComplexity int, id string) int
-		TriggerBulkCollection     func(childComplexity int) int
-		TriggerCollection         func(childComplexity int, validatorIndex int) int
-		UpdateValidatorMonitoring func(childComplexity int, validatorIndex int, monitored bool) int
+		AcknowledgeAlert    func(childComplexity int, id string) int
+		AddValidator        func(childComplexity int, input model.AddValidatorInput) int
+		Login               func(childComplexity int, input model.LoginInput) int
+		RefreshToken        func(childComplexity int, refreshToken string) int
+		Register            func(childComplexity int, input model.RegisterInput) int
+		RemoveValidator     func(childComplexity int, index int) int
+		UpdateValidatorName func(childComplexity int, index int, name string) int
 	}
 
 	NetworkStats struct {
-		AvgAttestationEffectiveness func(childComplexity int) int
-		CurrentEpoch                func(childComplexity int) int
-		CurrentSlot                 func(childComplexity int) int
-		LastUpdated                 func(childComplexity int) int
-		ParticipationRate           func(childComplexity int) int
-		TotalActiveValidators       func(childComplexity int) int
-		TotalStake                  func(childComplexity int) int
+		ActiveValidators  func(childComplexity int) int
+		AverageBalance    func(childComplexity int) int
+		CurrentEpoch      func(childComplexity int) int
+		CurrentSlot       func(childComplexity int) int
+		ExitingValidators func(childComplexity int) int
+		ParticipationRate func(childComplexity int) int
+		PendingValidators func(childComplexity int) int
+		SlashedValidators func(childComplexity int) int
+		Timestamp         func(childComplexity int) int
+		TotalStaked       func(childComplexity int) int
+		TotalValidators   func(childComplexity int) int
 	}
 
-	PageInfo struct {
-		EndCursor       func(childComplexity int) int
-		HasNextPage     func(childComplexity int) int
-		HasPreviousPage func(childComplexity int) int
-		StartCursor     func(childComplexity int) int
-	}
-
-	PerformanceMetrics struct {
-		AttestationsCount   func(childComplexity int) int
-		CalculatedAt        func(childComplexity int) int
-		CorrectHeadVotes    func(childComplexity int) int
-		CorrectSourceVotes  func(childComplexity int) int
-		CorrectTargetVotes  func(childComplexity int) int
-		EffectivenessScore  func(childComplexity int) int
-		Epoch               func(childComplexity int) int
-		ProposalCount       func(childComplexity int) int
-		SyncCommitteeCount  func(childComplexity int) int
-		TotalInclusionDelay func(childComplexity int) int
-		ValidatorIndex      func(childComplexity int) int
+	Performance struct {
+		AttestationScore  func(childComplexity int) int
+		ConsecutiveMisses func(childComplexity int) int
+		Effectiveness     func(childComplexity int) int
+		InactivityScore   func(childComplexity int) int
+		NetworkAverage    func(childComplexity int) int
+		NetworkPercentile func(childComplexity int) int
+		ProposalMissed    func(childComplexity int) int
+		ProposalSuccess   func(childComplexity int) int
+		SlashingRisk      func(childComplexity int) int
+		TotalMissed       func(childComplexity int) int
+		UptimePercentage  func(childComplexity int) int
 	}
 
 	Query struct {
-		AggregatePerformance func(childComplexity int, validatorIndices []int, epochFrom *int, epochTo *int) int
-		Alert                func(childComplexity int, id string) int
-		Alerts               func(childComplexity int, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) int
-		NetworkStats         func(childComplexity int) int
-		Snapshot             func(childComplexity int, validatorIndex int, time types.Time) int
-		Snapshots            func(childComplexity int, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) int
-		Validator            func(childComplexity int, index int) int
-		ValidatorByPubkey    func(childComplexity int, pubkey string) int
-		ValidatorPerformance func(childComplexity int, validatorIndex int, epochFrom *int, epochTo *int) int
-		Validators           func(childComplexity int, filter *model.ValidatorFilterInput, sort *model.ValidatorSortInput, pagination *model.PaginationInput) int
+		Alert      func(childComplexity int, id string) int
+		Alerts     func(childComplexity int, filter *models.AlertFilter) int
+		Health     func(childComplexity int) int
+		Me         func(childComplexity int) int
+		Network    func(childComplexity int) int
+		Validator  func(childComplexity int, index *int, pubkey *string) int
+		Validators func(childComplexity int, filter *models.ValidatorFilter) int
 	}
 
-	SnapshotConnection struct {
-		Edges      func(childComplexity int) int
-		PageInfo   func(childComplexity int) int
-		TotalCount func(childComplexity int) int
-	}
-
-	SnapshotEdge struct {
-		Cursor func(childComplexity int) int
-		Node   func(childComplexity int) int
+	Rewards struct {
+		Actual        func(childComplexity int) int
+		Effectiveness func(childComplexity int) int
+		Expected      func(childComplexity int) int
 	}
 
 	Subscription struct {
-		AlertCreated           func(childComplexity int, validatorIndex *int, severity *types.AlertSeverity) int
-		AlertResolved          func(childComplexity int, validatorIndex *int) int
-		NetworkStatsUpdated    func(childComplexity int) int
-		ValidatorSnapshotAdded func(childComplexity int, validatorIndex int) int
+		NewAlerts        func(childComplexity int, severity *types.AlertSeverity) int
+		ValidatorUpdates func(childComplexity int, indices []int) int
+	}
+
+	User struct {
+		CreatedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		LastLogin func(childComplexity int) int
+		Roles     func(childComplexity int) int
+		Username  func(childComplexity int) int
 	}
 
 	Validator struct {
-		ActivationEligibilityEpoch func(childComplexity int) int
-		ActivationEpoch            func(childComplexity int) int
-		Alerts                     func(childComplexity int, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) int
-		EffectiveBalance           func(childComplexity int) int
-		ExitEpoch                  func(childComplexity int) int
-		LatestSnapshot             func(childComplexity int) int
-		Monitored                  func(childComplexity int) int
-		PerformanceMetrics         func(childComplexity int, epochFrom *int, epochTo *int) int
-		Pubkey                     func(childComplexity int) int
-		Snapshots                  func(childComplexity int, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) int
-		Status                     func(childComplexity int) int
-		ValidatorIndex             func(childComplexity int) int
-		WithdrawableEpoch          func(childComplexity int) int
-		WithdrawalCredentials      func(childComplexity int) int
-	}
-
-	ValidatorConnection struct {
-		Edges      func(childComplexity int) int
-		PageInfo   func(childComplexity int) int
-		TotalCount func(childComplexity int) int
-	}
-
-	ValidatorEdge struct {
-		Cursor func(childComplexity int) int
-		Node   func(childComplexity int) int
-	}
-
-	ValidatorSnapshot struct {
-		AttestationEffectiveness  func(childComplexity int) int
-		AttestationHeadVote       func(childComplexity int) int
-		AttestationInclusionDelay func(childComplexity int) int
-		AttestationSourceVote     func(childComplexity int) int
-		AttestationTargetVote     func(childComplexity int) int
-		Balance                   func(childComplexity int) int
-		EffectiveBalance          func(childComplexity int) int
-		Epoch                     func(childComplexity int) int
-		IsOnline                  func(childComplexity int) int
-		Proposed                  func(childComplexity int) int
-		Slot                      func(childComplexity int) int
-		Time                      func(childComplexity int) int
-		Validator                 func(childComplexity int) int
-		ValidatorIndex            func(childComplexity int) int
+		ActivationEpoch func(childComplexity int) int
+		Alerts          func(childComplexity int) int
+		Balance         func(childComplexity int) int
+		CreatedAt       func(childComplexity int) int
+		ExitEpoch       func(childComplexity int) int
+		History         func(childComplexity int, from *types.Time, to *types.Time) int
+		Index           func(childComplexity int) int
+		Name            func(childComplexity int) int
+		Performance     func(childComplexity int) int
+		Pubkey          func(childComplexity int) int
+		Rewards         func(childComplexity int) int
+		Slashed         func(childComplexity int) int
+		Status          func(childComplexity int) int
+		UpdatedAt       func(childComplexity int) int
 	}
 }
 
 type AlertResolver interface {
 	ID(ctx context.Context, obj *models.Alert) (string, error)
 
-	Type(ctx context.Context, obj *models.Alert) (types.AlertType, error)
 	Severity(ctx context.Context, obj *models.Alert) (types.AlertSeverity, error)
+	Type(ctx context.Context, obj *models.Alert) (string, error)
 
-	Metadata(ctx context.Context, obj *models.Alert) (*string, error)
-	Resolved(ctx context.Context, obj *models.Alert) (bool, error)
+	Acknowledged(ctx context.Context, obj *models.Alert) (bool, error)
 	CreatedAt(ctx context.Context, obj *models.Alert) (*types.Time, error)
-	ResolvedAt(ctx context.Context, obj *models.Alert) (*types.Time, error)
-	Validator(ctx context.Context, obj *models.Alert) (*models.Validator, error)
 }
 type MutationResolver interface {
-	AddValidator(ctx context.Context, pubkey string, validatorIndex int) (*models.Validator, error)
-	RemoveValidator(ctx context.Context, validatorIndex int) (bool, error)
-	UpdateValidatorMonitoring(ctx context.Context, validatorIndex int, monitored bool) (*models.Validator, error)
-	ResolveAlert(ctx context.Context, id string) (*models.Alert, error)
-	BulkResolveAlerts(ctx context.Context, filter model.AlertFilterInput) (int, error)
-	TriggerCollection(ctx context.Context, validatorIndex int) (bool, error)
-	TriggerBulkCollection(ctx context.Context) (int, error)
+	Register(ctx context.Context, input model.RegisterInput) (*model.AuthPayload, error)
+	Login(ctx context.Context, input model.LoginInput) (*model.AuthPayload, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*model.AuthPayload, error)
+	AddValidator(ctx context.Context, input model.AddValidatorInput) (*models.Validator, error)
+	RemoveValidator(ctx context.Context, index int) (bool, error)
+	UpdateValidatorName(ctx context.Context, index int, name string) (*models.Validator, error)
+	AcknowledgeAlert(ctx context.Context, id string) (*models.Alert, error)
 }
 type NetworkStatsResolver interface {
-	TotalActiveValidators(ctx context.Context, obj *types.NetworkStats) (int, error)
-	TotalStake(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error)
-	AvgAttestationEffectiveness(ctx context.Context, obj *types.NetworkStats) (float64, error)
+	AverageBalance(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error)
+	TotalStaked(ctx context.Context, obj *types.NetworkStats) (*types.BigInt, error)
 
-	LastUpdated(ctx context.Context, obj *types.NetworkStats) (*types.Time, error)
-}
-type PerformanceMetricsResolver interface {
-	AttestationsCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	CorrectHeadVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	CorrectSourceVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	CorrectTargetVotes(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	TotalInclusionDelay(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	ProposalCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	SyncCommitteeCount(ctx context.Context, obj *types.PerformanceMetrics) (int, error)
-	EffectivenessScore(ctx context.Context, obj *types.PerformanceMetrics) (float64, error)
-	CalculatedAt(ctx context.Context, obj *types.PerformanceMetrics) (*types.Time, error)
+	Timestamp(ctx context.Context, obj *types.NetworkStats) (*types.Time, error)
 }
 type QueryResolver interface {
-	Validator(ctx context.Context, index int) (*models.Validator, error)
-	ValidatorByPubkey(ctx context.Context, pubkey string) (*models.Validator, error)
-	Validators(ctx context.Context, filter *model.ValidatorFilterInput, sort *model.ValidatorSortInput, pagination *model.PaginationInput) (*model.ValidatorConnection, error)
-	Snapshot(ctx context.Context, validatorIndex int, time types.Time) (*models.ValidatorSnapshot, error)
-	Snapshots(ctx context.Context, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) (*model.SnapshotConnection, error)
+	Validator(ctx context.Context, index *int, pubkey *string) (*models.Validator, error)
+	Validators(ctx context.Context, filter *models.ValidatorFilter) ([]*models.Validator, error)
+	Network(ctx context.Context) (*types.NetworkStats, error)
+	Alerts(ctx context.Context, filter *models.AlertFilter) ([]*models.Alert, error)
 	Alert(ctx context.Context, id string) (*models.Alert, error)
-	Alerts(ctx context.Context, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) (*model.AlertConnection, error)
-	NetworkStats(ctx context.Context) (*types.NetworkStats, error)
-	ValidatorPerformance(ctx context.Context, validatorIndex int, epochFrom *int, epochTo *int) ([]*types.PerformanceMetrics, error)
-	AggregatePerformance(ctx context.Context, validatorIndices []int, epochFrom *int, epochTo *int) (*types.PerformanceMetrics, error)
+	Health(ctx context.Context) (string, error)
+	Me(ctx context.Context) (*model.User, error)
 }
 type SubscriptionResolver interface {
-	ValidatorSnapshotAdded(ctx context.Context, validatorIndex int) (<-chan *models.ValidatorSnapshot, error)
-	AlertCreated(ctx context.Context, validatorIndex *int, severity *types.AlertSeverity) (<-chan *models.Alert, error)
-	AlertResolved(ctx context.Context, validatorIndex *int) (<-chan *models.Alert, error)
-	NetworkStatsUpdated(ctx context.Context) (<-chan *types.NetworkStats, error)
+	ValidatorUpdates(ctx context.Context, indices []int) (<-chan *models.Validator, error)
+	NewAlerts(ctx context.Context, severity *types.AlertSeverity) (<-chan *models.Alert, error)
 }
 type ValidatorResolver interface {
+	Index(ctx context.Context, obj *models.Validator) (int, error)
+
 	Status(ctx context.Context, obj *models.Validator) (types.ValidatorStatus, error)
 
-	EffectiveBalance(ctx context.Context, obj *models.Validator) (*types.BigInt, error)
-
-	LatestSnapshot(ctx context.Context, obj *models.Validator) (*models.ValidatorSnapshot, error)
-	Snapshots(ctx context.Context, obj *models.Validator, filter *model.SnapshotFilterInput, sort *model.SnapshotSortInput, pagination *model.PaginationInput) (*model.SnapshotConnection, error)
-	Alerts(ctx context.Context, obj *models.Validator, filter *model.AlertFilterInput, sort *model.AlertSortInput, pagination *model.PaginationInput) (*model.AlertConnection, error)
-	PerformanceMetrics(ctx context.Context, obj *models.Validator, epochFrom *int, epochTo *int) ([]*types.PerformanceMetrics, error)
+	Balance(ctx context.Context, obj *models.Validator) (*model.Balance, error)
+	Performance(ctx context.Context, obj *models.Validator) (*model.Performance, error)
+	Rewards(ctx context.Context, obj *models.Validator) (*model.Rewards, error)
+	Alerts(ctx context.Context, obj *models.Validator) ([]*models.Alert, error)
+	History(ctx context.Context, obj *models.Validator, from *types.Time, to *types.Time) ([]*model.HistoricalSnapshot, error)
+	CreatedAt(ctx context.Context, obj *models.Validator) (*types.Time, error)
+	UpdatedAt(ctx context.Context, obj *models.Validator) (*types.Time, error)
 }
-type ValidatorSnapshotResolver interface {
-	Time(ctx context.Context, obj *models.ValidatorSnapshot) (*types.Time, error)
 
-	Epoch(ctx context.Context, obj *models.ValidatorSnapshot) (int, error)
-	Slot(ctx context.Context, obj *models.ValidatorSnapshot) (int, error)
-	Balance(ctx context.Context, obj *models.ValidatorSnapshot) (*types.BigInt, error)
-	EffectiveBalance(ctx context.Context, obj *models.ValidatorSnapshot) (*types.BigInt, error)
+type AlertFilterResolver interface {
+	Severity(ctx context.Context, obj *models.AlertFilter, data *types.AlertSeverity) error
+	Acknowledged(ctx context.Context, obj *models.AlertFilter, data *bool) error
+	From(ctx context.Context, obj *models.AlertFilter, data *types.Time) error
+	To(ctx context.Context, obj *models.AlertFilter, data *types.Time) error
+}
+type ValidatorFilterResolver interface {
+	Status(ctx context.Context, obj *models.ValidatorFilter, data *types.ValidatorStatus) error
 
-	Proposed(ctx context.Context, obj *models.ValidatorSnapshot) (*bool, error)
-
-	Validator(ctx context.Context, obj *models.ValidatorSnapshot) (*models.Validator, error)
+	Indices(ctx context.Context, obj *models.ValidatorFilter, data []int) error
 }
 
 type executableSchema struct {
@@ -295,6 +258,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Alert.acknowledged":
+		if e.complexity.Alert.Acknowledged == nil {
+			break
+		}
+
+		return e.complexity.Alert.Acknowledged(childComplexity), true
 	case "Alert.createdAt":
 		if e.complexity.Alert.CreatedAt == nil {
 			break
@@ -313,24 +282,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Alert.Message(childComplexity), true
-	case "Alert.metadata":
-		if e.complexity.Alert.Metadata == nil {
-			break
-		}
-
-		return e.complexity.Alert.Metadata(childComplexity), true
-	case "Alert.resolved":
-		if e.complexity.Alert.Resolved == nil {
-			break
-		}
-
-		return e.complexity.Alert.Resolved(childComplexity), true
-	case "Alert.resolvedAt":
-		if e.complexity.Alert.ResolvedAt == nil {
-			break
-		}
-
-		return e.complexity.Alert.ResolvedAt(childComplexity), true
 	case "Alert.severity":
 		if e.complexity.Alert.Severity == nil {
 			break
@@ -343,12 +294,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Alert.Type(childComplexity), true
-	case "Alert.validator":
-		if e.complexity.Alert.Validator == nil {
-			break
-		}
-
-		return e.complexity.Alert.Validator(childComplexity), true
 	case "Alert.validatorIndex":
 		if e.complexity.Alert.ValidatorIndex == nil {
 			break
@@ -356,38 +301,122 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Alert.ValidatorIndex(childComplexity), true
 
-	case "AlertConnection.edges":
-		if e.complexity.AlertConnection.Edges == nil {
+	case "AuthPayload.accessToken":
+		if e.complexity.AuthPayload.AccessToken == nil {
 			break
 		}
 
-		return e.complexity.AlertConnection.Edges(childComplexity), true
-	case "AlertConnection.pageInfo":
-		if e.complexity.AlertConnection.PageInfo == nil {
+		return e.complexity.AuthPayload.AccessToken(childComplexity), true
+	case "AuthPayload.expiresAt":
+		if e.complexity.AuthPayload.ExpiresAt == nil {
 			break
 		}
 
-		return e.complexity.AlertConnection.PageInfo(childComplexity), true
-	case "AlertConnection.totalCount":
-		if e.complexity.AlertConnection.TotalCount == nil {
+		return e.complexity.AuthPayload.ExpiresAt(childComplexity), true
+	case "AuthPayload.refreshToken":
+		if e.complexity.AuthPayload.RefreshToken == nil {
 			break
 		}
 
-		return e.complexity.AlertConnection.TotalCount(childComplexity), true
-
-	case "AlertEdge.cursor":
-		if e.complexity.AlertEdge.Cursor == nil {
+		return e.complexity.AuthPayload.RefreshToken(childComplexity), true
+	case "AuthPayload.user":
+		if e.complexity.AuthPayload.User == nil {
 			break
 		}
 
-		return e.complexity.AlertEdge.Cursor(childComplexity), true
-	case "AlertEdge.node":
-		if e.complexity.AlertEdge.Node == nil {
+		return e.complexity.AuthPayload.User(childComplexity), true
+
+	case "Balance.current":
+		if e.complexity.Balance.Current == nil {
 			break
 		}
 
-		return e.complexity.AlertEdge.Node(childComplexity), true
+		return e.complexity.Balance.Current(childComplexity), true
+	case "Balance.effective":
+		if e.complexity.Balance.Effective == nil {
+			break
+		}
 
+		return e.complexity.Balance.Effective(childComplexity), true
+	case "Balance.withdrawable":
+		if e.complexity.Balance.Withdrawable == nil {
+			break
+		}
+
+		return e.complexity.Balance.Withdrawable(childComplexity), true
+
+	case "HistoricalSnapshot.attestationSuccess":
+		if e.complexity.HistoricalSnapshot.AttestationSuccess == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.AttestationSuccess(childComplexity), true
+	case "HistoricalSnapshot.balance":
+		if e.complexity.HistoricalSnapshot.Balance == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.Balance(childComplexity), true
+	case "HistoricalSnapshot.effectiveBalance":
+		if e.complexity.HistoricalSnapshot.EffectiveBalance == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.EffectiveBalance(childComplexity), true
+	case "HistoricalSnapshot.epoch":
+		if e.complexity.HistoricalSnapshot.Epoch == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.Epoch(childComplexity), true
+	case "HistoricalSnapshot.inclusionDelay":
+		if e.complexity.HistoricalSnapshot.InclusionDelay == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.InclusionDelay(childComplexity), true
+	case "HistoricalSnapshot.networkPercentile":
+		if e.complexity.HistoricalSnapshot.NetworkPercentile == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.NetworkPercentile(childComplexity), true
+	case "HistoricalSnapshot.performanceScore":
+		if e.complexity.HistoricalSnapshot.PerformanceScore == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.PerformanceScore(childComplexity), true
+	case "HistoricalSnapshot.proposalSuccess":
+		if e.complexity.HistoricalSnapshot.ProposalSuccess == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.ProposalSuccess(childComplexity), true
+	case "HistoricalSnapshot.slot":
+		if e.complexity.HistoricalSnapshot.Slot == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.Slot(childComplexity), true
+	case "HistoricalSnapshot.timestamp":
+		if e.complexity.HistoricalSnapshot.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.HistoricalSnapshot.Timestamp(childComplexity), true
+
+	case "Mutation.acknowledgeAlert":
+		if e.complexity.Mutation.AcknowledgeAlert == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_acknowledgeAlert_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AcknowledgeAlert(childComplexity, args["id"].(string)), true
 	case "Mutation.addValidator":
 		if e.complexity.Mutation.AddValidator == nil {
 			break
@@ -398,18 +427,40 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddValidator(childComplexity, args["pubkey"].(string), args["validatorIndex"].(int)), true
-	case "Mutation.bulkResolveAlerts":
-		if e.complexity.Mutation.BulkResolveAlerts == nil {
+		return e.complexity.Mutation.AddValidator(childComplexity, args["input"].(model.AddValidatorInput)), true
+	case "Mutation.login":
+		if e.complexity.Mutation.Login == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_bulkResolveAlerts_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_login_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.BulkResolveAlerts(childComplexity, args["filter"].(model.AlertFilterInput)), true
+		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.LoginInput)), true
+	case "Mutation.refreshToken":
+		if e.complexity.Mutation.RefreshToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_refreshToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RefreshToken(childComplexity, args["refreshToken"].(string)), true
+	case "Mutation.register":
+		if e.complexity.Mutation.Register == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_register_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Register(childComplexity, args["input"].(model.RegisterInput)), true
 	case "Mutation.removeValidator":
 		if e.complexity.Mutation.RemoveValidator == nil {
 			break
@@ -420,53 +471,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RemoveValidator(childComplexity, args["validatorIndex"].(int)), true
-	case "Mutation.resolveAlert":
-		if e.complexity.Mutation.ResolveAlert == nil {
+		return e.complexity.Mutation.RemoveValidator(childComplexity, args["index"].(int)), true
+	case "Mutation.updateValidatorName":
+		if e.complexity.Mutation.UpdateValidatorName == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_resolveAlert_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_updateValidatorName_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ResolveAlert(childComplexity, args["id"].(string)), true
-	case "Mutation.triggerBulkCollection":
-		if e.complexity.Mutation.TriggerBulkCollection == nil {
+		return e.complexity.Mutation.UpdateValidatorName(childComplexity, args["index"].(int), args["name"].(string)), true
+
+	case "NetworkStats.activeValidators":
+		if e.complexity.NetworkStats.ActiveValidators == nil {
 			break
 		}
 
-		return e.complexity.Mutation.TriggerBulkCollection(childComplexity), true
-	case "Mutation.triggerCollection":
-		if e.complexity.Mutation.TriggerCollection == nil {
+		return e.complexity.NetworkStats.ActiveValidators(childComplexity), true
+	case "NetworkStats.averageBalance":
+		if e.complexity.NetworkStats.AverageBalance == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_triggerCollection_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.TriggerCollection(childComplexity, args["validatorIndex"].(int)), true
-	case "Mutation.updateValidatorMonitoring":
-		if e.complexity.Mutation.UpdateValidatorMonitoring == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateValidatorMonitoring_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateValidatorMonitoring(childComplexity, args["validatorIndex"].(int), args["monitored"].(bool)), true
-
-	case "NetworkStats.avgAttestationEffectiveness":
-		if e.complexity.NetworkStats.AvgAttestationEffectiveness == nil {
-			break
-		}
-
-		return e.complexity.NetworkStats.AvgAttestationEffectiveness(childComplexity), true
+		return e.complexity.NetworkStats.AverageBalance(childComplexity), true
 	case "NetworkStats.currentEpoch":
 		if e.complexity.NetworkStats.CurrentEpoch == nil {
 			break
@@ -479,134 +508,116 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.NetworkStats.CurrentSlot(childComplexity), true
-	case "NetworkStats.lastUpdated":
-		if e.complexity.NetworkStats.LastUpdated == nil {
+	case "NetworkStats.exitingValidators":
+		if e.complexity.NetworkStats.ExitingValidators == nil {
 			break
 		}
 
-		return e.complexity.NetworkStats.LastUpdated(childComplexity), true
+		return e.complexity.NetworkStats.ExitingValidators(childComplexity), true
 	case "NetworkStats.participationRate":
 		if e.complexity.NetworkStats.ParticipationRate == nil {
 			break
 		}
 
 		return e.complexity.NetworkStats.ParticipationRate(childComplexity), true
-	case "NetworkStats.totalActiveValidators":
-		if e.complexity.NetworkStats.TotalActiveValidators == nil {
+	case "NetworkStats.pendingValidators":
+		if e.complexity.NetworkStats.PendingValidators == nil {
 			break
 		}
 
-		return e.complexity.NetworkStats.TotalActiveValidators(childComplexity), true
-	case "NetworkStats.totalStake":
-		if e.complexity.NetworkStats.TotalStake == nil {
+		return e.complexity.NetworkStats.PendingValidators(childComplexity), true
+	case "NetworkStats.slashedValidators":
+		if e.complexity.NetworkStats.SlashedValidators == nil {
 			break
 		}
 
-		return e.complexity.NetworkStats.TotalStake(childComplexity), true
-
-	case "PageInfo.endCursor":
-		if e.complexity.PageInfo.EndCursor == nil {
+		return e.complexity.NetworkStats.SlashedValidators(childComplexity), true
+	case "NetworkStats.timestamp":
+		if e.complexity.NetworkStats.Timestamp == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.EndCursor(childComplexity), true
-	case "PageInfo.hasNextPage":
-		if e.complexity.PageInfo.HasNextPage == nil {
+		return e.complexity.NetworkStats.Timestamp(childComplexity), true
+	case "NetworkStats.totalStaked":
+		if e.complexity.NetworkStats.TotalStaked == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.HasNextPage(childComplexity), true
-	case "PageInfo.hasPreviousPage":
-		if e.complexity.PageInfo.HasPreviousPage == nil {
+		return e.complexity.NetworkStats.TotalStaked(childComplexity), true
+	case "NetworkStats.totalValidators":
+		if e.complexity.NetworkStats.TotalValidators == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.HasPreviousPage(childComplexity), true
-	case "PageInfo.startCursor":
-		if e.complexity.PageInfo.StartCursor == nil {
+		return e.complexity.NetworkStats.TotalValidators(childComplexity), true
+
+	case "Performance.attestationScore":
+		if e.complexity.Performance.AttestationScore == nil {
 			break
 		}
 
-		return e.complexity.PageInfo.StartCursor(childComplexity), true
-
-	case "PerformanceMetrics.attestationsCount":
-		if e.complexity.PerformanceMetrics.AttestationsCount == nil {
+		return e.complexity.Performance.AttestationScore(childComplexity), true
+	case "Performance.consecutiveMisses":
+		if e.complexity.Performance.ConsecutiveMisses == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.AttestationsCount(childComplexity), true
-	case "PerformanceMetrics.calculatedAt":
-		if e.complexity.PerformanceMetrics.CalculatedAt == nil {
+		return e.complexity.Performance.ConsecutiveMisses(childComplexity), true
+	case "Performance.effectiveness":
+		if e.complexity.Performance.Effectiveness == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.CalculatedAt(childComplexity), true
-	case "PerformanceMetrics.correctHeadVotes":
-		if e.complexity.PerformanceMetrics.CorrectHeadVotes == nil {
+		return e.complexity.Performance.Effectiveness(childComplexity), true
+	case "Performance.inactivityScore":
+		if e.complexity.Performance.InactivityScore == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.CorrectHeadVotes(childComplexity), true
-	case "PerformanceMetrics.correctSourceVotes":
-		if e.complexity.PerformanceMetrics.CorrectSourceVotes == nil {
+		return e.complexity.Performance.InactivityScore(childComplexity), true
+	case "Performance.networkAverage":
+		if e.complexity.Performance.NetworkAverage == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.CorrectSourceVotes(childComplexity), true
-	case "PerformanceMetrics.correctTargetVotes":
-		if e.complexity.PerformanceMetrics.CorrectTargetVotes == nil {
+		return e.complexity.Performance.NetworkAverage(childComplexity), true
+	case "Performance.networkPercentile":
+		if e.complexity.Performance.NetworkPercentile == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.CorrectTargetVotes(childComplexity), true
-	case "PerformanceMetrics.effectivenessScore":
-		if e.complexity.PerformanceMetrics.EffectivenessScore == nil {
+		return e.complexity.Performance.NetworkPercentile(childComplexity), true
+	case "Performance.proposalMissed":
+		if e.complexity.Performance.ProposalMissed == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.EffectivenessScore(childComplexity), true
-	case "PerformanceMetrics.epoch":
-		if e.complexity.PerformanceMetrics.Epoch == nil {
+		return e.complexity.Performance.ProposalMissed(childComplexity), true
+	case "Performance.proposalSuccess":
+		if e.complexity.Performance.ProposalSuccess == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.Epoch(childComplexity), true
-	case "PerformanceMetrics.proposalCount":
-		if e.complexity.PerformanceMetrics.ProposalCount == nil {
+		return e.complexity.Performance.ProposalSuccess(childComplexity), true
+	case "Performance.slashingRisk":
+		if e.complexity.Performance.SlashingRisk == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.ProposalCount(childComplexity), true
-	case "PerformanceMetrics.syncCommitteeCount":
-		if e.complexity.PerformanceMetrics.SyncCommitteeCount == nil {
+		return e.complexity.Performance.SlashingRisk(childComplexity), true
+	case "Performance.totalMissed":
+		if e.complexity.Performance.TotalMissed == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.SyncCommitteeCount(childComplexity), true
-	case "PerformanceMetrics.totalInclusionDelay":
-		if e.complexity.PerformanceMetrics.TotalInclusionDelay == nil {
+		return e.complexity.Performance.TotalMissed(childComplexity), true
+	case "Performance.uptimePercentage":
+		if e.complexity.Performance.UptimePercentage == nil {
 			break
 		}
 
-		return e.complexity.PerformanceMetrics.TotalInclusionDelay(childComplexity), true
-	case "PerformanceMetrics.validatorIndex":
-		if e.complexity.PerformanceMetrics.ValidatorIndex == nil {
-			break
-		}
+		return e.complexity.Performance.UptimePercentage(childComplexity), true
 
-		return e.complexity.PerformanceMetrics.ValidatorIndex(childComplexity), true
-
-	case "Query.aggregatePerformance":
-		if e.complexity.Query.AggregatePerformance == nil {
-			break
-		}
-
-		args, err := ec.field_Query_aggregatePerformance_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.AggregatePerformance(childComplexity, args["validatorIndices"].([]int), args["epochFrom"].(*int), args["epochTo"].(*int)), true
 	case "Query.alert":
 		if e.complexity.Query.Alert == nil {
 			break
@@ -628,35 +639,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Alerts(childComplexity, args["filter"].(*model.AlertFilterInput), args["sort"].(*model.AlertSortInput), args["pagination"].(*model.PaginationInput)), true
-	case "Query.networkStats":
-		if e.complexity.Query.NetworkStats == nil {
+		return e.complexity.Query.Alerts(childComplexity, args["filter"].(*models.AlertFilter)), true
+	case "Query.health":
+		if e.complexity.Query.Health == nil {
 			break
 		}
 
-		return e.complexity.Query.NetworkStats(childComplexity), true
-	case "Query.snapshot":
-		if e.complexity.Query.Snapshot == nil {
+		return e.complexity.Query.Health(childComplexity), true
+	case "Query.me":
+		if e.complexity.Query.Me == nil {
 			break
 		}
 
-		args, err := ec.field_Query_snapshot_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Snapshot(childComplexity, args["validatorIndex"].(int), args["time"].(types.Time)), true
-	case "Query.snapshots":
-		if e.complexity.Query.Snapshots == nil {
+		return e.complexity.Query.Me(childComplexity), true
+	case "Query.network":
+		if e.complexity.Query.Network == nil {
 			break
 		}
 
-		args, err := ec.field_Query_snapshots_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Snapshots(childComplexity, args["filter"].(*model.SnapshotFilterInput), args["sort"].(*model.SnapshotSortInput), args["pagination"].(*model.PaginationInput)), true
+		return e.complexity.Query.Network(childComplexity), true
 	case "Query.validator":
 		if e.complexity.Query.Validator == nil {
 			break
@@ -667,29 +668,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Validator(childComplexity, args["index"].(int)), true
-	case "Query.validatorByPubkey":
-		if e.complexity.Query.ValidatorByPubkey == nil {
-			break
-		}
-
-		args, err := ec.field_Query_validatorByPubkey_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.ValidatorByPubkey(childComplexity, args["pubkey"].(string)), true
-	case "Query.validatorPerformance":
-		if e.complexity.Query.ValidatorPerformance == nil {
-			break
-		}
-
-		args, err := ec.field_Query_validatorPerformance_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.ValidatorPerformance(childComplexity, args["validatorIndex"].(int), args["epochFrom"].(*int), args["epochTo"].(*int)), true
+		return e.complexity.Query.Validator(childComplexity, args["index"].(*int), args["pubkey"].(*string)), true
 	case "Query.validators":
 		if e.complexity.Query.Validators == nil {
 			break
@@ -700,86 +679,87 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Validators(childComplexity, args["filter"].(*model.ValidatorFilterInput), args["sort"].(*model.ValidatorSortInput), args["pagination"].(*model.PaginationInput)), true
+		return e.complexity.Query.Validators(childComplexity, args["filter"].(*models.ValidatorFilter)), true
 
-	case "SnapshotConnection.edges":
-		if e.complexity.SnapshotConnection.Edges == nil {
+	case "Rewards.actual":
+		if e.complexity.Rewards.Actual == nil {
 			break
 		}
 
-		return e.complexity.SnapshotConnection.Edges(childComplexity), true
-	case "SnapshotConnection.pageInfo":
-		if e.complexity.SnapshotConnection.PageInfo == nil {
+		return e.complexity.Rewards.Actual(childComplexity), true
+	case "Rewards.effectiveness":
+		if e.complexity.Rewards.Effectiveness == nil {
 			break
 		}
 
-		return e.complexity.SnapshotConnection.PageInfo(childComplexity), true
-	case "SnapshotConnection.totalCount":
-		if e.complexity.SnapshotConnection.TotalCount == nil {
+		return e.complexity.Rewards.Effectiveness(childComplexity), true
+	case "Rewards.expected":
+		if e.complexity.Rewards.Expected == nil {
 			break
 		}
 
-		return e.complexity.SnapshotConnection.TotalCount(childComplexity), true
+		return e.complexity.Rewards.Expected(childComplexity), true
 
-	case "SnapshotEdge.cursor":
-		if e.complexity.SnapshotEdge.Cursor == nil {
+	case "Subscription.newAlerts":
+		if e.complexity.Subscription.NewAlerts == nil {
 			break
 		}
 
-		return e.complexity.SnapshotEdge.Cursor(childComplexity), true
-	case "SnapshotEdge.node":
-		if e.complexity.SnapshotEdge.Node == nil {
-			break
-		}
-
-		return e.complexity.SnapshotEdge.Node(childComplexity), true
-
-	case "Subscription.alertCreated":
-		if e.complexity.Subscription.AlertCreated == nil {
-			break
-		}
-
-		args, err := ec.field_Subscription_alertCreated_args(ctx, rawArgs)
+		args, err := ec.field_Subscription_newAlerts_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Subscription.AlertCreated(childComplexity, args["validatorIndex"].(*int), args["severity"].(*types.AlertSeverity)), true
-	case "Subscription.alertResolved":
-		if e.complexity.Subscription.AlertResolved == nil {
+		return e.complexity.Subscription.NewAlerts(childComplexity, args["severity"].(*types.AlertSeverity)), true
+	case "Subscription.validatorUpdates":
+		if e.complexity.Subscription.ValidatorUpdates == nil {
 			break
 		}
 
-		args, err := ec.field_Subscription_alertResolved_args(ctx, rawArgs)
+		args, err := ec.field_Subscription_validatorUpdates_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Subscription.AlertResolved(childComplexity, args["validatorIndex"].(*int)), true
-	case "Subscription.networkStatsUpdated":
-		if e.complexity.Subscription.NetworkStatsUpdated == nil {
+		return e.complexity.Subscription.ValidatorUpdates(childComplexity, args["indices"].([]int)), true
+
+	case "User.createdAt":
+		if e.complexity.User.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Subscription.NetworkStatsUpdated(childComplexity), true
-	case "Subscription.validatorSnapshotAdded":
-		if e.complexity.Subscription.ValidatorSnapshotAdded == nil {
+		return e.complexity.User.CreatedAt(childComplexity), true
+	case "User.email":
+		if e.complexity.User.Email == nil {
 			break
 		}
 
-		args, err := ec.field_Subscription_validatorSnapshotAdded_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Subscription.ValidatorSnapshotAdded(childComplexity, args["validatorIndex"].(int)), true
-
-	case "Validator.activationEligibilityEpoch":
-		if e.complexity.Validator.ActivationEligibilityEpoch == nil {
+		return e.complexity.User.Email(childComplexity), true
+	case "User.id":
+		if e.complexity.User.ID == nil {
 			break
 		}
 
-		return e.complexity.Validator.ActivationEligibilityEpoch(childComplexity), true
+		return e.complexity.User.ID(childComplexity), true
+	case "User.lastLogin":
+		if e.complexity.User.LastLogin == nil {
+			break
+		}
+
+		return e.complexity.User.LastLogin(childComplexity), true
+	case "User.roles":
+		if e.complexity.User.Roles == nil {
+			break
+		}
+
+		return e.complexity.User.Roles(childComplexity), true
+	case "User.username":
+		if e.complexity.User.Username == nil {
+			break
+		}
+
+		return e.complexity.User.Username(childComplexity), true
+
 	case "Validator.activationEpoch":
 		if e.complexity.Validator.ActivationEpoch == nil {
 			break
@@ -791,205 +771,84 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Validator_alerts_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Validator.Alerts(childComplexity, args["filter"].(*model.AlertFilterInput), args["sort"].(*model.AlertSortInput), args["pagination"].(*model.PaginationInput)), true
-	case "Validator.effectiveBalance":
-		if e.complexity.Validator.EffectiveBalance == nil {
+		return e.complexity.Validator.Alerts(childComplexity), true
+	case "Validator.balance":
+		if e.complexity.Validator.Balance == nil {
 			break
 		}
 
-		return e.complexity.Validator.EffectiveBalance(childComplexity), true
+		return e.complexity.Validator.Balance(childComplexity), true
+	case "Validator.createdAt":
+		if e.complexity.Validator.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Validator.CreatedAt(childComplexity), true
 	case "Validator.exitEpoch":
 		if e.complexity.Validator.ExitEpoch == nil {
 			break
 		}
 
 		return e.complexity.Validator.ExitEpoch(childComplexity), true
-	case "Validator.latestSnapshot":
-		if e.complexity.Validator.LatestSnapshot == nil {
+	case "Validator.history":
+		if e.complexity.Validator.History == nil {
 			break
 		}
 
-		return e.complexity.Validator.LatestSnapshot(childComplexity), true
-	case "Validator.monitored":
-		if e.complexity.Validator.Monitored == nil {
-			break
-		}
-
-		return e.complexity.Validator.Monitored(childComplexity), true
-	case "Validator.performanceMetrics":
-		if e.complexity.Validator.PerformanceMetrics == nil {
-			break
-		}
-
-		args, err := ec.field_Validator_performanceMetrics_args(ctx, rawArgs)
+		args, err := ec.field_Validator_history_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Validator.PerformanceMetrics(childComplexity, args["epochFrom"].(*int), args["epochTo"].(*int)), true
+		return e.complexity.Validator.History(childComplexity, args["from"].(*types.Time), args["to"].(*types.Time)), true
+	case "Validator.index":
+		if e.complexity.Validator.Index == nil {
+			break
+		}
+
+		return e.complexity.Validator.Index(childComplexity), true
+	case "Validator.name":
+		if e.complexity.Validator.Name == nil {
+			break
+		}
+
+		return e.complexity.Validator.Name(childComplexity), true
+	case "Validator.performance":
+		if e.complexity.Validator.Performance == nil {
+			break
+		}
+
+		return e.complexity.Validator.Performance(childComplexity), true
 	case "Validator.pubkey":
 		if e.complexity.Validator.Pubkey == nil {
 			break
 		}
 
 		return e.complexity.Validator.Pubkey(childComplexity), true
-	case "Validator.snapshots":
-		if e.complexity.Validator.Snapshots == nil {
+	case "Validator.rewards":
+		if e.complexity.Validator.Rewards == nil {
 			break
 		}
 
-		args, err := ec.field_Validator_snapshots_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
+		return e.complexity.Validator.Rewards(childComplexity), true
+	case "Validator.slashed":
+		if e.complexity.Validator.Slashed == nil {
+			break
 		}
 
-		return e.complexity.Validator.Snapshots(childComplexity, args["filter"].(*model.SnapshotFilterInput), args["sort"].(*model.SnapshotSortInput), args["pagination"].(*model.PaginationInput)), true
+		return e.complexity.Validator.Slashed(childComplexity), true
 	case "Validator.status":
 		if e.complexity.Validator.Status == nil {
 			break
 		}
 
 		return e.complexity.Validator.Status(childComplexity), true
-	case "Validator.validatorIndex":
-		if e.complexity.Validator.ValidatorIndex == nil {
+	case "Validator.updatedAt":
+		if e.complexity.Validator.UpdatedAt == nil {
 			break
 		}
 
-		return e.complexity.Validator.ValidatorIndex(childComplexity), true
-	case "Validator.withdrawableEpoch":
-		if e.complexity.Validator.WithdrawableEpoch == nil {
-			break
-		}
-
-		return e.complexity.Validator.WithdrawableEpoch(childComplexity), true
-	case "Validator.withdrawalCredentials":
-		if e.complexity.Validator.WithdrawalCredentials == nil {
-			break
-		}
-
-		return e.complexity.Validator.WithdrawalCredentials(childComplexity), true
-
-	case "ValidatorConnection.edges":
-		if e.complexity.ValidatorConnection.Edges == nil {
-			break
-		}
-
-		return e.complexity.ValidatorConnection.Edges(childComplexity), true
-	case "ValidatorConnection.pageInfo":
-		if e.complexity.ValidatorConnection.PageInfo == nil {
-			break
-		}
-
-		return e.complexity.ValidatorConnection.PageInfo(childComplexity), true
-	case "ValidatorConnection.totalCount":
-		if e.complexity.ValidatorConnection.TotalCount == nil {
-			break
-		}
-
-		return e.complexity.ValidatorConnection.TotalCount(childComplexity), true
-
-	case "ValidatorEdge.cursor":
-		if e.complexity.ValidatorEdge.Cursor == nil {
-			break
-		}
-
-		return e.complexity.ValidatorEdge.Cursor(childComplexity), true
-	case "ValidatorEdge.node":
-		if e.complexity.ValidatorEdge.Node == nil {
-			break
-		}
-
-		return e.complexity.ValidatorEdge.Node(childComplexity), true
-
-	case "ValidatorSnapshot.attestationEffectiveness":
-		if e.complexity.ValidatorSnapshot.AttestationEffectiveness == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.AttestationEffectiveness(childComplexity), true
-	case "ValidatorSnapshot.attestationHeadVote":
-		if e.complexity.ValidatorSnapshot.AttestationHeadVote == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.AttestationHeadVote(childComplexity), true
-	case "ValidatorSnapshot.attestationInclusionDelay":
-		if e.complexity.ValidatorSnapshot.AttestationInclusionDelay == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.AttestationInclusionDelay(childComplexity), true
-	case "ValidatorSnapshot.attestationSourceVote":
-		if e.complexity.ValidatorSnapshot.AttestationSourceVote == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.AttestationSourceVote(childComplexity), true
-	case "ValidatorSnapshot.attestationTargetVote":
-		if e.complexity.ValidatorSnapshot.AttestationTargetVote == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.AttestationTargetVote(childComplexity), true
-	case "ValidatorSnapshot.balance":
-		if e.complexity.ValidatorSnapshot.Balance == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Balance(childComplexity), true
-	case "ValidatorSnapshot.effectiveBalance":
-		if e.complexity.ValidatorSnapshot.EffectiveBalance == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.EffectiveBalance(childComplexity), true
-	case "ValidatorSnapshot.epoch":
-		if e.complexity.ValidatorSnapshot.Epoch == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Epoch(childComplexity), true
-	case "ValidatorSnapshot.isOnline":
-		if e.complexity.ValidatorSnapshot.IsOnline == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.IsOnline(childComplexity), true
-	case "ValidatorSnapshot.proposed":
-		if e.complexity.ValidatorSnapshot.Proposed == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Proposed(childComplexity), true
-	case "ValidatorSnapshot.slot":
-		if e.complexity.ValidatorSnapshot.Slot == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Slot(childComplexity), true
-	case "ValidatorSnapshot.time":
-		if e.complexity.ValidatorSnapshot.Time == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Time(childComplexity), true
-	case "ValidatorSnapshot.validator":
-		if e.complexity.ValidatorSnapshot.Validator == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.Validator(childComplexity), true
-	case "ValidatorSnapshot.validatorIndex":
-		if e.complexity.ValidatorSnapshot.ValidatorIndex == nil {
-			break
-		}
-
-		return e.complexity.ValidatorSnapshot.ValidatorIndex(childComplexity), true
+		return e.complexity.Validator.UpdatedAt(childComplexity), true
 
 	}
 	return 0, false
@@ -999,13 +858,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputAlertFilterInput,
-		ec.unmarshalInputAlertSortInput,
-		ec.unmarshalInputPaginationInput,
-		ec.unmarshalInputSnapshotFilterInput,
-		ec.unmarshalInputSnapshotSortInput,
-		ec.unmarshalInputValidatorFilterInput,
-		ec.unmarshalInputValidatorSortInput,
+		ec.unmarshalInputAddValidatorInput,
+		ec.unmarshalInputAlertFilter,
+		ec.unmarshalInputLoginInput,
+		ec.unmarshalInputRegisterInput,
+		ec.unmarshalInputValidatorFilter,
 	)
 	first := true
 
@@ -1120,462 +977,263 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema/schema.graphql", Input: `# GraphQL schema for Ethereum Validator Monitor
-# Defines types, queries, and mutations for validator monitoring data
+	{Name: "../schema.graphqls", Input: `# GraphQL schema for eth-validator-monitor
 
-# Custom scalar types
 scalar Time
 scalar BigInt
-scalar Hash
 
-# Validator status enum
+# Enums
 enum ValidatorStatus {
-  PENDING_INITIALIZED
-  PENDING_QUEUED
-  ACTIVE_ONGOING
-  ACTIVE_EXITING
-  ACTIVE_SLASHED
-  EXITED_UNSLASHED
-  EXITED_SLASHED
-  WITHDRAWAL_POSSIBLE
-  WITHDRAWAL_DONE
+  PENDING
+  ACTIVE
+  EXITING
+  EXITED
+  SLASHED
   UNKNOWN
 }
 
-# Alert severity levels
 enum AlertSeverity {
-  INFO
-  WARNING
-  ERROR
   CRITICAL
+  WARNING
+  INFO
 }
 
-# Alert types
-enum AlertType {
-  OFFLINE
-  BALANCE_DROP
-  MISSED_ATTESTATION
-  SLASHING
-  PERFORMANCE_DEGRADATION
-  SYNC_COMMITTEE_MISS
-  PROPOSAL_MISS
+enum RiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
 }
 
-# Sort direction
-enum SortDirection {
-  ASC
-  DESC
-}
-
-# Validator sort fields
-enum ValidatorSortField {
-  INDEX
-  PUBKEY
-  BALANCE
-  EFFECTIVE_BALANCE
-  STATUS
-  ACTIVATION_EPOCH
-}
-
-# Snapshot sort fields
-enum SnapshotSortField {
-  TIME
-  VALIDATOR_INDEX
-  BALANCE
-  EFFECTIVENESS
-}
-
-# Alert sort fields
-enum AlertSortField {
-  CREATED_AT
-  SEVERITY
-  TYPE
-}
-
-# Pagination input
-input PaginationInput {
-  """Number of items per page (max 100)"""
-  limit: Int = 20
-  """Cursor for pagination"""
-  cursor: String
-}
-
-# Validator filter input
-input ValidatorFilterInput {
-  """Filter by validator indices"""
-  indices: [Int!]
-  """Filter by public keys"""
-  pubkeys: [String!]
-  """Filter by status"""
-  status: ValidatorStatus
-  """Filter by monitored flag"""
-  monitored: Boolean
-  """Filter by minimum balance (in Gwei)"""
-  minBalance: BigInt
-  """Filter by maximum balance (in Gwei)"""
-  maxBalance: BigInt
-  """Filter by activation epoch range"""
-  activationEpochFrom: Int
-  activationEpochTo: Int
-}
-
-# Validator sort input
-input ValidatorSortInput {
-  field: ValidatorSortField!
-  direction: SortDirection = ASC
-}
-
-# Snapshot filter input
-input SnapshotFilterInput {
-  """Filter by validator index"""
-  validatorIndex: Int
-  """Filter by time range"""
-  timeFrom: Time
-  timeTo: Time
-  """Filter by epoch range"""
-  epochFrom: Int
-  epochTo: Int
-  """Filter by minimum effectiveness score"""
-  minEffectiveness: Float
-  """Only include online validators"""
-  onlineOnly: Boolean
-}
-
-# Snapshot sort input
-input SnapshotSortInput {
-  field: SnapshotSortField!
-  direction: SortDirection = DESC
-}
-
-# Alert filter input
-input AlertFilterInput {
-  """Filter by validator index"""
-  validatorIndex: Int
-  """Filter by alert type"""
-  type: AlertType
-  """Filter by severity"""
-  severity: AlertSeverity
-  """Filter by resolved status"""
-  resolved: Boolean
-  """Filter by time range"""
-  createdFrom: Time
-  createdTo: Time
-}
-
-# Alert sort input
-input AlertSortInput {
-  field: AlertSortField!
-  direction: SortDirection = DESC
-}
-
-# Validator type
+# Types
 type Validator {
-  """Validator index on the beacon chain"""
-  validatorIndex: Int!
-  """Validator public key (hex string)"""
+  index: Int!
   pubkey: String!
-  """Current validator status"""
+  name: String
   status: ValidatorStatus!
-  """Withdrawal credentials"""
-  withdrawalCredentials: String!
-  """Effective balance in Gwei"""
-  effectiveBalance: BigInt!
-  """Activation eligibility epoch"""
-  activationEligibilityEpoch: Int!
-  """Activation epoch"""
-  activationEpoch: Int!
-  """Exit epoch"""
+  activationEpoch: Int
   exitEpoch: Int
-  """Withdrawable epoch"""
-  withdrawableEpoch: Int
-  """Whether this validator is actively monitored"""
-  monitored: Boolean!
-  """Latest snapshot for this validator"""
-  latestSnapshot: ValidatorSnapshot
-  """Snapshots for this validator"""
-  snapshots(
-    filter: SnapshotFilterInput
-    sort: SnapshotSortInput
-    pagination: PaginationInput
-  ): SnapshotConnection!
-  """Alerts for this validator"""
-  alerts(
-    filter: AlertFilterInput
-    sort: AlertSortInput
-    pagination: PaginationInput
-  ): AlertConnection!
-  """Performance metrics for this validator"""
-  performanceMetrics(
-    epochFrom: Int
-    epochTo: Int
-  ): [PerformanceMetrics!]!
-}
-
-# Validator snapshot type
-type ValidatorSnapshot {
-  """Snapshot timestamp"""
-  time: Time!
-  """Validator index"""
-  validatorIndex: Int!
-  """Epoch when snapshot was taken"""
-  epoch: Int!
-  """Slot when snapshot was taken"""
-  slot: Int!
-  """Validator balance in Gwei"""
-  balance: BigInt!
-  """Effective balance in Gwei"""
-  effectiveBalance: BigInt!
-  """Whether validator was online"""
-  isOnline: Boolean!
-  """Whether validator proposed in this snapshot"""
-  proposed: Boolean
-  """Head vote correctness"""
-  attestationHeadVote: Boolean
-  """Source vote correctness"""
-  attestationSourceVote: Boolean
-  """Target vote correctness"""
-  attestationTargetVote: Boolean
-  """Attestation inclusion delay"""
-  attestationInclusionDelay: Int
-  """Overall attestation effectiveness score (0-100)"""
-  attestationEffectiveness: Float
-  """Validator entity for this snapshot"""
-  validator: Validator!
-}
-
-# Performance metrics type
-type PerformanceMetrics {
-  """Validator index"""
-  validatorIndex: Int!
-  """Epoch for these metrics"""
-  epoch: Int!
-  """Number of attestations made"""
-  attestationsCount: Int!
-  """Number of correct head votes"""
-  correctHeadVotes: Int!
-  """Number of correct source votes"""
-  correctSourceVotes: Int!
-  """Number of correct target votes"""
-  correctTargetVotes: Int!
-  """Total inclusion delay"""
-  totalInclusionDelay: Int!
-  """Number of proposals"""
-  proposalCount: Int!
-  """Number of sync committee participations"""
-  syncCommitteeCount: Int!
-  """Overall effectiveness score (0-100)"""
-  effectivenessScore: Float!
-  """Calculated at timestamp"""
-  calculatedAt: Time!
-}
-
-# Alert type
-type Alert {
-  """Alert ID"""
-  id: ID!
-  """Validator index"""
-  validatorIndex: Int!
-  """Alert type"""
-  type: AlertType!
-  """Alert severity"""
-  severity: AlertSeverity!
-  """Alert message"""
-  message: String!
-  """Alert metadata (JSON)"""
-  metadata: String
-  """Whether alert is resolved"""
-  resolved: Boolean!
-  """When alert was created"""
+  slashed: Boolean!
+  balance: Balance!
+  performance: Performance!
+  rewards: Rewards!
+  alerts: [Alert!]!
+  history(from: Time, to: Time): [HistoricalSnapshot!]!
   createdAt: Time!
-  """When alert was resolved"""
-  resolvedAt: Time
-  """Validator entity for this alert"""
-  validator: Validator!
+  updatedAt: Time!
 }
 
-# Network statistics type
+type Balance {
+  current: BigInt!
+  effective: BigInt!
+  withdrawable: BigInt!
+}
+
+type Performance {
+  uptimePercentage: Float!
+  consecutiveMisses: Int!
+  totalMissed: Int!
+  attestationScore: Float!
+  proposalSuccess: Int!
+  proposalMissed: Int!
+  effectiveness: Float!
+  networkAverage: Float!
+  networkPercentile: Float!
+  slashingRisk: RiskLevel!
+  inactivityScore: Int!
+}
+
+type Rewards {
+  expected: BigInt!
+  actual: BigInt!
+  effectiveness: Float!
+}
+
+type HistoricalSnapshot {
+  epoch: Int!
+  slot: Int!
+  timestamp: Time!
+  balance: BigInt!
+  effectiveBalance: BigInt!
+  attestationSuccess: Boolean
+  inclusionDelay: Int
+  proposalSuccess: Boolean
+  performanceScore: Float
+  networkPercentile: Float
+}
+
+type Alert {
+  id: ID!
+  validatorIndex: Int!
+  severity: AlertSeverity!
+  type: String!
+  message: String!
+  acknowledged: Boolean!
+  createdAt: Time!
+}
+
 type NetworkStats {
-  """Current epoch"""
   currentEpoch: Int!
-  """Current slot"""
   currentSlot: Int!
-  """Total number of active validators"""
-  totalActiveValidators: Int!
-  """Total staked ETH (in Gwei)"""
-  totalStake: BigInt!
-  """Average attestation effectiveness across all validators"""
-  avgAttestationEffectiveness: Float!
-  """Network participation rate"""
+  totalValidators: Int!
+  activeValidators: Int!
+  pendingValidators: Int!
+  exitingValidators: Int!
+  slashedValidators: Int!
+  averageBalance: BigInt!
+  totalStaked: BigInt!
   participationRate: Float!
-  """Last updated timestamp"""
-  lastUpdated: Time!
+  timestamp: Time!
 }
 
-# Page info for cursor-based pagination
-type PageInfo {
-  """Whether there are more items"""
-  hasNextPage: Boolean!
-  """Whether there are previous items"""
-  hasPreviousPage: Boolean!
-  """Cursor to the start of the page"""
-  startCursor: String
-  """Cursor to the end of the page"""
-  endCursor: String
+# Inputs
+input AddValidatorInput {
+  pubkey: String
+  index: Int
+  name: String
 }
 
-# Validator connection (paginated)
-type ValidatorConnection {
-  """List of validators"""
-  edges: [ValidatorEdge!]!
-  """Pagination info"""
-  pageInfo: PageInfo!
-  """Total count of items"""
-  totalCount: Int!
+input ValidatorFilter {
+  status: ValidatorStatus
+  slashed: Boolean
+  indices: [Int!]
+  pubkeys: [String!]
+  limit: Int
+  offset: Int
 }
 
-# Validator edge
-type ValidatorEdge {
-  """Cursor for this item"""
-  cursor: String!
-  """Validator node"""
-  node: Validator!
+input AlertFilter {
+  validatorIndex: Int
+  severity: AlertSeverity
+  acknowledged: Boolean
+  from: Time
+  to: Time
+  limit: Int
+  offset: Int
 }
 
-# Snapshot connection (paginated)
-type SnapshotConnection {
-  """List of snapshots"""
-  edges: [SnapshotEdge!]!
-  """Pagination info"""
-  pageInfo: PageInfo!
-  """Total count of items"""
-  totalCount: Int!
+# Authentication Types
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  roles: [String!]!
+  createdAt: Time!
+  lastLogin: Time
 }
 
-# Snapshot edge
-type SnapshotEdge {
-  """Cursor for this item"""
-  cursor: String!
-  """Snapshot node"""
-  node: ValidatorSnapshot!
+type AuthPayload {
+  """Access token for API authentication"""
+  accessToken: String!
+
+  """Refresh token for obtaining new access tokens"""
+  refreshToken: String!
+
+  """User information"""
+  user: User!
+
+  """Token expiration time (Unix timestamp)"""
+  expiresAt: Int!
 }
 
-# Alert connection (paginated)
-type AlertConnection {
-  """List of alerts"""
-  edges: [AlertEdge!]!
-  """Pagination info"""
-  pageInfo: PageInfo!
-  """Total count of items"""
-  totalCount: Int!
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
 }
 
-# Alert edge
-type AlertEdge {
-  """Cursor for this item"""
-  cursor: String!
-  """Alert node"""
-  node: Alert!
+input LoginInput {
+  username: String!
+  password: String!
 }
 
-# Query root type
+# Queries
 type Query {
-  """Get a single validator by index"""
-  validator(index: Int!): Validator
+  """
+  Get a single validator by index or pubkey
+  """
+  validator(index: Int, pubkey: String): Validator
 
-  """Get a single validator by public key"""
-  validatorByPubkey(pubkey: String!): Validator
+  """
+  Get multiple validators with optional filtering
+  """
+  validators(filter: ValidatorFilter): [Validator!]!
 
-  """List validators with filtering, sorting, and pagination"""
-  validators(
-    filter: ValidatorFilterInput
-    sort: ValidatorSortInput
-    pagination: PaginationInput
-  ): ValidatorConnection!
+  """
+  Get network-wide statistics
+  """
+  network: NetworkStats!
 
-  """Get a single snapshot by validator index and time"""
-  snapshot(validatorIndex: Int!, time: Time!): ValidatorSnapshot
+  """
+  Get alerts with optional filtering
+  """
+  alerts(filter: AlertFilter): [Alert!]!
 
-  """List snapshots with filtering, sorting, and pagination"""
-  snapshots(
-    filter: SnapshotFilterInput
-    sort: SnapshotSortInput
-    pagination: PaginationInput
-  ): SnapshotConnection!
-
-  """Get a single alert by ID"""
+  """
+  Get a specific alert by ID
+  """
   alert(id: ID!): Alert
 
-  """List alerts with filtering, sorting, and pagination"""
-  alerts(
-    filter: AlertFilterInput
-    sort: AlertSortInput
-    pagination: PaginationInput
-  ): AlertConnection!
+  """
+  Health check
+  """
+  health: String!
 
-  """Get current network statistics"""
-  networkStats: NetworkStats!
-
-  """Get performance metrics for a validator"""
-  validatorPerformance(
-    validatorIndex: Int!
-    epochFrom: Int
-    epochTo: Int
-  ): [PerformanceMetrics!]!
-
-  """Get aggregate performance across multiple validators"""
-  aggregatePerformance(
-    validatorIndices: [Int!]!
-    epochFrom: Int
-    epochTo: Int
-  ): PerformanceMetrics
+  """
+  Get current authenticated user
+  """
+  me: User!
 }
 
-# Mutation root type
+# Mutations
 type Mutation {
-  """Add a validator to monitoring"""
-  addValidator(
-    pubkey: String!
-    validatorIndex: Int!
-  ): Validator!
+  """
+  Register a new user account
+  """
+  register(input: RegisterInput!): AuthPayload!
 
-  """Remove a validator from monitoring"""
-  removeValidator(validatorIndex: Int!): Boolean!
+  """
+  Login with username and password
+  """
+  login(input: LoginInput!): AuthPayload!
 
-  """Update validator monitoring status"""
-  updateValidatorMonitoring(
-    validatorIndex: Int!
-    monitored: Boolean!
-  ): Validator!
+  """
+  Refresh access token using refresh token
+  """
+  refreshToken(refreshToken: String!): AuthPayload!
 
-  """Resolve an alert"""
-  resolveAlert(id: ID!): Alert!
+  """
+  Add a new validator to monitor
+  """
+  addValidator(input: AddValidatorInput!): Validator!
 
-  """Bulk resolve alerts by filter"""
-  bulkResolveAlerts(filter: AlertFilterInput!): Int!
+  """
+  Remove a validator from monitoring
+  """
+  removeValidator(index: Int!): Boolean!
 
-  """Trigger manual data collection for a validator"""
-  triggerCollection(validatorIndex: Int!): Boolean!
+  """
+  Update validator name
+  """
+  updateValidatorName(index: Int!, name: String!): Validator!
 
-  """Trigger manual collection for all monitored validators"""
-  triggerBulkCollection: Int!
+  """
+  Acknowledge an alert
+  """
+  acknowledgeAlert(id: ID!): Alert!
 }
 
-# Subscription root type (for real-time updates)
+# Subscriptions
 type Subscription {
-  """Subscribe to new snapshots for a validator"""
-  validatorSnapshotAdded(validatorIndex: Int!): ValidatorSnapshot!
+  """
+  Subscribe to validator updates for specific validators
+  """
+  validatorUpdates(indices: [Int!]): Validator!
 
-  """Subscribe to new alerts"""
-  alertCreated(
-    validatorIndex: Int
-    severity: AlertSeverity
-  ): Alert!
-
-  """Subscribe to alert resolutions"""
-  alertResolved(validatorIndex: Int): Alert!
-
-  """Subscribe to network statistics updates"""
-  networkStatsUpdated: NetworkStats!
+  """
+  Subscribe to new alerts
+  """
+  newAlerts(severity: AlertSeverity): Alert!
 }
 `, BuiltIn: false},
 }
@@ -1585,45 +1243,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addValidator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "pubkey", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["pubkey"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
-	if err != nil {
-		return nil, err
-	}
-	args["validatorIndex"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_bulkResolveAlerts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalNAlertFilterInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertFilterInput)
-	if err != nil {
-		return nil, err
-	}
-	args["filter"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_removeValidator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
-	if err != nil {
-		return nil, err
-	}
-	args["validatorIndex"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_resolveAlert_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_acknowledgeAlert_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
@@ -1634,30 +1254,74 @@ func (ec *executionContext) field_Mutation_resolveAlert_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_triggerCollection_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_addValidator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNAddValidatorInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAddValidatorInput)
 	if err != nil {
 		return nil, err
 	}
-	args["validatorIndex"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateValidatorMonitoring_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNLoginInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐLoginInput)
 	if err != nil {
 		return nil, err
 	}
-	args["validatorIndex"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "monitored", ec.unmarshalNBoolean2bool)
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "refreshToken", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
-	args["monitored"] = arg1
+	args["refreshToken"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_register_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNRegisterInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐRegisterInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeValidator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "index", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["index"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateValidatorName_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "index", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["index"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "name", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -1669,27 +1333,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_aggregatePerformance_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndices", ec.unmarshalNInt2ᚕintᚄ)
-	if err != nil {
-		return nil, err
-	}
-	args["validatorIndices"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "epochFrom", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochFrom"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "epochTo", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochTo"] = arg2
 	return args, nil
 }
 
@@ -1707,218 +1350,76 @@ func (ec *executionContext) field_Query_alert_args(ctx context.Context, rawArgs 
 func (ec *executionContext) field_Query_alerts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOAlertFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOAlertFilter2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlertFilter)
 	if err != nil {
 		return nil, err
 	}
 	args["filter"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOAlertSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortInput)
-	if err != nil {
-		return nil, err
-	}
-	args["sort"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "pagination", ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput)
-	if err != nil {
-		return nil, err
-	}
-	args["pagination"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_snapshot_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
-	if err != nil {
-		return nil, err
-	}
-	args["validatorIndex"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "time", ec.unmarshalNTime2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime)
-	if err != nil {
-		return nil, err
-	}
-	args["time"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_snapshots_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOSnapshotFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotFilterInput)
-	if err != nil {
-		return nil, err
-	}
-	args["filter"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOSnapshotSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortInput)
-	if err != nil {
-		return nil, err
-	}
-	args["sort"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "pagination", ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput)
-	if err != nil {
-		return nil, err
-	}
-	args["pagination"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_validatorByPubkey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "pubkey", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["pubkey"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_validatorPerformance_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
-	if err != nil {
-		return nil, err
-	}
-	args["validatorIndex"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "epochFrom", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochFrom"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "epochTo", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochTo"] = arg2
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_validator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "index", ec.unmarshalNInt2int)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "index", ec.unmarshalOInt2ᚖint)
 	if err != nil {
 		return nil, err
 	}
 	args["index"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "pubkey", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["pubkey"] = arg1
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_validators_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOValidatorFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorFilterInput)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOValidatorFilter2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorFilter)
 	if err != nil {
 		return nil, err
 	}
 	args["filter"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOValidatorSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorSortInput)
-	if err != nil {
-		return nil, err
-	}
-	args["sort"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "pagination", ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput)
-	if err != nil {
-		return nil, err
-	}
-	args["pagination"] = arg2
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_alertCreated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Subscription_newAlerts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalOInt2ᚖint)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "severity", ec.unmarshalOAlertSeverity2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertSeverity)
 	if err != nil {
 		return nil, err
 	}
-	args["validatorIndex"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "severity", ec.unmarshalOAlertSeverity2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertSeverity)
-	if err != nil {
-		return nil, err
-	}
-	args["severity"] = arg1
+	args["severity"] = arg0
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_alertResolved_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Subscription_validatorUpdates_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalOInt2ᚖint)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "indices", ec.unmarshalOInt2ᚕintᚄ)
 	if err != nil {
 		return nil, err
 	}
-	args["validatorIndex"] = arg0
+	args["indices"] = arg0
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_validatorSnapshotAdded_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Validator_history_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "validatorIndex", ec.unmarshalNInt2int)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "from", ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime)
 	if err != nil {
 		return nil, err
 	}
-	args["validatorIndex"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Validator_alerts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOAlertFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertFilterInput)
+	args["from"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "to", ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime)
 	if err != nil {
 		return nil, err
 	}
-	args["filter"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOAlertSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortInput)
-	if err != nil {
-		return nil, err
-	}
-	args["sort"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "pagination", ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput)
-	if err != nil {
-		return nil, err
-	}
-	args["pagination"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Validator_performanceMetrics_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "epochFrom", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochFrom"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "epochTo", ec.unmarshalOInt2ᚖint)
-	if err != nil {
-		return nil, err
-	}
-	args["epochTo"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Validator_snapshots_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "filter", ec.unmarshalOSnapshotFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotFilterInput)
-	if err != nil {
-		return nil, err
-	}
-	args["filter"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "sort", ec.unmarshalOSnapshotSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortInput)
-	if err != nil {
-		return nil, err
-	}
-	args["sort"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "pagination", ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput)
-	if err != nil {
-		return nil, err
-	}
-	args["pagination"] = arg2
+	args["to"] = arg1
 	return args, nil
 }
 
@@ -2032,35 +1533,6 @@ func (ec *executionContext) fieldContext_Alert_validatorIndex(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Alert_type(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Alert_type,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Alert().Type(ctx, obj)
-		},
-		nil,
-		ec.marshalNAlertType2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Alert_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Alert",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type AlertType does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Alert_severity(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2085,6 +1557,35 @@ func (ec *executionContext) fieldContext_Alert_severity(_ context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type AlertSeverity does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Alert_type(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Alert_type,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Alert().Type(ctx, obj)
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Alert_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Alert",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2119,43 +1620,14 @@ func (ec *executionContext) fieldContext_Alert_message(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Alert_metadata(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
+func (ec *executionContext) _Alert_acknowledged(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Alert_metadata,
+		ec.fieldContext_Alert_acknowledged,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Alert().Metadata(ctx, obj)
-		},
-		nil,
-		ec.marshalOString2ᚖstring,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_Alert_metadata(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Alert",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Alert_resolved(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Alert_resolved,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Alert().Resolved(ctx, obj)
+			return ec.resolvers.Alert().Acknowledged(ctx, obj)
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -2164,7 +1636,7 @@ func (ec *executionContext) _Alert_resolved(ctx context.Context, field graphql.C
 	)
 }
 
-func (ec *executionContext) fieldContext_Alert_resolved(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Alert_acknowledged(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Alert",
 		Field:      field,
@@ -2206,205 +1678,14 @@ func (ec *executionContext) fieldContext_Alert_createdAt(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Alert_resolvedAt(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthPayload_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Alert_resolvedAt,
+		ec.fieldContext_AuthPayload_accessToken,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Alert().ResolvedAt(ctx, obj)
-		},
-		nil,
-		ec.marshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_Alert_resolvedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Alert",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Alert_validator(ctx context.Context, field graphql.CollectedField, obj *models.Alert) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Alert_validator,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Alert().Validator(ctx, obj)
-		},
-		nil,
-		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Alert_validator(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Alert",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
-			case "pubkey":
-				return ec.fieldContext_Validator_pubkey(ctx, field)
-			case "status":
-				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
-			case "activationEpoch":
-				return ec.fieldContext_Validator_activationEpoch(ctx, field)
-			case "exitEpoch":
-				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
-			case "alerts":
-				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AlertConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.AlertConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_AlertConnection_edges,
-		func(ctx context.Context) (any, error) {
-			return obj.Edges, nil
-		},
-		nil,
-		ec.marshalNAlertEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertEdgeᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_AlertConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AlertConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "cursor":
-				return ec.fieldContext_AlertEdge_cursor(ctx, field)
-			case "node":
-				return ec.fieldContext_AlertEdge_node(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type AlertEdge", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AlertConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.AlertConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_AlertConnection_pageInfo,
-		func(ctx context.Context) (any, error) {
-			return obj.PageInfo, nil
-		},
-		nil,
-		ec.marshalNPageInfo2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPageInfo,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_AlertConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AlertConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "hasNextPage":
-				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
-			case "hasPreviousPage":
-				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
-			case "startCursor":
-				return ec.fieldContext_PageInfo_startCursor(ctx, field)
-			case "endCursor":
-				return ec.fieldContext_PageInfo_endCursor(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AlertConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.AlertConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_AlertConnection_totalCount,
-		func(ctx context.Context) (any, error) {
-			return obj.TotalCount, nil
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_AlertConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AlertConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AlertEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.AlertEdge) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_AlertEdge_cursor,
-		func(ctx context.Context) (any, error) {
-			return obj.Cursor, nil
+			return obj.AccessToken, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -2413,9 +1694,9 @@ func (ec *executionContext) _AlertEdge_cursor(ctx context.Context, field graphql
 	)
 }
 
-func (ec *executionContext) fieldContext_AlertEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AuthPayload_accessToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AlertEdge",
+		Object:     "AuthPayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2426,53 +1707,633 @@ func (ec *executionContext) fieldContext_AlertEdge_cursor(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _AlertEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.AlertEdge) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthPayload_refreshToken(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_AlertEdge_node,
+		ec.fieldContext_AuthPayload_refreshToken,
 		func(ctx context.Context) (any, error) {
-			return obj.Node, nil
+			return obj.RefreshToken, nil
 		},
 		nil,
-		ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert,
+		ec.marshalNString2string,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_AlertEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AuthPayload_refreshToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AlertEdge",
+		Object:     "AuthPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuthPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AuthPayload_user,
+		func(ctx context.Context) (any, error) {
+			return obj.User, nil
+		},
+		nil,
+		ec.marshalNUser2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐUser,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AuthPayload_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthPayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Alert_id(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_Alert_validatorIndex(ctx, field)
-			case "type":
-				return ec.fieldContext_Alert_type(ctx, field)
-			case "severity":
-				return ec.fieldContext_Alert_severity(ctx, field)
-			case "message":
-				return ec.fieldContext_Alert_message(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Alert_metadata(ctx, field)
-			case "resolved":
-				return ec.fieldContext_Alert_resolved(ctx, field)
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "roles":
+				return ec.fieldContext_User_roles(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_Alert_createdAt(ctx, field)
-			case "resolvedAt":
-				return ec.fieldContext_Alert_resolvedAt(ctx, field)
-			case "validator":
-				return ec.fieldContext_Alert_validator(ctx, field)
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "lastLogin":
+				return ec.fieldContext_User_lastLogin(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuthPayload_expiresAt(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AuthPayload_expiresAt,
+		func(ctx context.Context) (any, error) {
+			return obj.ExpiresAt, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AuthPayload_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuthPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Balance_current(ctx context.Context, field graphql.CollectedField, obj *model.Balance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Balance_current,
+		func(ctx context.Context) (any, error) {
+			return obj.Current, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Balance_current(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Balance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Balance_effective(ctx context.Context, field graphql.CollectedField, obj *model.Balance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Balance_effective,
+		func(ctx context.Context) (any, error) {
+			return obj.Effective, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Balance_effective(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Balance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Balance_withdrawable(ctx context.Context, field graphql.CollectedField, obj *model.Balance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Balance_withdrawable,
+		func(ctx context.Context) (any, error) {
+			return obj.Withdrawable, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Balance_withdrawable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Balance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_epoch(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_epoch,
+		func(ctx context.Context) (any, error) {
+			return obj.Epoch, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_epoch(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_slot(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_slot,
+		func(ctx context.Context) (any, error) {
+			return obj.Slot, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_slot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_timestamp,
+		func(ctx context.Context) (any, error) {
+			return obj.Timestamp, nil
+		},
+		nil,
+		ec.marshalNTime2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_balance(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_balance,
+		func(ctx context.Context) (any, error) {
+			return obj.Balance, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_balance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_effectiveBalance(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_effectiveBalance,
+		func(ctx context.Context) (any, error) {
+			return obj.EffectiveBalance, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_effectiveBalance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_attestationSuccess(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_attestationSuccess,
+		func(ctx context.Context) (any, error) {
+			return obj.AttestationSuccess, nil
+		},
+		nil,
+		ec.marshalOBoolean2ᚖbool,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_attestationSuccess(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_inclusionDelay(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_inclusionDelay,
+		func(ctx context.Context) (any, error) {
+			return obj.InclusionDelay, nil
+		},
+		nil,
+		ec.marshalOInt2ᚖint,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_inclusionDelay(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_proposalSuccess(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_proposalSuccess,
+		func(ctx context.Context) (any, error) {
+			return obj.ProposalSuccess, nil
+		},
+		nil,
+		ec.marshalOBoolean2ᚖbool,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_proposalSuccess(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_performanceScore(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_performanceScore,
+		func(ctx context.Context) (any, error) {
+			return obj.PerformanceScore, nil
+		},
+		nil,
+		ec.marshalOFloat2ᚖfloat64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_performanceScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HistoricalSnapshot_networkPercentile(ctx context.Context, field graphql.CollectedField, obj *model.HistoricalSnapshot) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HistoricalSnapshot_networkPercentile,
+		func(ctx context.Context) (any, error) {
+			return obj.NetworkPercentile, nil
+		},
+		nil,
+		ec.marshalOFloat2ᚖfloat64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HistoricalSnapshot_networkPercentile(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricalSnapshot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_register,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().Register(ctx, fc.Args["input"].(model.RegisterInput))
+		},
+		nil,
+		ec.marshalNAuthPayload2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAuthPayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "accessToken":
+				return ec.fieldContext_AuthPayload_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_AuthPayload_refreshToken(ctx, field)
+			case "user":
+				return ec.fieldContext_AuthPayload_user(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_AuthPayload_expiresAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuthPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_register_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_login,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().Login(ctx, fc.Args["input"].(model.LoginInput))
+		},
+		nil,
+		ec.marshalNAuthPayload2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAuthPayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "accessToken":
+				return ec.fieldContext_AuthPayload_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_AuthPayload_refreshToken(ctx, field)
+			case "user":
+				return ec.fieldContext_AuthPayload_user(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_AuthPayload_expiresAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuthPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_refreshToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().RefreshToken(ctx, fc.Args["refreshToken"].(string))
+		},
+		nil,
+		ec.marshalNAuthPayload2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAuthPayload,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "accessToken":
+				return ec.fieldContext_AuthPayload_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_AuthPayload_refreshToken(ctx, field)
+			case "user":
+				return ec.fieldContext_AuthPayload_user(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_AuthPayload_expiresAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuthPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_refreshToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -2485,7 +2346,7 @@ func (ec *executionContext) _Mutation_addValidator(ctx context.Context, field gr
 		ec.fieldContext_Mutation_addValidator,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().AddValidator(ctx, fc.Args["pubkey"].(string), fc.Args["validatorIndex"].(int))
+			return ec.resolvers.Mutation().AddValidator(ctx, fc.Args["input"].(model.AddValidatorInput))
 		},
 		nil,
 		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
@@ -2502,34 +2363,34 @@ func (ec *executionContext) fieldContext_Mutation_addValidator(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
+			case "index":
+				return ec.fieldContext_Validator_index(ctx, field)
 			case "pubkey":
 				return ec.fieldContext_Validator_pubkey(ctx, field)
+			case "name":
+				return ec.fieldContext_Validator_name(ctx, field)
 			case "status":
 				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
 			case "activationEpoch":
 				return ec.fieldContext_Validator_activationEpoch(ctx, field)
 			case "exitEpoch":
 				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
+			case "slashed":
+				return ec.fieldContext_Validator_slashed(ctx, field)
+			case "balance":
+				return ec.fieldContext_Validator_balance(ctx, field)
+			case "performance":
+				return ec.fieldContext_Validator_performance(ctx, field)
+			case "rewards":
+				return ec.fieldContext_Validator_rewards(ctx, field)
 			case "alerts":
 				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
+			case "history":
+				return ec.fieldContext_Validator_history(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Validator_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Validator_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
 		},
@@ -2556,7 +2417,7 @@ func (ec *executionContext) _Mutation_removeValidator(ctx context.Context, field
 		ec.fieldContext_Mutation_removeValidator,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().RemoveValidator(ctx, fc.Args["validatorIndex"].(int))
+			return ec.resolvers.Mutation().RemoveValidator(ctx, fc.Args["index"].(int))
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -2589,15 +2450,15 @@ func (ec *executionContext) fieldContext_Mutation_removeValidator(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateValidatorMonitoring(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_updateValidatorName(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Mutation_updateValidatorMonitoring,
+		ec.fieldContext_Mutation_updateValidatorName,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().UpdateValidatorMonitoring(ctx, fc.Args["validatorIndex"].(int), fc.Args["monitored"].(bool))
+			return ec.resolvers.Mutation().UpdateValidatorName(ctx, fc.Args["index"].(int), fc.Args["name"].(string))
 		},
 		nil,
 		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
@@ -2606,7 +2467,7 @@ func (ec *executionContext) _Mutation_updateValidatorMonitoring(ctx context.Cont
 	)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updateValidatorMonitoring(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateValidatorName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2614,34 +2475,34 @@ func (ec *executionContext) fieldContext_Mutation_updateValidatorMonitoring(ctx 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
+			case "index":
+				return ec.fieldContext_Validator_index(ctx, field)
 			case "pubkey":
 				return ec.fieldContext_Validator_pubkey(ctx, field)
+			case "name":
+				return ec.fieldContext_Validator_name(ctx, field)
 			case "status":
 				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
 			case "activationEpoch":
 				return ec.fieldContext_Validator_activationEpoch(ctx, field)
 			case "exitEpoch":
 				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
+			case "slashed":
+				return ec.fieldContext_Validator_slashed(ctx, field)
+			case "balance":
+				return ec.fieldContext_Validator_balance(ctx, field)
+			case "performance":
+				return ec.fieldContext_Validator_performance(ctx, field)
+			case "rewards":
+				return ec.fieldContext_Validator_rewards(ctx, field)
 			case "alerts":
 				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
+			case "history":
+				return ec.fieldContext_Validator_history(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Validator_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Validator_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
 		},
@@ -2653,22 +2514,22 @@ func (ec *executionContext) fieldContext_Mutation_updateValidatorMonitoring(ctx 
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateValidatorMonitoring_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateValidatorName_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_resolveAlert(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_acknowledgeAlert(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Mutation_resolveAlert,
+		ec.fieldContext_Mutation_acknowledgeAlert,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().ResolveAlert(ctx, fc.Args["id"].(string))
+			return ec.resolvers.Mutation().AcknowledgeAlert(ctx, fc.Args["id"].(string))
 		},
 		nil,
 		ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert,
@@ -2677,7 +2538,7 @@ func (ec *executionContext) _Mutation_resolveAlert(ctx context.Context, field gr
 	)
 }
 
-func (ec *executionContext) fieldContext_Mutation_resolveAlert(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_acknowledgeAlert(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2689,22 +2550,16 @@ func (ec *executionContext) fieldContext_Mutation_resolveAlert(ctx context.Conte
 				return ec.fieldContext_Alert_id(ctx, field)
 			case "validatorIndex":
 				return ec.fieldContext_Alert_validatorIndex(ctx, field)
-			case "type":
-				return ec.fieldContext_Alert_type(ctx, field)
 			case "severity":
 				return ec.fieldContext_Alert_severity(ctx, field)
+			case "type":
+				return ec.fieldContext_Alert_type(ctx, field)
 			case "message":
 				return ec.fieldContext_Alert_message(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Alert_metadata(ctx, field)
-			case "resolved":
-				return ec.fieldContext_Alert_resolved(ctx, field)
+			case "acknowledged":
+				return ec.fieldContext_Alert_acknowledged(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Alert_createdAt(ctx, field)
-			case "resolvedAt":
-				return ec.fieldContext_Alert_resolvedAt(ctx, field)
-			case "validator":
-				return ec.fieldContext_Alert_validator(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
 		},
@@ -2716,120 +2571,9 @@ func (ec *executionContext) fieldContext_Mutation_resolveAlert(ctx context.Conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_resolveAlert_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_acknowledgeAlert_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_bulkResolveAlerts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_bulkResolveAlerts,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().BulkResolveAlerts(ctx, fc.Args["filter"].(model.AlertFilterInput))
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_bulkResolveAlerts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_bulkResolveAlerts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_triggerCollection(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_triggerCollection,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().TriggerCollection(ctx, fc.Args["validatorIndex"].(int))
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_triggerCollection(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_triggerCollection_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_triggerBulkCollection(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_triggerBulkCollection,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Mutation().TriggerBulkCollection(ctx)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_triggerBulkCollection(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
 	}
 	return fc, nil
 }
@@ -2892,14 +2636,14 @@ func (ec *executionContext) fieldContext_NetworkStats_currentSlot(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _NetworkStats_totalActiveValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+func (ec *executionContext) _NetworkStats_totalValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_NetworkStats_totalActiveValidators,
+		ec.fieldContext_NetworkStats_totalValidators,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.NetworkStats().TotalActiveValidators(ctx, obj)
+			return obj.TotalValidators, nil
 		},
 		nil,
 		ec.marshalNInt2int,
@@ -2908,12 +2652,12 @@ func (ec *executionContext) _NetworkStats_totalActiveValidators(ctx context.Cont
 	)
 }
 
-func (ec *executionContext) fieldContext_NetworkStats_totalActiveValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NetworkStats_totalValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NetworkStats",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -2921,14 +2665,130 @@ func (ec *executionContext) fieldContext_NetworkStats_totalActiveValidators(_ co
 	return fc, nil
 }
 
-func (ec *executionContext) _NetworkStats_totalStake(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+func (ec *executionContext) _NetworkStats_activeValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_NetworkStats_totalStake,
+		ec.fieldContext_NetworkStats_activeValidators,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.NetworkStats().TotalStake(ctx, obj)
+			return obj.ActiveValidators, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_NetworkStats_activeValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NetworkStats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NetworkStats_pendingValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_NetworkStats_pendingValidators,
+		func(ctx context.Context) (any, error) {
+			return obj.PendingValidators, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_NetworkStats_pendingValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NetworkStats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NetworkStats_exitingValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_NetworkStats_exitingValidators,
+		func(ctx context.Context) (any, error) {
+			return obj.ExitingValidators, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_NetworkStats_exitingValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NetworkStats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NetworkStats_slashedValidators(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_NetworkStats_slashedValidators,
+		func(ctx context.Context) (any, error) {
+			return obj.SlashedValidators, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_NetworkStats_slashedValidators(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NetworkStats",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NetworkStats_averageBalance(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_NetworkStats_averageBalance,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.NetworkStats().AverageBalance(ctx, obj)
 		},
 		nil,
 		ec.marshalNBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
@@ -2937,7 +2797,7 @@ func (ec *executionContext) _NetworkStats_totalStake(ctx context.Context, field 
 	)
 }
 
-func (ec *executionContext) fieldContext_NetworkStats_totalStake(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NetworkStats_averageBalance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NetworkStats",
 		Field:      field,
@@ -2950,30 +2810,30 @@ func (ec *executionContext) fieldContext_NetworkStats_totalStake(_ context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _NetworkStats_avgAttestationEffectiveness(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+func (ec *executionContext) _NetworkStats_totalStaked(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_NetworkStats_avgAttestationEffectiveness,
+		ec.fieldContext_NetworkStats_totalStaked,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.NetworkStats().AvgAttestationEffectiveness(ctx, obj)
+			return ec.resolvers.NetworkStats().TotalStaked(ctx, obj)
 		},
 		nil,
-		ec.marshalNFloat2float64,
+		ec.marshalNBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_NetworkStats_avgAttestationEffectiveness(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NetworkStats_totalStaked(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NetworkStats",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type BigInt does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3008,14 +2868,14 @@ func (ec *executionContext) fieldContext_NetworkStats_participationRate(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _NetworkStats_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
+func (ec *executionContext) _NetworkStats_timestamp(ctx context.Context, field graphql.CollectedField, obj *types.NetworkStats) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_NetworkStats_lastUpdated,
+		ec.fieldContext_NetworkStats_timestamp,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.NetworkStats().LastUpdated(ctx, obj)
+			return ec.resolvers.NetworkStats().Timestamp(ctx, obj)
 		},
 		nil,
 		ec.marshalNTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
@@ -3024,7 +2884,7 @@ func (ec *executionContext) _NetworkStats_lastUpdated(ctx context.Context, field
 	)
 }
 
-func (ec *executionContext) fieldContext_NetworkStats_lastUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NetworkStats_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NetworkStats",
 		Field:      field,
@@ -3037,391 +2897,14 @@ func (ec *executionContext) fieldContext_NetworkStats_lastUpdated(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Performance_uptimePercentage(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_PageInfo_hasNextPage,
+		ec.fieldContext_Performance_uptimePercentage,
 		func(ctx context.Context) (any, error) {
-			return obj.HasNextPage, nil
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PageInfo_hasNextPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PageInfo_hasPreviousPage(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PageInfo_hasPreviousPage,
-		func(ctx context.Context) (any, error) {
-			return obj.HasPreviousPage, nil
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PageInfo_hasPreviousPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PageInfo_startCursor,
-		func(ctx context.Context) (any, error) {
-			return obj.StartCursor, nil
-		},
-		nil,
-		ec.marshalOString2ᚖstring,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_PageInfo_startCursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PageInfo_endCursor,
-		func(ctx context.Context) (any, error) {
-			return obj.EndCursor, nil
-		},
-		nil,
-		ec.marshalOString2ᚖstring,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_PageInfo_endCursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PageInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_validatorIndex(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_validatorIndex,
-		func(ctx context.Context) (any, error) {
-			return obj.ValidatorIndex, nil
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_validatorIndex(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_epoch(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_epoch,
-		func(ctx context.Context) (any, error) {
-			return obj.Epoch, nil
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_epoch(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_attestationsCount(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_attestationsCount,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().AttestationsCount(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_attestationsCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_correctHeadVotes(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_correctHeadVotes,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().CorrectHeadVotes(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_correctHeadVotes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_correctSourceVotes(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_correctSourceVotes,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().CorrectSourceVotes(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_correctSourceVotes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_correctTargetVotes(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_correctTargetVotes,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().CorrectTargetVotes(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_correctTargetVotes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_totalInclusionDelay(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_totalInclusionDelay,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().TotalInclusionDelay(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_totalInclusionDelay(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_proposalCount(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_proposalCount,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().ProposalCount(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_proposalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_syncCommitteeCount(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_syncCommitteeCount,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().SyncCommitteeCount(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_PerformanceMetrics_syncCommitteeCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformanceMetrics_effectivenessScore(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_PerformanceMetrics_effectivenessScore,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().EffectivenessScore(ctx, obj)
+			return obj.UptimePercentage, nil
 		},
 		nil,
 		ec.marshalNFloat2float64,
@@ -3430,12 +2913,12 @@ func (ec *executionContext) _PerformanceMetrics_effectivenessScore(ctx context.C
 	)
 }
 
-func (ec *executionContext) fieldContext_PerformanceMetrics_effectivenessScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Performance_uptimePercentage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
+		Object:     "Performance",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
 		},
@@ -3443,30 +2926,291 @@ func (ec *executionContext) fieldContext_PerformanceMetrics_effectivenessScore(_
 	return fc, nil
 }
 
-func (ec *executionContext) _PerformanceMetrics_calculatedAt(ctx context.Context, field graphql.CollectedField, obj *types.PerformanceMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _Performance_consecutiveMisses(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_PerformanceMetrics_calculatedAt,
+		ec.fieldContext_Performance_consecutiveMisses,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.PerformanceMetrics().CalculatedAt(ctx, obj)
+			return obj.ConsecutiveMisses, nil
 		},
 		nil,
-		ec.marshalNTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
+		ec.marshalNInt2int,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_PerformanceMetrics_calculatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Performance_consecutiveMisses(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "PerformanceMetrics",
+		Object:     "Performance",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_totalMissed(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_totalMissed,
+		func(ctx context.Context) (any, error) {
+			return obj.TotalMissed, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_totalMissed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_attestationScore(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_attestationScore,
+		func(ctx context.Context) (any, error) {
+			return obj.AttestationScore, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_attestationScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_proposalSuccess(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_proposalSuccess,
+		func(ctx context.Context) (any, error) {
+			return obj.ProposalSuccess, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_proposalSuccess(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_proposalMissed(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_proposalMissed,
+		func(ctx context.Context) (any, error) {
+			return obj.ProposalMissed, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_proposalMissed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_effectiveness(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_effectiveness,
+		func(ctx context.Context) (any, error) {
+			return obj.Effectiveness, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_effectiveness(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_networkAverage(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_networkAverage,
+		func(ctx context.Context) (any, error) {
+			return obj.NetworkAverage, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_networkAverage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_networkPercentile(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_networkPercentile,
+		func(ctx context.Context) (any, error) {
+			return obj.NetworkPercentile, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_networkPercentile(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_slashingRisk(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_slashingRisk,
+		func(ctx context.Context) (any, error) {
+			return obj.SlashingRisk, nil
+		},
+		nil,
+		ec.marshalNRiskLevel2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐRiskLevel,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_slashingRisk(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RiskLevel does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performance_inactivityScore(ctx context.Context, field graphql.CollectedField, obj *model.Performance) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Performance_inactivityScore,
+		func(ctx context.Context) (any, error) {
+			return obj.InactivityScore, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Performance_inactivityScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3480,7 +3224,7 @@ func (ec *executionContext) _Query_validator(ctx context.Context, field graphql.
 		ec.fieldContext_Query_validator,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Validator(ctx, fc.Args["index"].(int))
+			return ec.resolvers.Query().Validator(ctx, fc.Args["index"].(*int), fc.Args["pubkey"].(*string))
 		},
 		nil,
 		ec.marshalOValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
@@ -3497,34 +3241,34 @@ func (ec *executionContext) fieldContext_Query_validator(ctx context.Context, fi
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
+			case "index":
+				return ec.fieldContext_Validator_index(ctx, field)
 			case "pubkey":
 				return ec.fieldContext_Validator_pubkey(ctx, field)
+			case "name":
+				return ec.fieldContext_Validator_name(ctx, field)
 			case "status":
 				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
 			case "activationEpoch":
 				return ec.fieldContext_Validator_activationEpoch(ctx, field)
 			case "exitEpoch":
 				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
+			case "slashed":
+				return ec.fieldContext_Validator_slashed(ctx, field)
+			case "balance":
+				return ec.fieldContext_Validator_balance(ctx, field)
+			case "performance":
+				return ec.fieldContext_Validator_performance(ctx, field)
+			case "rewards":
+				return ec.fieldContext_Validator_rewards(ctx, field)
 			case "alerts":
 				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
+			case "history":
+				return ec.fieldContext_Validator_history(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Validator_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Validator_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
 		},
@@ -3543,77 +3287,6 @@ func (ec *executionContext) fieldContext_Query_validator(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_validatorByPubkey(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_validatorByPubkey,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().ValidatorByPubkey(ctx, fc.Args["pubkey"].(string))
-		},
-		nil,
-		ec.marshalOValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_validatorByPubkey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
-			case "pubkey":
-				return ec.fieldContext_Validator_pubkey(ctx, field)
-			case "status":
-				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
-			case "activationEpoch":
-				return ec.fieldContext_Validator_activationEpoch(ctx, field)
-			case "exitEpoch":
-				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
-			case "alerts":
-				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_validatorByPubkey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_validators(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3622,10 +3295,10 @@ func (ec *executionContext) _Query_validators(ctx context.Context, field graphql
 		ec.fieldContext_Query_validators,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Validators(ctx, fc.Args["filter"].(*model.ValidatorFilterInput), fc.Args["sort"].(*model.ValidatorSortInput), fc.Args["pagination"].(*model.PaginationInput))
+			return ec.resolvers.Query().Validators(ctx, fc.Args["filter"].(*models.ValidatorFilter))
 		},
 		nil,
-		ec.marshalNValidatorConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorConnection,
+		ec.marshalNValidator2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorᚄ,
 		true,
 		true,
 	)
@@ -3639,14 +3312,36 @@ func (ec *executionContext) fieldContext_Query_validators(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "edges":
-				return ec.fieldContext_ValidatorConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_ValidatorConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_ValidatorConnection_totalCount(ctx, field)
+			case "index":
+				return ec.fieldContext_Validator_index(ctx, field)
+			case "pubkey":
+				return ec.fieldContext_Validator_pubkey(ctx, field)
+			case "name":
+				return ec.fieldContext_Validator_name(ctx, field)
+			case "status":
+				return ec.fieldContext_Validator_status(ctx, field)
+			case "activationEpoch":
+				return ec.fieldContext_Validator_activationEpoch(ctx, field)
+			case "exitEpoch":
+				return ec.fieldContext_Validator_exitEpoch(ctx, field)
+			case "slashed":
+				return ec.fieldContext_Validator_slashed(ctx, field)
+			case "balance":
+				return ec.fieldContext_Validator_balance(ctx, field)
+			case "performance":
+				return ec.fieldContext_Validator_performance(ctx, field)
+			case "rewards":
+				return ec.fieldContext_Validator_rewards(ctx, field)
+			case "alerts":
+				return ec.fieldContext_Validator_alerts(ctx, field)
+			case "history":
+				return ec.fieldContext_Validator_history(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Validator_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Validator_updatedAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorConnection", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
 		},
 	}
 	defer func() {
@@ -3663,24 +3358,23 @@ func (ec *executionContext) fieldContext_Query_validators(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_snapshot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_network(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Query_snapshot,
+		ec.fieldContext_Query_network,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Snapshot(ctx, fc.Args["validatorIndex"].(int), fc.Args["time"].(types.Time))
+			return ec.resolvers.Query().Network(ctx)
 		},
 		nil,
-		ec.marshalOValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot,
+		ec.marshalNNetworkStats2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐNetworkStats,
 		true,
-		false,
+		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_snapshot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_network(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3688,70 +3382,53 @@ func (ec *executionContext) fieldContext_Query_snapshot(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "time":
-				return ec.fieldContext_ValidatorSnapshot_time(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_ValidatorSnapshot_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_ValidatorSnapshot_epoch(ctx, field)
-			case "slot":
-				return ec.fieldContext_ValidatorSnapshot_slot(ctx, field)
-			case "balance":
-				return ec.fieldContext_ValidatorSnapshot_balance(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_ValidatorSnapshot_effectiveBalance(ctx, field)
-			case "isOnline":
-				return ec.fieldContext_ValidatorSnapshot_isOnline(ctx, field)
-			case "proposed":
-				return ec.fieldContext_ValidatorSnapshot_proposed(ctx, field)
-			case "attestationHeadVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationHeadVote(ctx, field)
-			case "attestationSourceVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationSourceVote(ctx, field)
-			case "attestationTargetVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationTargetVote(ctx, field)
-			case "attestationInclusionDelay":
-				return ec.fieldContext_ValidatorSnapshot_attestationInclusionDelay(ctx, field)
-			case "attestationEffectiveness":
-				return ec.fieldContext_ValidatorSnapshot_attestationEffectiveness(ctx, field)
-			case "validator":
-				return ec.fieldContext_ValidatorSnapshot_validator(ctx, field)
+			case "currentEpoch":
+				return ec.fieldContext_NetworkStats_currentEpoch(ctx, field)
+			case "currentSlot":
+				return ec.fieldContext_NetworkStats_currentSlot(ctx, field)
+			case "totalValidators":
+				return ec.fieldContext_NetworkStats_totalValidators(ctx, field)
+			case "activeValidators":
+				return ec.fieldContext_NetworkStats_activeValidators(ctx, field)
+			case "pendingValidators":
+				return ec.fieldContext_NetworkStats_pendingValidators(ctx, field)
+			case "exitingValidators":
+				return ec.fieldContext_NetworkStats_exitingValidators(ctx, field)
+			case "slashedValidators":
+				return ec.fieldContext_NetworkStats_slashedValidators(ctx, field)
+			case "averageBalance":
+				return ec.fieldContext_NetworkStats_averageBalance(ctx, field)
+			case "totalStaked":
+				return ec.fieldContext_NetworkStats_totalStaked(ctx, field)
+			case "participationRate":
+				return ec.fieldContext_NetworkStats_participationRate(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_NetworkStats_timestamp(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorSnapshot", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type NetworkStats", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_snapshot_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_snapshots(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_alerts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Query_snapshots,
+		ec.fieldContext_Query_alerts,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Snapshots(ctx, fc.Args["filter"].(*model.SnapshotFilterInput), fc.Args["sort"].(*model.SnapshotSortInput), fc.Args["pagination"].(*model.PaginationInput))
+			return ec.resolvers.Query().Alerts(ctx, fc.Args["filter"].(*models.AlertFilter))
 		},
 		nil,
-		ec.marshalNSnapshotConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotConnection,
+		ec.marshalNAlert2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlertᚄ,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_snapshots(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_alerts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3759,14 +3436,22 @@ func (ec *executionContext) fieldContext_Query_snapshots(ctx context.Context, fi
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "edges":
-				return ec.fieldContext_SnapshotConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_SnapshotConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_SnapshotConnection_totalCount(ctx, field)
+			case "id":
+				return ec.fieldContext_Alert_id(ctx, field)
+			case "validatorIndex":
+				return ec.fieldContext_Alert_validatorIndex(ctx, field)
+			case "severity":
+				return ec.fieldContext_Alert_severity(ctx, field)
+			case "type":
+				return ec.fieldContext_Alert_type(ctx, field)
+			case "message":
+				return ec.fieldContext_Alert_message(ctx, field)
+			case "acknowledged":
+				return ec.fieldContext_Alert_acknowledged(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Alert_createdAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SnapshotConnection", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
 		},
 	}
 	defer func() {
@@ -3776,7 +3461,7 @@ func (ec *executionContext) fieldContext_Query_snapshots(ctx context.Context, fi
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_snapshots_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_alerts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3812,22 +3497,16 @@ func (ec *executionContext) fieldContext_Query_alert(ctx context.Context, field 
 				return ec.fieldContext_Alert_id(ctx, field)
 			case "validatorIndex":
 				return ec.fieldContext_Alert_validatorIndex(ctx, field)
-			case "type":
-				return ec.fieldContext_Alert_type(ctx, field)
 			case "severity":
 				return ec.fieldContext_Alert_severity(ctx, field)
+			case "type":
+				return ec.fieldContext_Alert_type(ctx, field)
 			case "message":
 				return ec.fieldContext_Alert_message(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Alert_metadata(ctx, field)
-			case "resolved":
-				return ec.fieldContext_Alert_resolved(ctx, field)
+			case "acknowledged":
+				return ec.fieldContext_Alert_acknowledged(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Alert_createdAt(ctx, field)
-			case "resolvedAt":
-				return ec.fieldContext_Alert_resolvedAt(ctx, field)
-			case "validator":
-				return ec.fieldContext_Alert_validator(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
 		},
@@ -3846,118 +3525,52 @@ func (ec *executionContext) fieldContext_Query_alert(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_alerts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_health(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Query_alerts,
+		ec.fieldContext_Query_health,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Alerts(ctx, fc.Args["filter"].(*model.AlertFilterInput), fc.Args["sort"].(*model.AlertSortInput), fc.Args["pagination"].(*model.PaginationInput))
+			return ec.resolvers.Query().Health(ctx)
 		},
 		nil,
-		ec.marshalNAlertConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertConnection,
+		ec.marshalNString2string,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_alerts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_health(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_AlertConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_AlertConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_AlertConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type AlertConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_alerts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_networkStats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_networkStats,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Query().NetworkStats(ctx)
-		},
-		nil,
-		ec.marshalNNetworkStats2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐNetworkStats,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_networkStats(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "currentEpoch":
-				return ec.fieldContext_NetworkStats_currentEpoch(ctx, field)
-			case "currentSlot":
-				return ec.fieldContext_NetworkStats_currentSlot(ctx, field)
-			case "totalActiveValidators":
-				return ec.fieldContext_NetworkStats_totalActiveValidators(ctx, field)
-			case "totalStake":
-				return ec.fieldContext_NetworkStats_totalStake(ctx, field)
-			case "avgAttestationEffectiveness":
-				return ec.fieldContext_NetworkStats_avgAttestationEffectiveness(ctx, field)
-			case "participationRate":
-				return ec.fieldContext_NetworkStats_participationRate(ctx, field)
-			case "lastUpdated":
-				return ec.fieldContext_NetworkStats_lastUpdated(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type NetworkStats", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_validatorPerformance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Query_validatorPerformance,
+		ec.fieldContext_Query_me,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().ValidatorPerformance(ctx, fc.Args["validatorIndex"].(int), fc.Args["epochFrom"].(*int), fc.Args["epochTo"].(*int))
+			return ec.resolvers.Query().Me(ctx)
 		},
 		nil,
-		ec.marshalNPerformanceMetrics2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetricsᚄ,
+		ec.marshalNUser2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐUser,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_validatorPerformance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3965,107 +3578,21 @@ func (ec *executionContext) fieldContext_Query_validatorPerformance(ctx context.
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_PerformanceMetrics_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_PerformanceMetrics_epoch(ctx, field)
-			case "attestationsCount":
-				return ec.fieldContext_PerformanceMetrics_attestationsCount(ctx, field)
-			case "correctHeadVotes":
-				return ec.fieldContext_PerformanceMetrics_correctHeadVotes(ctx, field)
-			case "correctSourceVotes":
-				return ec.fieldContext_PerformanceMetrics_correctSourceVotes(ctx, field)
-			case "correctTargetVotes":
-				return ec.fieldContext_PerformanceMetrics_correctTargetVotes(ctx, field)
-			case "totalInclusionDelay":
-				return ec.fieldContext_PerformanceMetrics_totalInclusionDelay(ctx, field)
-			case "proposalCount":
-				return ec.fieldContext_PerformanceMetrics_proposalCount(ctx, field)
-			case "syncCommitteeCount":
-				return ec.fieldContext_PerformanceMetrics_syncCommitteeCount(ctx, field)
-			case "effectivenessScore":
-				return ec.fieldContext_PerformanceMetrics_effectivenessScore(ctx, field)
-			case "calculatedAt":
-				return ec.fieldContext_PerformanceMetrics_calculatedAt(ctx, field)
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "roles":
+				return ec.fieldContext_User_roles(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "lastLogin":
+				return ec.fieldContext_User_lastLogin(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type PerformanceMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_validatorPerformance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_aggregatePerformance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_aggregatePerformance,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().AggregatePerformance(ctx, fc.Args["validatorIndices"].([]int), fc.Args["epochFrom"].(*int), fc.Args["epochTo"].(*int))
-		},
-		nil,
-		ec.marshalOPerformanceMetrics2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetrics,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_aggregatePerformance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_PerformanceMetrics_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_PerformanceMetrics_epoch(ctx, field)
-			case "attestationsCount":
-				return ec.fieldContext_PerformanceMetrics_attestationsCount(ctx, field)
-			case "correctHeadVotes":
-				return ec.fieldContext_PerformanceMetrics_correctHeadVotes(ctx, field)
-			case "correctSourceVotes":
-				return ec.fieldContext_PerformanceMetrics_correctSourceVotes(ctx, field)
-			case "correctTargetVotes":
-				return ec.fieldContext_PerformanceMetrics_correctTargetVotes(ctx, field)
-			case "totalInclusionDelay":
-				return ec.fieldContext_PerformanceMetrics_totalInclusionDelay(ctx, field)
-			case "proposalCount":
-				return ec.fieldContext_PerformanceMetrics_proposalCount(ctx, field)
-			case "syncCommitteeCount":
-				return ec.fieldContext_PerformanceMetrics_syncCommitteeCount(ctx, field)
-			case "effectivenessScore":
-				return ec.fieldContext_PerformanceMetrics_effectivenessScore(ctx, field)
-			case "calculatedAt":
-				return ec.fieldContext_PerformanceMetrics_calculatedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type PerformanceMetrics", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_aggregatePerformance_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -4178,117 +3705,258 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _SnapshotConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.SnapshotConnection) (ret graphql.Marshaler) {
+func (ec *executionContext) _Rewards_expected(ctx context.Context, field graphql.CollectedField, obj *model.Rewards) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SnapshotConnection_edges,
+		ec.fieldContext_Rewards_expected,
 		func(ctx context.Context) (any, error) {
-			return obj.Edges, nil
+			return obj.Expected, nil
 		},
 		nil,
-		ec.marshalNSnapshotEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotEdgeᚄ,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_SnapshotConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Rewards_expected(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SnapshotConnection",
+		Object:     "Rewards",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Rewards_actual(ctx context.Context, field graphql.CollectedField, obj *model.Rewards) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Rewards_actual,
+		func(ctx context.Context) (any, error) {
+			return obj.Actual, nil
+		},
+		nil,
+		ec.marshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Rewards_actual(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Rewards",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type BigInt does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Rewards_effectiveness(ctx context.Context, field graphql.CollectedField, obj *model.Rewards) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Rewards_effectiveness,
+		func(ctx context.Context) (any, error) {
+			return obj.Effectiveness, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Rewards_effectiveness(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Rewards",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_validatorUpdates(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	return graphql.ResolveFieldStream(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Subscription_validatorUpdates,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Subscription().ValidatorUpdates(ctx, fc.Args["indices"].([]int))
+		},
+		nil,
+		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Subscription_validatorUpdates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "cursor":
-				return ec.fieldContext_SnapshotEdge_cursor(ctx, field)
-			case "node":
-				return ec.fieldContext_SnapshotEdge_node(ctx, field)
+			case "index":
+				return ec.fieldContext_Validator_index(ctx, field)
+			case "pubkey":
+				return ec.fieldContext_Validator_pubkey(ctx, field)
+			case "name":
+				return ec.fieldContext_Validator_name(ctx, field)
+			case "status":
+				return ec.fieldContext_Validator_status(ctx, field)
+			case "activationEpoch":
+				return ec.fieldContext_Validator_activationEpoch(ctx, field)
+			case "exitEpoch":
+				return ec.fieldContext_Validator_exitEpoch(ctx, field)
+			case "slashed":
+				return ec.fieldContext_Validator_slashed(ctx, field)
+			case "balance":
+				return ec.fieldContext_Validator_balance(ctx, field)
+			case "performance":
+				return ec.fieldContext_Validator_performance(ctx, field)
+			case "rewards":
+				return ec.fieldContext_Validator_rewards(ctx, field)
+			case "alerts":
+				return ec.fieldContext_Validator_alerts(ctx, field)
+			case "history":
+				return ec.fieldContext_Validator_history(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Validator_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Validator_updatedAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SnapshotEdge", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_validatorUpdates_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SnapshotConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.SnapshotConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
+func (ec *executionContext) _Subscription_newAlerts(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	return graphql.ResolveFieldStream(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SnapshotConnection_pageInfo,
+		ec.fieldContext_Subscription_newAlerts,
 		func(ctx context.Context) (any, error) {
-			return obj.PageInfo, nil
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Subscription().NewAlerts(ctx, fc.Args["severity"].(*types.AlertSeverity))
 		},
 		nil,
-		ec.marshalNPageInfo2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPageInfo,
+		ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_SnapshotConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Subscription_newAlerts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SnapshotConnection",
+		Object:     "Subscription",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "hasNextPage":
-				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
-			case "hasPreviousPage":
-				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
-			case "startCursor":
-				return ec.fieldContext_PageInfo_startCursor(ctx, field)
-			case "endCursor":
-				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			case "id":
+				return ec.fieldContext_Alert_id(ctx, field)
+			case "validatorIndex":
+				return ec.fieldContext_Alert_validatorIndex(ctx, field)
+			case "severity":
+				return ec.fieldContext_Alert_severity(ctx, field)
+			case "type":
+				return ec.fieldContext_Alert_type(ctx, field)
+			case "message":
+				return ec.fieldContext_Alert_message(ctx, field)
+			case "acknowledged":
+				return ec.fieldContext_Alert_acknowledged(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Alert_createdAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_newAlerts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SnapshotConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.SnapshotConnection) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SnapshotConnection_totalCount,
+		ec.fieldContext_User_id,
 		func(ctx context.Context) (any, error) {
-			return obj.TotalCount, nil
+			return obj.ID, nil
 		},
 		nil,
-		ec.marshalNInt2int,
+		ec.marshalNID2string,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_SnapshotConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SnapshotConnection",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SnapshotEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.SnapshotEdge) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SnapshotEdge_cursor,
+		ec.fieldContext_User_username,
 		func(ctx context.Context) (any, error) {
-			return obj.Cursor, nil
+			return obj.Username, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -4297,9 +3965,9 @@ func (ec *executionContext) _SnapshotEdge_cursor(ctx context.Context, field grap
 	)
 }
 
-func (ec *executionContext) fieldContext_SnapshotEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_username(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SnapshotEdge",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4310,329 +3978,144 @@ func (ec *executionContext) fieldContext_SnapshotEdge_cursor(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _SnapshotEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.SnapshotEdge) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_SnapshotEdge_node,
+		ec.fieldContext_User_email,
 		func(ctx context.Context) (any, error) {
-			return obj.Node, nil
+			return obj.Email, nil
 		},
 		nil,
-		ec.marshalNValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot,
+		ec.marshalNString2string,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_SnapshotEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SnapshotEdge",
+		Object:     "User",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "time":
-				return ec.fieldContext_ValidatorSnapshot_time(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_ValidatorSnapshot_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_ValidatorSnapshot_epoch(ctx, field)
-			case "slot":
-				return ec.fieldContext_ValidatorSnapshot_slot(ctx, field)
-			case "balance":
-				return ec.fieldContext_ValidatorSnapshot_balance(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_ValidatorSnapshot_effectiveBalance(ctx, field)
-			case "isOnline":
-				return ec.fieldContext_ValidatorSnapshot_isOnline(ctx, field)
-			case "proposed":
-				return ec.fieldContext_ValidatorSnapshot_proposed(ctx, field)
-			case "attestationHeadVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationHeadVote(ctx, field)
-			case "attestationSourceVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationSourceVote(ctx, field)
-			case "attestationTargetVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationTargetVote(ctx, field)
-			case "attestationInclusionDelay":
-				return ec.fieldContext_ValidatorSnapshot_attestationInclusionDelay(ctx, field)
-			case "attestationEffectiveness":
-				return ec.fieldContext_ValidatorSnapshot_attestationEffectiveness(ctx, field)
-			case "validator":
-				return ec.fieldContext_ValidatorSnapshot_validator(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorSnapshot", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Subscription_validatorSnapshotAdded(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	return graphql.ResolveFieldStream(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Subscription_validatorSnapshotAdded,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Subscription().ValidatorSnapshotAdded(ctx, fc.Args["validatorIndex"].(int))
-		},
-		nil,
-		ec.marshalNValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Subscription_validatorSnapshotAdded(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "time":
-				return ec.fieldContext_ValidatorSnapshot_time(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_ValidatorSnapshot_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_ValidatorSnapshot_epoch(ctx, field)
-			case "slot":
-				return ec.fieldContext_ValidatorSnapshot_slot(ctx, field)
-			case "balance":
-				return ec.fieldContext_ValidatorSnapshot_balance(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_ValidatorSnapshot_effectiveBalance(ctx, field)
-			case "isOnline":
-				return ec.fieldContext_ValidatorSnapshot_isOnline(ctx, field)
-			case "proposed":
-				return ec.fieldContext_ValidatorSnapshot_proposed(ctx, field)
-			case "attestationHeadVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationHeadVote(ctx, field)
-			case "attestationSourceVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationSourceVote(ctx, field)
-			case "attestationTargetVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationTargetVote(ctx, field)
-			case "attestationInclusionDelay":
-				return ec.fieldContext_ValidatorSnapshot_attestationInclusionDelay(ctx, field)
-			case "attestationEffectiveness":
-				return ec.fieldContext_ValidatorSnapshot_attestationEffectiveness(ctx, field)
-			case "validator":
-				return ec.fieldContext_ValidatorSnapshot_validator(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorSnapshot", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_validatorSnapshotAdded_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_alertCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	return graphql.ResolveFieldStream(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Subscription_alertCreated,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Subscription().AlertCreated(ctx, fc.Args["validatorIndex"].(*int), fc.Args["severity"].(*types.AlertSeverity))
-		},
-		nil,
-		ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Subscription_alertCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Alert_id(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_Alert_validatorIndex(ctx, field)
-			case "type":
-				return ec.fieldContext_Alert_type(ctx, field)
-			case "severity":
-				return ec.fieldContext_Alert_severity(ctx, field)
-			case "message":
-				return ec.fieldContext_Alert_message(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Alert_metadata(ctx, field)
-			case "resolved":
-				return ec.fieldContext_Alert_resolved(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Alert_createdAt(ctx, field)
-			case "resolvedAt":
-				return ec.fieldContext_Alert_resolvedAt(ctx, field)
-			case "validator":
-				return ec.fieldContext_Alert_validator(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_alertCreated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_alertResolved(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	return graphql.ResolveFieldStream(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Subscription_alertResolved,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Subscription().AlertResolved(ctx, fc.Args["validatorIndex"].(*int))
-		},
-		nil,
-		ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Subscription_alertResolved(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Alert_id(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_Alert_validatorIndex(ctx, field)
-			case "type":
-				return ec.fieldContext_Alert_type(ctx, field)
-			case "severity":
-				return ec.fieldContext_Alert_severity(ctx, field)
-			case "message":
-				return ec.fieldContext_Alert_message(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Alert_metadata(ctx, field)
-			case "resolved":
-				return ec.fieldContext_Alert_resolved(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Alert_createdAt(ctx, field)
-			case "resolvedAt":
-				return ec.fieldContext_Alert_resolvedAt(ctx, field)
-			case "validator":
-				return ec.fieldContext_Alert_validator(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Subscription_alertResolved_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Subscription_networkStatsUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
-	return graphql.ResolveFieldStream(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Subscription_networkStatsUpdated,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Subscription().NetworkStatsUpdated(ctx)
-		},
-		nil,
-		ec.marshalNNetworkStats2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐNetworkStats,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Subscription_networkStatsUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Subscription",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "currentEpoch":
-				return ec.fieldContext_NetworkStats_currentEpoch(ctx, field)
-			case "currentSlot":
-				return ec.fieldContext_NetworkStats_currentSlot(ctx, field)
-			case "totalActiveValidators":
-				return ec.fieldContext_NetworkStats_totalActiveValidators(ctx, field)
-			case "totalStake":
-				return ec.fieldContext_NetworkStats_totalStake(ctx, field)
-			case "avgAttestationEffectiveness":
-				return ec.fieldContext_NetworkStats_avgAttestationEffectiveness(ctx, field)
-			case "participationRate":
-				return ec.fieldContext_NetworkStats_participationRate(ctx, field)
-			case "lastUpdated":
-				return ec.fieldContext_NetworkStats_lastUpdated(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type NetworkStats", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Validator_validatorIndex(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_roles(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Validator_validatorIndex,
+		ec.fieldContext_User_roles,
 		func(ctx context.Context) (any, error) {
-			return obj.ValidatorIndex, nil
+			return obj.Roles, nil
 		},
 		nil,
-		ec.marshalNInt2int64,
+		ec.marshalNString2ᚕstringᚄ,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_validatorIndex(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_roles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_User_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_User_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_lastLogin(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_User_lastLogin,
+		func(ctx context.Context) (any, error) {
+			return obj.LastLogin, nil
+		},
+		nil,
+		ec.marshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_User_lastLogin(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Validator_index(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Validator_index,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Validator().Index(ctx, obj)
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Validator_index(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -4657,6 +4140,35 @@ func (ec *executionContext) _Validator_pubkey(ctx context.Context, field graphql
 }
 
 func (ec *executionContext) fieldContext_Validator_pubkey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Validator",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Validator_name(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Validator_name,
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_Validator_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -4698,93 +4210,6 @@ func (ec *executionContext) fieldContext_Validator_status(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Validator_withdrawalCredentials(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Validator_withdrawalCredentials,
-		func(ctx context.Context) (any, error) {
-			return obj.WithdrawalCredentials, nil
-		},
-		nil,
-		ec.marshalNString2ᚖstring,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Validator_withdrawalCredentials(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Validator",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Validator_effectiveBalance(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Validator_effectiveBalance,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Validator().EffectiveBalance(ctx, obj)
-		},
-		nil,
-		ec.marshalNBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Validator_effectiveBalance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Validator",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type BigInt does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Validator_activationEligibilityEpoch(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Validator_activationEligibilityEpoch,
-		func(ctx context.Context) (any, error) {
-			return obj.ActivationEligibilityEpoch, nil
-		},
-		nil,
-		ec.marshalNInt2ᚖint64,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Validator_activationEligibilityEpoch(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Validator",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Validator_activationEpoch(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4795,9 +4220,9 @@ func (ec *executionContext) _Validator_activationEpoch(ctx context.Context, fiel
 			return obj.ActivationEpoch, nil
 		},
 		nil,
-		ec.marshalNInt2ᚖint64,
+		ec.marshalOInt2ᚖint64,
 		true,
-		true,
+		false,
 	)
 }
 
@@ -4843,43 +4268,14 @@ func (ec *executionContext) fieldContext_Validator_exitEpoch(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Validator_withdrawableEpoch(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_slashed(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Validator_withdrawableEpoch,
+		ec.fieldContext_Validator_slashed,
 		func(ctx context.Context) (any, error) {
-			return obj.WithdrawableEpoch, nil
-		},
-		nil,
-		ec.marshalOInt2ᚖint64,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_Validator_withdrawableEpoch(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Validator",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Validator_monitored(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Validator_monitored,
-		func(ctx context.Context) (any, error) {
-			return obj.Monitored, nil
+			return obj.Slashed, nil
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -4888,7 +4284,7 @@ func (ec *executionContext) _Validator_monitored(ctx context.Context, field grap
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_monitored(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_slashed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -4901,23 +4297,23 @@ func (ec *executionContext) fieldContext_Validator_monitored(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Validator_latestSnapshot(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_balance(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Validator_latestSnapshot,
+		ec.fieldContext_Validator_balance,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Validator().LatestSnapshot(ctx, obj)
+			return ec.resolvers.Validator().Balance(ctx, obj)
 		},
 		nil,
-		ec.marshalOValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot,
+		ec.marshalNBalance2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐBalance,
 		true,
-		false,
+		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_latestSnapshot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_balance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -4925,59 +4321,36 @@ func (ec *executionContext) fieldContext_Validator_latestSnapshot(_ context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "time":
-				return ec.fieldContext_ValidatorSnapshot_time(ctx, field)
-			case "validatorIndex":
-				return ec.fieldContext_ValidatorSnapshot_validatorIndex(ctx, field)
-			case "epoch":
-				return ec.fieldContext_ValidatorSnapshot_epoch(ctx, field)
-			case "slot":
-				return ec.fieldContext_ValidatorSnapshot_slot(ctx, field)
-			case "balance":
-				return ec.fieldContext_ValidatorSnapshot_balance(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_ValidatorSnapshot_effectiveBalance(ctx, field)
-			case "isOnline":
-				return ec.fieldContext_ValidatorSnapshot_isOnline(ctx, field)
-			case "proposed":
-				return ec.fieldContext_ValidatorSnapshot_proposed(ctx, field)
-			case "attestationHeadVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationHeadVote(ctx, field)
-			case "attestationSourceVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationSourceVote(ctx, field)
-			case "attestationTargetVote":
-				return ec.fieldContext_ValidatorSnapshot_attestationTargetVote(ctx, field)
-			case "attestationInclusionDelay":
-				return ec.fieldContext_ValidatorSnapshot_attestationInclusionDelay(ctx, field)
-			case "attestationEffectiveness":
-				return ec.fieldContext_ValidatorSnapshot_attestationEffectiveness(ctx, field)
-			case "validator":
-				return ec.fieldContext_ValidatorSnapshot_validator(ctx, field)
+			case "current":
+				return ec.fieldContext_Balance_current(ctx, field)
+			case "effective":
+				return ec.fieldContext_Balance_effective(ctx, field)
+			case "withdrawable":
+				return ec.fieldContext_Balance_withdrawable(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorSnapshot", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Balance", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Validator_snapshots(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_performance(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Validator_snapshots,
+		ec.fieldContext_Validator_performance,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Validator().Snapshots(ctx, obj, fc.Args["filter"].(*model.SnapshotFilterInput), fc.Args["sort"].(*model.SnapshotSortInput), fc.Args["pagination"].(*model.PaginationInput))
+			return ec.resolvers.Validator().Performance(ctx, obj)
 		},
 		nil,
-		ec.marshalNSnapshotConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotConnection,
+		ec.marshalNPerformance2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPerformance,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_snapshots(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_performance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -4985,26 +4358,68 @@ func (ec *executionContext) fieldContext_Validator_snapshots(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "edges":
-				return ec.fieldContext_SnapshotConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_SnapshotConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_SnapshotConnection_totalCount(ctx, field)
+			case "uptimePercentage":
+				return ec.fieldContext_Performance_uptimePercentage(ctx, field)
+			case "consecutiveMisses":
+				return ec.fieldContext_Performance_consecutiveMisses(ctx, field)
+			case "totalMissed":
+				return ec.fieldContext_Performance_totalMissed(ctx, field)
+			case "attestationScore":
+				return ec.fieldContext_Performance_attestationScore(ctx, field)
+			case "proposalSuccess":
+				return ec.fieldContext_Performance_proposalSuccess(ctx, field)
+			case "proposalMissed":
+				return ec.fieldContext_Performance_proposalMissed(ctx, field)
+			case "effectiveness":
+				return ec.fieldContext_Performance_effectiveness(ctx, field)
+			case "networkAverage":
+				return ec.fieldContext_Performance_networkAverage(ctx, field)
+			case "networkPercentile":
+				return ec.fieldContext_Performance_networkPercentile(ctx, field)
+			case "slashingRisk":
+				return ec.fieldContext_Performance_slashingRisk(ctx, field)
+			case "inactivityScore":
+				return ec.fieldContext_Performance_inactivityScore(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SnapshotConnection", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Performance", field.Name)
 		},
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Validator_snapshots_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
+	return fc, nil
+}
+
+func (ec *executionContext) _Validator_rewards(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Validator_rewards,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Validator().Rewards(ctx, obj)
+		},
+		nil,
+		ec.marshalNRewards2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐRewards,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Validator_rewards(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Validator",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "expected":
+				return ec.fieldContext_Rewards_expected(ctx, field)
+			case "actual":
+				return ec.fieldContext_Rewards_actual(ctx, field)
+			case "effectiveness":
+				return ec.fieldContext_Rewards_effectiveness(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Rewards", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -5016,17 +4431,16 @@ func (ec *executionContext) _Validator_alerts(ctx context.Context, field graphql
 		field,
 		ec.fieldContext_Validator_alerts,
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Validator().Alerts(ctx, obj, fc.Args["filter"].(*model.AlertFilterInput), fc.Args["sort"].(*model.AlertSortInput), fc.Args["pagination"].(*model.PaginationInput))
+			return ec.resolvers.Validator().Alerts(ctx, obj)
 		},
 		nil,
-		ec.marshalNAlertConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertConnection,
+		ec.marshalNAlert2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlertᚄ,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_alerts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_alerts(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -5034,48 +4448,45 @@ func (ec *executionContext) fieldContext_Validator_alerts(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "edges":
-				return ec.fieldContext_AlertConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_AlertConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_AlertConnection_totalCount(ctx, field)
+			case "id":
+				return ec.fieldContext_Alert_id(ctx, field)
+			case "validatorIndex":
+				return ec.fieldContext_Alert_validatorIndex(ctx, field)
+			case "severity":
+				return ec.fieldContext_Alert_severity(ctx, field)
+			case "type":
+				return ec.fieldContext_Alert_type(ctx, field)
+			case "message":
+				return ec.fieldContext_Alert_message(ctx, field)
+			case "acknowledged":
+				return ec.fieldContext_Alert_acknowledged(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Alert_createdAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type AlertConnection", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Alert", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Validator_alerts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Validator_performanceMetrics(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_history(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Validator_performanceMetrics,
+		ec.fieldContext_Validator_history,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Validator().PerformanceMetrics(ctx, obj, fc.Args["epochFrom"].(*int), fc.Args["epochTo"].(*int))
+			return ec.resolvers.Validator().History(ctx, obj, fc.Args["from"].(*types.Time), fc.Args["to"].(*types.Time))
 		},
 		nil,
-		ec.marshalNPerformanceMetrics2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetricsᚄ,
+		ec.marshalNHistoricalSnapshot2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐHistoricalSnapshotᚄ,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Validator_performanceMetrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_history(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Validator",
 		Field:      field,
@@ -5083,30 +4494,28 @@ func (ec *executionContext) fieldContext_Validator_performanceMetrics(ctx contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_PerformanceMetrics_validatorIndex(ctx, field)
 			case "epoch":
-				return ec.fieldContext_PerformanceMetrics_epoch(ctx, field)
-			case "attestationsCount":
-				return ec.fieldContext_PerformanceMetrics_attestationsCount(ctx, field)
-			case "correctHeadVotes":
-				return ec.fieldContext_PerformanceMetrics_correctHeadVotes(ctx, field)
-			case "correctSourceVotes":
-				return ec.fieldContext_PerformanceMetrics_correctSourceVotes(ctx, field)
-			case "correctTargetVotes":
-				return ec.fieldContext_PerformanceMetrics_correctTargetVotes(ctx, field)
-			case "totalInclusionDelay":
-				return ec.fieldContext_PerformanceMetrics_totalInclusionDelay(ctx, field)
-			case "proposalCount":
-				return ec.fieldContext_PerformanceMetrics_proposalCount(ctx, field)
-			case "syncCommitteeCount":
-				return ec.fieldContext_PerformanceMetrics_syncCommitteeCount(ctx, field)
-			case "effectivenessScore":
-				return ec.fieldContext_PerformanceMetrics_effectivenessScore(ctx, field)
-			case "calculatedAt":
-				return ec.fieldContext_PerformanceMetrics_calculatedAt(ctx, field)
+				return ec.fieldContext_HistoricalSnapshot_epoch(ctx, field)
+			case "slot":
+				return ec.fieldContext_HistoricalSnapshot_slot(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_HistoricalSnapshot_timestamp(ctx, field)
+			case "balance":
+				return ec.fieldContext_HistoricalSnapshot_balance(ctx, field)
+			case "effectiveBalance":
+				return ec.fieldContext_HistoricalSnapshot_effectiveBalance(ctx, field)
+			case "attestationSuccess":
+				return ec.fieldContext_HistoricalSnapshot_attestationSuccess(ctx, field)
+			case "inclusionDelay":
+				return ec.fieldContext_HistoricalSnapshot_inclusionDelay(ctx, field)
+			case "proposalSuccess":
+				return ec.fieldContext_HistoricalSnapshot_proposalSuccess(ctx, field)
+			case "performanceScore":
+				return ec.fieldContext_HistoricalSnapshot_performanceScore(ctx, field)
+			case "networkPercentile":
+				return ec.fieldContext_HistoricalSnapshot_networkPercentile(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type PerformanceMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type HistoricalSnapshot", field.Name)
 		},
 	}
 	defer func() {
@@ -5116,212 +4525,21 @@ func (ec *executionContext) fieldContext_Validator_performanceMetrics(ctx contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Validator_performanceMetrics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Validator_history_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _ValidatorConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.ValidatorConnection) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_ValidatorConnection_edges,
+		ec.fieldContext_Validator_createdAt,
 		func(ctx context.Context) (any, error) {
-			return obj.Edges, nil
-		},
-		nil,
-		ec.marshalNValidatorEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorEdgeᚄ,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "cursor":
-				return ec.fieldContext_ValidatorEdge_cursor(ctx, field)
-			case "node":
-				return ec.fieldContext_ValidatorEdge_node(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ValidatorEdge", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.ValidatorConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorConnection_pageInfo,
-		func(ctx context.Context) (any, error) {
-			return obj.PageInfo, nil
-		},
-		nil,
-		ec.marshalNPageInfo2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPageInfo,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "hasNextPage":
-				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
-			case "hasPreviousPage":
-				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
-			case "startCursor":
-				return ec.fieldContext_PageInfo_startCursor(ctx, field)
-			case "endCursor":
-				return ec.fieldContext_PageInfo_endCursor(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *model.ValidatorConnection) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorConnection_totalCount,
-		func(ctx context.Context) (any, error) {
-			return obj.TotalCount, nil
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.ValidatorEdge) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorEdge_cursor,
-		func(ctx context.Context) (any, error) {
-			return obj.Cursor, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorEdge",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.ValidatorEdge) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorEdge_node,
-		func(ctx context.Context) (any, error) {
-			return obj.Node, nil
-		},
-		nil,
-		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorEdge",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
-			case "pubkey":
-				return ec.fieldContext_Validator_pubkey(ctx, field)
-			case "status":
-				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
-			case "activationEpoch":
-				return ec.fieldContext_Validator_activationEpoch(ctx, field)
-			case "exitEpoch":
-				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
-			case "alerts":
-				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_time(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_time,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Time(ctx, obj)
+			return ec.resolvers.Validator().CreatedAt(ctx, obj)
 		},
 		nil,
 		ec.marshalNTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
@@ -5330,9 +4548,9 @@ func (ec *executionContext) _ValidatorSnapshot_time(ctx context.Context, field g
 	)
 }
 
-func (ec *executionContext) fieldContext_ValidatorSnapshot_time(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
+		Object:     "Validator",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
@@ -5343,408 +4561,30 @@ func (ec *executionContext) fieldContext_ValidatorSnapshot_time(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _ValidatorSnapshot_validatorIndex(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
+func (ec *executionContext) _Validator_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Validator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_ValidatorSnapshot_validatorIndex,
+		ec.fieldContext_Validator_updatedAt,
 		func(ctx context.Context) (any, error) {
-			return obj.ValidatorIndex, nil
+			return ec.resolvers.Validator().UpdatedAt(ctx, obj)
 		},
 		nil,
-		ec.marshalNInt2int64,
+		ec.marshalNTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_ValidatorSnapshot_validatorIndex(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Validator_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_epoch(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_epoch,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Epoch(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_epoch(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
+		Object:     "Validator",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_slot(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_slot,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Slot(ctx, obj)
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_slot(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_balance(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_balance,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Balance(ctx, obj)
-		},
-		nil,
-		ec.marshalNBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_balance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type BigInt does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_effectiveBalance(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_effectiveBalance,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().EffectiveBalance(ctx, obj)
-		},
-		nil,
-		ec.marshalNBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_effectiveBalance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type BigInt does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_isOnline(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_isOnline,
-		func(ctx context.Context) (any, error) {
-			return obj.IsOnline, nil
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_isOnline(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_proposed(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_proposed,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Proposed(ctx, obj)
-		},
-		nil,
-		ec.marshalOBoolean2ᚖbool,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_proposed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_attestationHeadVote(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_attestationHeadVote,
-		func(ctx context.Context) (any, error) {
-			return obj.AttestationHeadVote, nil
-		},
-		nil,
-		ec.marshalOBoolean2ᚖbool,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_attestationHeadVote(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_attestationSourceVote(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_attestationSourceVote,
-		func(ctx context.Context) (any, error) {
-			return obj.AttestationSourceVote, nil
-		},
-		nil,
-		ec.marshalOBoolean2ᚖbool,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_attestationSourceVote(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_attestationTargetVote(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_attestationTargetVote,
-		func(ctx context.Context) (any, error) {
-			return obj.AttestationTargetVote, nil
-		},
-		nil,
-		ec.marshalOBoolean2ᚖbool,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_attestationTargetVote(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_attestationInclusionDelay(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_attestationInclusionDelay,
-		func(ctx context.Context) (any, error) {
-			return obj.AttestationInclusionDelay, nil
-		},
-		nil,
-		ec.marshalOInt2ᚖint32,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_attestationInclusionDelay(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_attestationEffectiveness(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_attestationEffectiveness,
-		func(ctx context.Context) (any, error) {
-			return obj.AttestationEffectiveness, nil
-		},
-		nil,
-		ec.marshalOFloat2ᚖfloat64,
-		true,
-		false,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_attestationEffectiveness(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ValidatorSnapshot_validator(ctx context.Context, field graphql.CollectedField, obj *models.ValidatorSnapshot) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ValidatorSnapshot_validator,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.ValidatorSnapshot().Validator(ctx, obj)
-		},
-		nil,
-		ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ValidatorSnapshot_validator(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ValidatorSnapshot",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "validatorIndex":
-				return ec.fieldContext_Validator_validatorIndex(ctx, field)
-			case "pubkey":
-				return ec.fieldContext_Validator_pubkey(ctx, field)
-			case "status":
-				return ec.fieldContext_Validator_status(ctx, field)
-			case "withdrawalCredentials":
-				return ec.fieldContext_Validator_withdrawalCredentials(ctx, field)
-			case "effectiveBalance":
-				return ec.fieldContext_Validator_effectiveBalance(ctx, field)
-			case "activationEligibilityEpoch":
-				return ec.fieldContext_Validator_activationEligibilityEpoch(ctx, field)
-			case "activationEpoch":
-				return ec.fieldContext_Validator_activationEpoch(ctx, field)
-			case "exitEpoch":
-				return ec.fieldContext_Validator_exitEpoch(ctx, field)
-			case "withdrawableEpoch":
-				return ec.fieldContext_Validator_withdrawableEpoch(ctx, field)
-			case "monitored":
-				return ec.fieldContext_Validator_monitored(ctx, field)
-			case "latestSnapshot":
-				return ec.fieldContext_Validator_latestSnapshot(ctx, field)
-			case "snapshots":
-				return ec.fieldContext_Validator_snapshots(ctx, field)
-			case "alerts":
-				return ec.fieldContext_Validator_alerts(ctx, field)
-			case "performanceMetrics":
-				return ec.fieldContext_Validator_performanceMetrics(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Validator", field.Name)
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7196,14 +6036,55 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputAlertFilterInput(ctx context.Context, obj any) (model.AlertFilterInput, error) {
-	var it model.AlertFilterInput
+func (ec *executionContext) unmarshalInputAddValidatorInput(ctx context.Context, obj any) (model.AddValidatorInput, error) {
+	var it model.AddValidatorInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"validatorIndex", "type", "severity", "resolved", "createdFrom", "createdTo"}
+	fieldsInOrder := [...]string{"pubkey", "index", "name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "pubkey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubkey"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pubkey = data
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAlertFilter(ctx context.Context, obj any) (models.AlertFilter, error) {
+	var it models.AlertFilter
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"validatorIndex", "severity", "acknowledged", "from", "to", "limit", "offset"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7212,256 +6093,181 @@ func (ec *executionContext) unmarshalInputAlertFilterInput(ctx context.Context, 
 		switch k {
 		case "validatorIndex":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("validatorIndex"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ValidatorIndex = data
-		case "type":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOAlertType2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Type = data
 		case "severity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("severity"))
 			data, err := ec.unmarshalOAlertSeverity2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertSeverity(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Severity = data
-		case "resolved":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resolved"))
+			if err = ec.resolvers.AlertFilter().Severity(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "acknowledged":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("acknowledged"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Resolved = data
-		case "createdFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdFrom"))
+			if err = ec.resolvers.AlertFilter().Acknowledged(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "from":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from"))
 			data, err := ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CreatedFrom = data
-		case "createdTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdTo"))
+			if err = ec.resolvers.AlertFilter().From(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "to":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
 			data, err := ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CreatedTo = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputAlertSortInput(ctx context.Context, obj any) (model.AlertSortInput, error) {
-	var it model.AlertSortInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	if _, present := asMap["direction"]; !present {
-		asMap["direction"] = "DESC"
-	}
-
-	fieldsInOrder := [...]string{"field", "direction"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "field":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNAlertSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortField(ctx, v)
-			if err != nil {
+			if err = ec.resolvers.AlertFilter().To(ctx, &it, data); err != nil {
 				return it, err
 			}
-			it.Field = data
-		case "direction":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
-			data, err := ec.unmarshalOSortDirection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSortDirection(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Direction = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, obj any) (model.PaginationInput, error) {
-	var it model.PaginationInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	if _, present := asMap["limit"]; !present {
-		asMap["limit"] = 20
-	}
-
-	fieldsInOrder := [...]string{"limit", "cursor"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
 		case "limit":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Limit = data
-		case "cursor":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cursor"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Cursor = data
+			it.Offset = data
 		}
 	}
 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSnapshotFilterInput(ctx context.Context, obj any) (model.SnapshotFilterInput, error) {
-	var it model.SnapshotFilterInput
+func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj any) (model.LoginInput, error) {
+	var it model.LoginInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"validatorIndex", "timeFrom", "timeTo", "epochFrom", "epochTo", "minEffectiveness", "onlineOnly"}
+	fieldsInOrder := [...]string{"username", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "validatorIndex":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("validatorIndex"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+		case "username":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ValidatorIndex = data
-		case "timeFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timeFrom"))
-			data, err := ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime(ctx, v)
+			it.Username = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TimeFrom = data
-		case "timeTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timeTo"))
-			data, err := ec.unmarshalOTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime(ctx, v)
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj any) (model.RegisterInput, error) {
+	var it model.RegisterInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"username", "email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "username":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TimeTo = data
-		case "epochFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("epochFrom"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			it.Username = data
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.EpochFrom = data
-		case "epochTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("epochTo"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			it.Email = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.EpochTo = data
-		case "minEffectiveness":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minEffectiveness"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputValidatorFilter(ctx context.Context, obj any) (models.ValidatorFilter, error) {
+	var it models.ValidatorFilter
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"status", "slashed", "indices", "pubkeys", "limit", "offset"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOValidatorStatus2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐValidatorStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.MinEffectiveness = data
-		case "onlineOnly":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("onlineOnly"))
+			if err = ec.resolvers.ValidatorFilter().Status(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "slashed":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slashed"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.OnlineOnly = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputSnapshotSortInput(ctx context.Context, obj any) (model.SnapshotSortInput, error) {
-	var it model.SnapshotSortInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	if _, present := asMap["direction"]; !present {
-		asMap["direction"] = "DESC"
-	}
-
-	fieldsInOrder := [...]string{"field", "direction"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "field":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNSnapshotSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortField(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Field = data
-		case "direction":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
-			data, err := ec.unmarshalOSortDirection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSortDirection(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Direction = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputValidatorFilterInput(ctx context.Context, obj any) (model.ValidatorFilterInput, error) {
-	var it model.ValidatorFilterInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"indices", "pubkeys", "status", "monitored", "minBalance", "maxBalance", "activationEpochFrom", "activationEpochTo"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
+			it.Slashed = data
 		case "indices":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("indices"))
 			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Indices = data
+			if err = ec.resolvers.ValidatorFilter().Indices(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "pubkeys":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubkeys"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -7469,86 +6275,20 @@ func (ec *executionContext) unmarshalInputValidatorFilterInput(ctx context.Conte
 				return it, err
 			}
 			it.Pubkeys = data
-		case "status":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOValidatorStatus2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐValidatorStatus(ctx, v)
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Status = data
-		case "monitored":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("monitored"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Limit = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Monitored = data
-		case "minBalance":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minBalance"))
-			data, err := ec.unmarshalOBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MinBalance = data
-		case "maxBalance":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("maxBalance"))
-			data, err := ec.unmarshalOBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MaxBalance = data
-		case "activationEpochFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activationEpochFrom"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ActivationEpochFrom = data
-		case "activationEpochTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activationEpochTo"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ActivationEpochTo = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputValidatorSortInput(ctx context.Context, obj any) (model.ValidatorSortInput, error) {
-	var it model.ValidatorSortInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	if _, present := asMap["direction"]; !present {
-		asMap["direction"] = "ASC"
-	}
-
-	fieldsInOrder := [...]string{"field", "direction"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "field":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNValidatorSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorSortField(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Field = data
-		case "direction":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
-			data, err := ec.unmarshalOSortDirection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSortDirection(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Direction = data
+			it.Offset = data
 		}
 	}
 
@@ -7615,42 +6355,6 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "type":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Alert_type(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "severity":
 			field := field
 
@@ -7687,21 +6391,19 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "message":
-			out.Values[i] = ec._Alert_message(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "metadata":
+		case "type":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Alert_metadata(ctx, field, obj)
+				res = ec._Alert_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -7725,7 +6427,12 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "resolved":
+		case "message":
+			out.Values[i] = ec._Alert_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "acknowledged":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -7734,7 +6441,7 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Alert_resolved(ctx, field, obj)
+				res = ec._Alert_acknowledged(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -7797,75 +6504,6 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "resolvedAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Alert_resolvedAt(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "validator":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Alert_validator(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7889,29 +6527,34 @@ func (ec *executionContext) _Alert(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var alertConnectionImplementors = []string{"AlertConnection"}
+var authPayloadImplementors = []string{"AuthPayload"}
 
-func (ec *executionContext) _AlertConnection(ctx context.Context, sel ast.SelectionSet, obj *model.AlertConnection) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, alertConnectionImplementors)
+func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionSet, obj *model.AuthPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authPayloadImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AlertConnection")
-		case "edges":
-			out.Values[i] = ec._AlertConnection_edges(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("AuthPayload")
+		case "accessToken":
+			out.Values[i] = ec._AuthPayload_accessToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "pageInfo":
-			out.Values[i] = ec._AlertConnection_pageInfo(ctx, field, obj)
+		case "refreshToken":
+			out.Values[i] = ec._AuthPayload_refreshToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "totalCount":
-			out.Values[i] = ec._AlertConnection_totalCount(ctx, field, obj)
+		case "user":
+			out.Values[i] = ec._AuthPayload_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "expiresAt":
+			out.Values[i] = ec._AuthPayload_expiresAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7938,27 +6581,101 @@ func (ec *executionContext) _AlertConnection(ctx context.Context, sel ast.Select
 	return out
 }
 
-var alertEdgeImplementors = []string{"AlertEdge"}
+var balanceImplementors = []string{"Balance"}
 
-func (ec *executionContext) _AlertEdge(ctx context.Context, sel ast.SelectionSet, obj *model.AlertEdge) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, alertEdgeImplementors)
+func (ec *executionContext) _Balance(ctx context.Context, sel ast.SelectionSet, obj *model.Balance) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, balanceImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AlertEdge")
-		case "cursor":
-			out.Values[i] = ec._AlertEdge_cursor(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Balance")
+		case "current":
+			out.Values[i] = ec._Balance_current(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "node":
-			out.Values[i] = ec._AlertEdge_node(ctx, field, obj)
+		case "effective":
+			out.Values[i] = ec._Balance_effective(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "withdrawable":
+			out.Values[i] = ec._Balance_withdrawable(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var historicalSnapshotImplementors = []string{"HistoricalSnapshot"}
+
+func (ec *executionContext) _HistoricalSnapshot(ctx context.Context, sel ast.SelectionSet, obj *model.HistoricalSnapshot) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, historicalSnapshotImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HistoricalSnapshot")
+		case "epoch":
+			out.Values[i] = ec._HistoricalSnapshot_epoch(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "slot":
+			out.Values[i] = ec._HistoricalSnapshot_slot(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "timestamp":
+			out.Values[i] = ec._HistoricalSnapshot_timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "balance":
+			out.Values[i] = ec._HistoricalSnapshot_balance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "effectiveBalance":
+			out.Values[i] = ec._HistoricalSnapshot_effectiveBalance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "attestationSuccess":
+			out.Values[i] = ec._HistoricalSnapshot_attestationSuccess(ctx, field, obj)
+		case "inclusionDelay":
+			out.Values[i] = ec._HistoricalSnapshot_inclusionDelay(ctx, field, obj)
+		case "proposalSuccess":
+			out.Values[i] = ec._HistoricalSnapshot_proposalSuccess(ctx, field, obj)
+		case "performanceScore":
+			out.Values[i] = ec._HistoricalSnapshot_performanceScore(ctx, field, obj)
+		case "networkPercentile":
+			out.Values[i] = ec._HistoricalSnapshot_networkPercentile(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8001,6 +6718,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "register":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_register(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "login":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_login(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "refreshToken":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_refreshToken(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "addValidator":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addValidator(ctx, field)
@@ -8015,37 +6753,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "updateValidatorMonitoring":
+		case "updateValidatorName":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateValidatorMonitoring(ctx, field)
+				return ec._Mutation_updateValidatorName(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "resolveAlert":
+		case "acknowledgeAlert":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_resolveAlert(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "bulkResolveAlerts":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_bulkResolveAlerts(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "triggerCollection":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_triggerCollection(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "triggerBulkCollection":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_triggerBulkCollection(ctx, field)
+				return ec._Mutation_acknowledgeAlert(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8094,7 +6811,32 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "totalActiveValidators":
+		case "totalValidators":
+			out.Values[i] = ec._NetworkStats_totalValidators(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "activeValidators":
+			out.Values[i] = ec._NetworkStats_activeValidators(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "pendingValidators":
+			out.Values[i] = ec._NetworkStats_pendingValidators(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "exitingValidators":
+			out.Values[i] = ec._NetworkStats_exitingValidators(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "slashedValidators":
+			out.Values[i] = ec._NetworkStats_slashedValidators(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "averageBalance":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8103,7 +6845,7 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._NetworkStats_totalActiveValidators(ctx, field, obj)
+				res = ec._NetworkStats_averageBalance(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -8130,7 +6872,7 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "totalStake":
+		case "totalStaked":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8139,43 +6881,7 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._NetworkStats_totalStake(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "avgAttestationEffectiveness":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._NetworkStats_avgAttestationEffectiveness(ctx, field, obj)
+				res = ec._NetworkStats_totalStaked(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -8207,7 +6913,7 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "lastUpdated":
+		case "timestamp":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8216,7 +6922,7 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._NetworkStats_lastUpdated(ctx, field, obj)
+				res = ec._NetworkStats_timestamp(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -8266,399 +6972,72 @@ func (ec *executionContext) _NetworkStats(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var pageInfoImplementors = []string{"PageInfo"}
+var performanceImplementors = []string{"Performance"}
 
-func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PageInfo) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("PageInfo")
-		case "hasNextPage":
-			out.Values[i] = ec._PageInfo_hasNextPage(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "hasPreviousPage":
-			out.Values[i] = ec._PageInfo_hasPreviousPage(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "startCursor":
-			out.Values[i] = ec._PageInfo_startCursor(ctx, field, obj)
-		case "endCursor":
-			out.Values[i] = ec._PageInfo_endCursor(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var performanceMetricsImplementors = []string{"PerformanceMetrics"}
-
-func (ec *executionContext) _PerformanceMetrics(ctx context.Context, sel ast.SelectionSet, obj *types.PerformanceMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, performanceMetricsImplementors)
+func (ec *executionContext) _Performance(ctx context.Context, sel ast.SelectionSet, obj *model.Performance) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, performanceImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("PerformanceMetrics")
-		case "validatorIndex":
-			out.Values[i] = ec._PerformanceMetrics_validatorIndex(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Performance")
+		case "uptimePercentage":
+			out.Values[i] = ec._Performance_uptimePercentage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
-		case "epoch":
-			out.Values[i] = ec._PerformanceMetrics_epoch(ctx, field, obj)
+		case "consecutiveMisses":
+			out.Values[i] = ec._Performance_consecutiveMisses(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
-		case "attestationsCount":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_attestationsCount(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "totalMissed":
+			out.Values[i] = ec._Performance_totalMissed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
+		case "attestationScore":
+			out.Values[i] = ec._Performance_attestationScore(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "correctHeadVotes":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_correctHeadVotes(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "proposalSuccess":
+			out.Values[i] = ec._Performance_proposalSuccess(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
+		case "proposalMissed":
+			out.Values[i] = ec._Performance_proposalMissed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "correctSourceVotes":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_correctSourceVotes(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "effectiveness":
+			out.Values[i] = ec._Performance_effectiveness(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
+		case "networkAverage":
+			out.Values[i] = ec._Performance_networkAverage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "correctTargetVotes":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_correctTargetVotes(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "networkPercentile":
+			out.Values[i] = ec._Performance_networkPercentile(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
+		case "slashingRisk":
+			out.Values[i] = ec._Performance_slashingRisk(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "totalInclusionDelay":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_totalInclusionDelay(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "inactivityScore":
+			out.Values[i] = ec._Performance_inactivityScore(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "proposalCount":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_proposalCount(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "syncCommitteeCount":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_syncCommitteeCount(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "effectivenessScore":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_effectivenessScore(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "calculatedAt":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PerformanceMetrics_calculatedAt(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8720,25 +7099,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "validatorByPubkey":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_validatorByPubkey(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "validators":
 			field := field
 
@@ -8761,26 +7121,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "snapshot":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_snapshot(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "snapshots":
+		case "network":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8789,29 +7130,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_snapshots(ctx, field)
+				res = ec._Query_network(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "alert":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_alert(ctx, field)
 				return res
 			}
 
@@ -8843,51 +7165,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "networkStats":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_networkStats(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "validatorPerformance":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_validatorPerformance(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "aggregatePerformance":
+		case "alert":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8896,7 +7174,51 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_aggregatePerformance(ctx, field)
+				res = ec._Query_alert(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "health":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_health(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "me":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_me(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -8937,73 +7259,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var snapshotConnectionImplementors = []string{"SnapshotConnection"}
+var rewardsImplementors = []string{"Rewards"}
 
-func (ec *executionContext) _SnapshotConnection(ctx context.Context, sel ast.SelectionSet, obj *model.SnapshotConnection) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, snapshotConnectionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SnapshotConnection")
-		case "edges":
-			out.Values[i] = ec._SnapshotConnection_edges(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "pageInfo":
-			out.Values[i] = ec._SnapshotConnection_pageInfo(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "totalCount":
-			out.Values[i] = ec._SnapshotConnection_totalCount(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var snapshotEdgeImplementors = []string{"SnapshotEdge"}
-
-func (ec *executionContext) _SnapshotEdge(ctx context.Context, sel ast.SelectionSet, obj *model.SnapshotEdge) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, snapshotEdgeImplementors)
+func (ec *executionContext) _Rewards(ctx context.Context, sel ast.SelectionSet, obj *model.Rewards) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, rewardsImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("SnapshotEdge")
-		case "cursor":
-			out.Values[i] = ec._SnapshotEdge_cursor(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Rewards")
+		case "expected":
+			out.Values[i] = ec._Rewards_expected(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "node":
-			out.Values[i] = ec._SnapshotEdge_node(ctx, field, obj)
+		case "actual":
+			out.Values[i] = ec._Rewards_actual(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "effectiveness":
+			out.Values[i] = ec._Rewards_effectiveness(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -9043,17 +7321,74 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	}
 
 	switch fields[0].Name {
-	case "validatorSnapshotAdded":
-		return ec._Subscription_validatorSnapshotAdded(ctx, fields[0])
-	case "alertCreated":
-		return ec._Subscription_alertCreated(ctx, fields[0])
-	case "alertResolved":
-		return ec._Subscription_alertResolved(ctx, fields[0])
-	case "networkStatsUpdated":
-		return ec._Subscription_networkStatsUpdated(ctx, fields[0])
+	case "validatorUpdates":
+		return ec._Subscription_validatorUpdates(ctx, fields[0])
+	case "newAlerts":
+		return ec._Subscription_newAlerts(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
+}
+
+var userImplementors = []string{"User"}
+
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("User")
+		case "id":
+			out.Values[i] = ec._User_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "username":
+			out.Values[i] = ec._User_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "email":
+			out.Values[i] = ec._User_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "roles":
+			out.Values[i] = ec._User_roles(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._User_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lastLogin":
+			out.Values[i] = ec._User_lastLogin(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
 }
 
 var validatorImplementors = []string{"Validator"}
@@ -9067,16 +7402,49 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Validator")
-		case "validatorIndex":
-			out.Values[i] = ec._Validator_validatorIndex(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+		case "index":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Validator_index(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "pubkey":
 			out.Values[i] = ec._Validator_pubkey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "name":
+			out.Values[i] = ec._Validator_name(ctx, field, obj)
 		case "status":
 			field := field
 
@@ -9113,12 +7481,16 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "withdrawalCredentials":
-			out.Values[i] = ec._Validator_withdrawalCredentials(ctx, field, obj)
+		case "activationEpoch":
+			out.Values[i] = ec._Validator_activationEpoch(ctx, field, obj)
+		case "exitEpoch":
+			out.Values[i] = ec._Validator_exitEpoch(ctx, field, obj)
+		case "slashed":
+			out.Values[i] = ec._Validator_slashed(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "effectiveBalance":
+		case "balance":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9127,7 +7499,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Validator_effectiveBalance(ctx, field, obj)
+				res = ec._Validator_balance(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9154,35 +7526,19 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "activationEligibilityEpoch":
-			out.Values[i] = ec._Validator_activationEligibilityEpoch(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "activationEpoch":
-			out.Values[i] = ec._Validator_activationEpoch(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "exitEpoch":
-			out.Values[i] = ec._Validator_exitEpoch(ctx, field, obj)
-		case "withdrawableEpoch":
-			out.Values[i] = ec._Validator_withdrawableEpoch(ctx, field, obj)
-		case "monitored":
-			out.Values[i] = ec._Validator_monitored(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "latestSnapshot":
+		case "performance":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Validator_latestSnapshot(ctx, field, obj)
+				res = ec._Validator_performance(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -9206,7 +7562,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "snapshots":
+		case "rewards":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9215,7 +7571,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Validator_snapshots(ctx, field, obj)
+				res = ec._Validator_rewards(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9278,7 +7634,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "performanceMetrics":
+		case "history":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9287,7 +7643,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Validator_performanceMetrics(ctx, field, obj)
+				res = ec._Validator_history(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9314,134 +7670,7 @@ func (ec *executionContext) _Validator(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var validatorConnectionImplementors = []string{"ValidatorConnection"}
-
-func (ec *executionContext) _ValidatorConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ValidatorConnection) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, validatorConnectionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ValidatorConnection")
-		case "edges":
-			out.Values[i] = ec._ValidatorConnection_edges(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "pageInfo":
-			out.Values[i] = ec._ValidatorConnection_pageInfo(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "totalCount":
-			out.Values[i] = ec._ValidatorConnection_totalCount(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var validatorEdgeImplementors = []string{"ValidatorEdge"}
-
-func (ec *executionContext) _ValidatorEdge(ctx context.Context, sel ast.SelectionSet, obj *model.ValidatorEdge) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, validatorEdgeImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ValidatorEdge")
-		case "cursor":
-			out.Values[i] = ec._ValidatorEdge_cursor(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "node":
-			out.Values[i] = ec._ValidatorEdge_node(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var validatorSnapshotImplementors = []string{"ValidatorSnapshot"}
-
-func (ec *executionContext) _ValidatorSnapshot(ctx context.Context, sel ast.SelectionSet, obj *models.ValidatorSnapshot) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, validatorSnapshotImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ValidatorSnapshot")
-		case "time":
+		case "createdAt":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9450,7 +7679,7 @@ func (ec *executionContext) _ValidatorSnapshot(ctx context.Context, sel ast.Sele
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ValidatorSnapshot_time(ctx, field, obj)
+				res = ec._Validator_createdAt(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9477,12 +7706,7 @@ func (ec *executionContext) _ValidatorSnapshot(ctx context.Context, sel ast.Sele
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "validatorIndex":
-			out.Values[i] = ec._ValidatorSnapshot_validatorIndex(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "epoch":
+		case "updatedAt":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -9491,199 +7715,7 @@ func (ec *executionContext) _ValidatorSnapshot(ctx context.Context, sel ast.Sele
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ValidatorSnapshot_epoch(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "slot":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ValidatorSnapshot_slot(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "balance":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ValidatorSnapshot_balance(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "effectiveBalance":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ValidatorSnapshot_effectiveBalance(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "isOnline":
-			out.Values[i] = ec._ValidatorSnapshot_isOnline(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "proposed":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ValidatorSnapshot_proposed(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "attestationHeadVote":
-			out.Values[i] = ec._ValidatorSnapshot_attestationHeadVote(ctx, field, obj)
-		case "attestationSourceVote":
-			out.Values[i] = ec._ValidatorSnapshot_attestationSourceVote(ctx, field, obj)
-		case "attestationTargetVote":
-			out.Values[i] = ec._ValidatorSnapshot_attestationTargetVote(ctx, field, obj)
-		case "attestationInclusionDelay":
-			out.Values[i] = ec._ValidatorSnapshot_attestationInclusionDelay(ctx, field, obj)
-		case "attestationEffectiveness":
-			out.Values[i] = ec._ValidatorSnapshot_attestationEffectiveness(ctx, field, obj)
-		case "validator":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ValidatorSnapshot_validator(ctx, field, obj)
+				res = ec._Validator_updatedAt(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -10068,35 +8100,16 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAddValidatorInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAddValidatorInput(ctx context.Context, v any) (model.AddValidatorInput, error) {
+	res, err := ec.unmarshalInputAddValidatorInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAlert2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert(ctx context.Context, sel ast.SelectionSet, v models.Alert) graphql.Marshaler {
 	return ec._Alert(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert(ctx context.Context, sel ast.SelectionSet, v *models.Alert) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Alert(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNAlertConnection2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertConnection(ctx context.Context, sel ast.SelectionSet, v model.AlertConnection) graphql.Marshaler {
-	return ec._AlertConnection(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAlertConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertConnection(ctx context.Context, sel ast.SelectionSet, v *model.AlertConnection) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._AlertConnection(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNAlertEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AlertEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNAlert2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlertᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Alert) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10120,7 +8133,7 @@ func (ec *executionContext) marshalNAlertEdge2ᚕᚖgithubᚗcomᚋbirddigital�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAlertEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10140,19 +8153,14 @@ func (ec *executionContext) marshalNAlertEdge2ᚕᚖgithubᚗcomᚋbirddigital�
 	return ret
 }
 
-func (ec *executionContext) marshalNAlertEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertEdge(ctx context.Context, sel ast.SelectionSet, v *model.AlertEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlert(ctx context.Context, sel ast.SelectionSet, v *models.Alert) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._AlertEdge(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNAlertFilterInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertFilterInput(ctx context.Context, v any) (model.AlertFilterInput, error) {
-	res, err := ec.unmarshalInputAlertFilterInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
+	return ec._Alert(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNAlertSeverity2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertSeverity(ctx context.Context, v any) (types.AlertSeverity, error) {
@@ -10172,31 +8180,32 @@ func (ec *executionContext) marshalNAlertSeverity2githubᚗcomᚋbirddigitalᚋe
 	return res
 }
 
-func (ec *executionContext) unmarshalNAlertSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortField(ctx context.Context, v any) (model.AlertSortField, error) {
-	var res model.AlertSortField
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) marshalNAuthPayload2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v model.AuthPayload) graphql.Marshaler {
+	return ec._AuthPayload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAlertSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortField(ctx context.Context, sel ast.SelectionSet, v model.AlertSortField) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) unmarshalNAlertType2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType(ctx context.Context, v any) (types.AlertType, error) {
-	tmp, err := graphql.UnmarshalString(v)
-	res := types.AlertType(tmp)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNAlertType2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType(ctx context.Context, sel ast.SelectionSet, v types.AlertType) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalString(string(v))
-	if res == graphql.Null {
+func (ec *executionContext) marshalNAuthPayload2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAuthPayload(ctx context.Context, sel ast.SelectionSet, v *model.AuthPayload) graphql.Marshaler {
+	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
+		return graphql.Null
 	}
-	return res
+	return ec._AuthPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBalance2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐBalance(ctx context.Context, sel ast.SelectionSet, v model.Balance) graphql.Marshaler {
+	return ec._Balance(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBalance2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐBalance(ctx context.Context, sel ast.SelectionSet, v *model.Balance) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Balance(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBigInt2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt(ctx context.Context, v any) (types.BigInt, error) {
@@ -10257,6 +8266,60 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) marshalNHistoricalSnapshot2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐHistoricalSnapshotᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.HistoricalSnapshot) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNHistoricalSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐHistoricalSnapshot(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNHistoricalSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐHistoricalSnapshot(ctx context.Context, sel ast.SelectionSet, v *model.HistoricalSnapshot) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HistoricalSnapshot(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10289,52 +8352,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v any) (int64, error) {
-	res, err := graphql.UnmarshalInt64(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalInt64(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]int, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) unmarshalNInt2ᚖint64(ctx context.Context, v any) (*int64, error) {
 	res, err := graphql.UnmarshalInt64(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -10357,6 +8374,11 @@ func (ec *executionContext) marshalNInt2ᚖint64(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐLoginInput(ctx context.Context, v any) (model.LoginInput, error) {
+	res, err := ec.unmarshalInputLoginInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNNetworkStats2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐNetworkStats(ctx context.Context, sel ast.SelectionSet, v types.NetworkStats) graphql.Marshaler {
 	return ec._NetworkStats(ctx, sel, &v)
 }
@@ -10371,146 +8393,54 @@ func (ec *executionContext) marshalNNetworkStats2ᚖgithubᚗcomᚋbirddigital�
 	return ec._NetworkStats(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformance2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPerformance(ctx context.Context, sel ast.SelectionSet, v model.Performance) graphql.Marshaler {
+	return ec._Performance(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPerformance2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPerformance(ctx context.Context, sel ast.SelectionSet, v *model.Performance) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._PageInfo(ctx, sel, v)
+	return ec._Performance(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPerformanceMetrics2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetricsᚄ(ctx context.Context, sel ast.SelectionSet, v []*types.PerformanceMetrics) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNPerformanceMetrics2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetrics(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNPerformanceMetrics2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetrics(ctx context.Context, sel ast.SelectionSet, v *types.PerformanceMetrics) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._PerformanceMetrics(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSnapshotConnection2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotConnection(ctx context.Context, sel ast.SelectionSet, v model.SnapshotConnection) graphql.Marshaler {
-	return ec._SnapshotConnection(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNSnapshotConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotConnection(ctx context.Context, sel ast.SelectionSet, v *model.SnapshotConnection) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SnapshotConnection(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSnapshotEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SnapshotEdge) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNSnapshotEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotEdge(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNSnapshotEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotEdge(ctx context.Context, sel ast.SelectionSet, v *model.SnapshotEdge) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SnapshotEdge(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNSnapshotSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortField(ctx context.Context, v any) (model.SnapshotSortField, error) {
-	var res model.SnapshotSortField
-	err := res.UnmarshalGQL(v)
+func (ec *executionContext) unmarshalNRegisterInput2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐRegisterInput(ctx context.Context, v any) (model.RegisterInput, error) {
+	res, err := ec.unmarshalInputRegisterInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSnapshotSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortField(ctx context.Context, sel ast.SelectionSet, v model.SnapshotSortField) graphql.Marshaler {
-	return v
+func (ec *executionContext) marshalNRewards2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐRewards(ctx context.Context, sel ast.SelectionSet, v model.Rewards) graphql.Marshaler {
+	return ec._Rewards(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRewards2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐRewards(ctx context.Context, sel ast.SelectionSet, v *model.Rewards) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Rewards(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRiskLevel2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐRiskLevel(ctx context.Context, v any) (types.RiskLevel, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := types.RiskLevel(tmp)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRiskLevel2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐRiskLevel(ctx context.Context, sel ast.SelectionSet, v types.RiskLevel) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
@@ -10529,26 +8459,34 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNString2ᚖstring(ctx context.Context, v any) (*string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
-func (ec *executionContext) marshalNString2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
 	}
-	_ = sel
-	res := graphql.MarshalString(*v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
 		}
 	}
-	return res
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNTime2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐTime(ctx context.Context, v any) (types.Time, error) {
@@ -10577,35 +8515,25 @@ func (ec *executionContext) marshalNTime2ᚖgithubᚗcomᚋbirddigitalᚋethᚑv
 	return v
 }
 
+func (ec *executionContext) marshalNUser2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNValidator2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator(ctx context.Context, sel ast.SelectionSet, v models.Validator) graphql.Marshaler {
 	return ec._Validator(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator(ctx context.Context, sel ast.SelectionSet, v *models.Validator) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Validator(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNValidatorConnection2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorConnection(ctx context.Context, sel ast.SelectionSet, v model.ValidatorConnection) graphql.Marshaler {
-	return ec._ValidatorConnection(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNValidatorConnection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorConnection(ctx context.Context, sel ast.SelectionSet, v *model.ValidatorConnection) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._ValidatorConnection(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNValidatorEdge2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ValidatorEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNValidator2ᚕᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Validator) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10629,7 +8557,7 @@ func (ec *executionContext) marshalNValidatorEdge2ᚕᚖgithubᚗcomᚋbirddigit
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNValidatorEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10649,38 +8577,14 @@ func (ec *executionContext) marshalNValidatorEdge2ᚕᚖgithubᚗcomᚋbirddigit
 	return ret
 }
 
-func (ec *executionContext) marshalNValidatorEdge2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorEdge(ctx context.Context, sel ast.SelectionSet, v *model.ValidatorEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNValidator2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidator(ctx context.Context, sel ast.SelectionSet, v *models.Validator) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._ValidatorEdge(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNValidatorSnapshot2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot(ctx context.Context, sel ast.SelectionSet, v models.ValidatorSnapshot) graphql.Marshaler {
-	return ec._ValidatorSnapshot(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot(ctx context.Context, sel ast.SelectionSet, v *models.ValidatorSnapshot) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._ValidatorSnapshot(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNValidatorSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorSortField(ctx context.Context, v any) (model.ValidatorSortField, error) {
-	var res model.ValidatorSortField
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNValidatorSortField2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorSortField(ctx context.Context, sel ast.SelectionSet, v model.ValidatorSortField) graphql.Marshaler {
-	return v
+	return ec._Validator(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNValidatorStatus2githubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐValidatorStatus(ctx context.Context, v any) (types.ValidatorStatus, error) {
@@ -10960,11 +8864,11 @@ func (ec *executionContext) marshalOAlert2ᚖgithubᚗcomᚋbirddigitalᚋethᚑ
 	return ec._Alert(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOAlertFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertFilterInput(ctx context.Context, v any) (*model.AlertFilterInput, error) {
+func (ec *executionContext) unmarshalOAlertFilter2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐAlertFilter(ctx context.Context, v any) (*models.AlertFilter, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputAlertFilterInput(ctx, v)
+	res, err := ec.unmarshalInputAlertFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -10985,49 +8889,6 @@ func (ec *executionContext) marshalOAlertSeverity2ᚖgithubᚗcomᚋbirddigital�
 	_ = ctx
 	res := graphql.MarshalString(string(*v))
 	return res
-}
-
-func (ec *executionContext) unmarshalOAlertSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐAlertSortInput(ctx context.Context, v any) (*model.AlertSortInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputAlertSortInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOAlertType2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType(ctx context.Context, v any) (*types.AlertType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	tmp, err := graphql.UnmarshalString(v)
-	res := types.AlertType(tmp)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOAlertType2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐAlertType(ctx context.Context, sel ast.SelectionSet, v *types.AlertType) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalString(string(*v))
-	return res
-}
-
-func (ec *executionContext) unmarshalOBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt(ctx context.Context, v any) (*types.BigInt, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(types.BigInt)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOBigInt2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐBigInt(ctx context.Context, sel ast.SelectionSet, v *types.BigInt) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
@@ -11075,6 +8936,18 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	_ = sel
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v any) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
@@ -11131,24 +9004,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt32(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalInt32(*v)
-	return res
-}
-
 func (ec *executionContext) unmarshalOInt2ᚖint64(ctx context.Context, v any) (*int64, error) {
 	if v == nil {
 		return nil, nil
@@ -11165,53 +9020,6 @@ func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.Se
 	_ = ctx
 	res := graphql.MarshalInt64(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOPaginationInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐPaginationInput(ctx context.Context, v any) (*model.PaginationInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputPaginationInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOPerformanceMetrics2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋpkgᚋtypesᚐPerformanceMetrics(ctx context.Context, sel ast.SelectionSet, v *types.PerformanceMetrics) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._PerformanceMetrics(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOSnapshotFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotFilterInput(ctx context.Context, v any) (*model.SnapshotFilterInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputSnapshotFilterInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOSnapshotSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSnapshotSortInput(ctx context.Context, v any) (*model.SnapshotSortInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputSnapshotSortInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOSortDirection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSortDirection(ctx context.Context, v any) (*model.SortDirection, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(model.SortDirection)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOSortDirection2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐSortDirection(ctx context.Context, sel ast.SelectionSet, v *model.SortDirection) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
@@ -11291,26 +9099,11 @@ func (ec *executionContext) marshalOValidator2ᚖgithubᚗcomᚋbirddigitalᚋet
 	return ec._Validator(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOValidatorFilterInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorFilterInput(ctx context.Context, v any) (*model.ValidatorFilterInput, error) {
+func (ec *executionContext) unmarshalOValidatorFilter2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorFilter(ctx context.Context, v any) (*models.ValidatorFilter, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputValidatorFilterInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOValidatorSnapshot2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋinternalᚋdatabaseᚋmodelsᚐValidatorSnapshot(ctx context.Context, sel ast.SelectionSet, v *models.ValidatorSnapshot) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._ValidatorSnapshot(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOValidatorSortInput2ᚖgithubᚗcomᚋbirddigitalᚋethᚑvalidatorᚑmonitorᚋgraphᚋmodelᚐValidatorSortInput(ctx context.Context, v any) (*model.ValidatorSortInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputValidatorSortInput(ctx, v)
+	res, err := ec.unmarshalInputValidatorFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

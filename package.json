@@ -1,0 +1,20 @@
+{
+  "name": "eth-validator-monitor",
+  "version": "1.0.0",
+  "description": "Ethereum Validator Monitoring System with TailwindCSS + DaisyUI",
+  "scripts": {
+    "css:dev": "tailwindcss -i ./web/styles/input.css -o ./web/static/css/output.css --watch",
+    "css:build": "NODE_ENV=production tailwindcss -i ./web/styles/input.css -o ./web/static/css/output.css --minify",
+    "test:visual": "playwright test",
+    "test:visual:ui": "playwright test --ui",
+    "test:visual:headed": "playwright test --headed",
+    "test:visual:update": "playwright test --update-snapshots",
+    "playwright:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17",
+    "daisyui": "^5.0.0",
+    "@playwright/test": "^1.49.1",
+    "pixelmatch": "^5.3.0"
+  }
+}

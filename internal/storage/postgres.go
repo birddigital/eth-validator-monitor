@@ -147,7 +147,7 @@ func (s *PostgresStorage) GetValidator(ctx context.Context, index int) (*types.V
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("validator %d not found", index)
+		return nil, fmt.Errorf("validator %d not found: %w", index, err)
 	}
 
 	return &v, err

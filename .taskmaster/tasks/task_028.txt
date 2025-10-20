@@ -1,0 +1,35 @@
+# Task ID: 28
+# Title: Add export and reporting features
+# Status: pending
+# Dependencies: 23, 26
+# Priority: medium
+# Description: Implement CSV/PDF export for validators and reports with background job processing
+# Details:
+Create CSV export for validator list. Implement PDF report generation. Add date range selector. Generate validator performance report with charts. Create alerts summary report. Implement background job queue. Send export via email. Add download history.
+
+# Test Strategy:
+Test CSV export with 1000+ validators. Verify PDF generation with charts. Test background job processing. Test email delivery. Load test concurrent exports.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Export options (CSV/PDF)
+- Screenshot: Date range selector
+- Screenshot: Export in progress (loading state)
+- Screenshot: Export completed (download link)
+- Screenshot: Export history table
+- Screenshot: Generated PDF preview
+- Screenshot: Email notification settings
+- Screenshot: Background job status
+- Verify CSV downloads correctly
+- Verify PDF renders with charts embedded
+- Test large export (1000+ rows) doesn't freeze UI

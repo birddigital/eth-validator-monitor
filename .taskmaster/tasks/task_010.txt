@@ -1,0 +1,11 @@
+# Task ID: 10
+# Title: Implement comprehensive performance benchmarking suite
+# Status: done
+# Dependencies: 8
+# Priority: medium
+# Description: Create benchmark tests for critical performance paths including validator data collection, database operations, GraphQL queries, and Redis caching to ensure system performance under load.
+# Details:
+Implement Go benchmark tests covering all performance-critical code paths. Create benchmarks for: (1) Validator data collection goroutines to measure throughput and latency under various validator counts (2) Database operations including batch inserts for validator snapshots, complex queries for performance metrics, and connection pool efficiency (3) GraphQL resolver performance with large datasets and pagination (4) Redis cache operations including get/set operations and invalidation patterns (5) Beacon Chain API client performance with retry logic and rate limiting. Use `go test -bench=.` and `make benchmark` for execution. Implement table-driven benchmarks with realistic data volumes (1000, 5000, 10000 validators). Add memory profiling with `-benchmem` flag to track allocations. Create benchmark comparison tooling to track performance regressions over time. Document benchmark results and performance targets in README.md.
+
+# Test Strategy:
+Verify benchmarks run successfully with `make benchmark`. Compare results against baseline performance targets. Test with different validator counts to ensure linear scaling. Validate memory allocation patterns don't show excessive garbage collection. Run benchmarks in CI to catch performance regressions.

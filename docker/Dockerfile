@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile with security best practices
 # Build stage
-FROM golang:1.22-alpine3.19 AS builder
+FROM golang:alpine3.19 AS builder
 
 # Add metadata
 LABEL maintainer="Adrien Bird <contact@adrienbird.com>" \
@@ -17,15 +17,23 @@ WORKDIR /build
 
 # Copy dependency files first for better caching
 COPY go.mod go.sum ./
+
+# Enable Go toolchain auto-download for version compatibility
+ENV GOTOOLCHAIN=auto
+
 RUN go mod download && go mod verify
 
 # Copy source code
 COPY . .
 
+# Platform detection for multi-arch builds
+ARG TARGETARCH
+ARG TARGETOS=linux
+
 # Build with security-hardened flags
 RUN CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64 \
+    GOOS=${TARGETOS} \
+    GOARCH=${TARGETARCH} \
     go build \
     -a \
     -trimpath \

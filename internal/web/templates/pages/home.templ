@@ -1,0 +1,62 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
+)
+
+// HomePageData contains data for the home page
+type HomePageData struct {
+	ValidatorCount   int
+	ActiveValidators int
+	TotalBalance     float64
+	AvgEffectiveness float64
+}
+
+// HomePage renders the home page content
+templ HomePage(data HomePageData) {
+	<div class="container mx-auto px-4 py-8">
+		<!-- Hero Section -->
+		<div class="hero bg-base-200 rounded-box shadow-lg mb-8 py-12">
+			<div class="hero-content text-center">
+				<div class="max-w-2xl">
+					<h1 class="text-5xl font-bold text-eth-primary mb-4">Ethereum Validator Monitor</h1>
+					<p class="text-lg text-base-content/70">Real-time monitoring and performance tracking for Ethereum validators</p>
+				</div>
+			</div>
+		</div>
+		<!-- Stats Grid -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+			<div class="stat bg-base-100 shadow-lg rounded-box">
+				<div class="stat-title text-base-content/70">Total Validators</div>
+				<div class="stat-value text-primary">{ fmt.Sprintf("%d", data.ValidatorCount) }</div>
+				<div class="stat-desc">Tracked validators</div>
+			</div>
+			<div class="stat bg-base-100 shadow-lg rounded-box">
+				<div class="stat-title text-base-content/70">Active Validators</div>
+				<div class="stat-value text-secondary">{ fmt.Sprintf("%d", data.ActiveValidators) }</div>
+				<div class="stat-desc">Currently active</div>
+			</div>
+			<div class="stat bg-base-100 shadow-lg rounded-box">
+				<div class="stat-title text-base-content/70">Total Balance</div>
+				<div class="stat-value text-accent">{ fmt.Sprintf("%.2f", data.TotalBalance) } ETH</div>
+				<div class="stat-desc">Combined balance</div>
+			</div>
+			<div class="stat bg-base-100 shadow-lg rounded-box">
+				<div class="stat-title text-base-content/70">Avg Effectiveness</div>
+				<div class="stat-value text-success">{ fmt.Sprintf("%.2f%%", data.AvgEffectiveness) }</div>
+				<div class="stat-desc">Performance score</div>
+			</div>
+		</div>
+		<!-- Action Buttons -->
+		<div class="flex flex-wrap gap-4 justify-center">
+			<a href="/validators" class="btn btn-primary btn-lg">View All Validators</a>
+			<a href="/metrics" class="btn btn-secondary btn-lg">View Metrics</a>
+		</div>
+	</div>
+}
+
+// HomePageWithLayout wraps HomePage in the base layout
+templ HomePageWithLayout(data HomePageData) {
+	@layouts.Base("Home", HomePage(data))
+}

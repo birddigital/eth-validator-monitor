@@ -58,11 +58,12 @@ func (l *LoggingMiddleware) Middleware(next http.Handler) http.Handler {
 
 		// Get client identifier
 		identifier := r.RemoteAddr
-		if apiKey, err := GetAPIKey(r.Context()); err == nil {
-			identifier = fmt.Sprintf("api_key:%s", apiKey.Name)
-		} else if user, err := GetUser(r.Context()); err == nil {
-			identifier = fmt.Sprintf("user:%s", user.Username)
-		}
+		// TODO: Implement GetAPIKey and GetUser context helpers
+		// if apiKey, err := GetAPIKey(r.Context()); err == nil {
+		// 	identifier = fmt.Sprintf("api_key:%s", apiKey.Name)
+		// } else if user, err := GetUser(r.Context()); err == nil {
+		// 	identifier = fmt.Sprintf("user:%s", user.Username)
+		// }
 
 		// Call next handler
 		next.ServeHTTP(wrapped, r)

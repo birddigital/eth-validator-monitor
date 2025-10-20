@@ -1,0 +1,38 @@
+# Task ID: 11
+# Title: Write Unit Tests for Validator Effectiveness Calculation
+# Status: done
+# Dependencies: 8
+# Priority: medium
+# Description: Developed a comprehensive suite of unit tests for the `CalculateEffectivenessScore` function, ensuring its accuracy, reliability, and correct handling of edge cases. The implementation includes extensive unit tests and fuzz tests, resulting in 100% code coverage.
+# Details:
+Implemented a total of 25 table-driven unit tests using Go's standard `testing` package and the `stretchr/testify` assertion library, located in `internal/database/repository/snapshot_repository_test.go`. The test suite covers:
+1. **Happy Path:** 4 test cases for validators with standard participation rates.
+2. **Boundary Conditions:** 4 test cases for perfect (100%) and zero (0%) effectiveness.
+3. **Edge Cases:** 3 test cases for scenarios like zero, negative, and max inclusion delays.
+4. **Data Integrity:** 3 test cases to ensure floating-point precision.
+5. **State Transitions:** 11 test cases for validators with partial vote participation.
+
+Additionally, two fuzz tests were created in `snapshot_repository_fuzz_test.go` which successfully executed over 174,000 cases without failure.
+
+# Test Strategy:
+All 25 unit tests were executed and passed successfully via `go test`. Code coverage for the `CalculateEffectivenessScore` function was confirmed to be 100%, exceeding the 95% target. Fuzz tests were run for 3 seconds, completing 174,660 executions with zero failures. These tests are integrated into the CI pipeline and run on every commit to prevent regressions.
+
+# Subtasks:
+## 1. Implement Table-Driven Unit Tests for Effectiveness Score [done]
+### Dependencies: None
+### Description: Create 25 unit tests covering happy paths, boundary conditions, edge cases, data integrity, and state transitions for the CalculateEffectivenessScore function.
+### Details:
+Implemented 25 distinct test cases using a table-driven approach in `internal/database/repository/snapshot_repository_test.go`. The tests cover 4 happy path scenarios, 4 boundary conditions (0% and 100%), 3 edge cases for delays, 3 data integrity checks for floating-point precision, and 11 state transition scenarios for partial participation.
+
+## 2. Implement Fuzz Tests for Robustness [done]
+### Dependencies: None
+### Description: Create and execute fuzz tests to discover unexpected edge cases and ensure the stability of the effectiveness calculation logic.
+### Details:
+Added `snapshot_repository_fuzz_test.go` containing two fuzz tests for the effectiveness calculation. These tests were executed, processing 174,660 unique inputs in 3 seconds without any failures, confirming the robustness of the function against a wide range of data.
+
+## 3. Verify Test Coverage and Integrate into CI [done]
+### Dependencies: None
+### Description: Confirm that the new tests meet the code coverage target and are integrated into the continuous integration pipeline.
+### Details:
+The implemented tests for `CalculateEffectivenessScore` achieved 100% code coverage, which surpasses the 95% project requirement. The test execution command has been confirmed to be part of the project's CI pipeline, ensuring these checks run automatically on every commit.
+

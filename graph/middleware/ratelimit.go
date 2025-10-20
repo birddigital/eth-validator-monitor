@@ -4,11 +4,19 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
 )
+
+// RateLimiterConfig holds rate limiter configuration
+type RateLimiterConfig struct {
+	Enabled        bool
+	RequestsPerSec float64
+	Burst          int
+}
 
 // RateLimiter manages rate limiting for API endpoints
 type RateLimiter struct {
@@ -16,16 +24,16 @@ type RateLimiter struct {
 	mu       sync.RWMutex
 	rate     rate.Limit
 	burst    int
+	enabled  bool
 }
 
-// NewRateLimiter creates a new rate limiter
-// ratePerSecond: number of requests allowed per second
-// burst: maximum burst size
-func NewRateLimiter(ratePerSecond float64, burst int) *RateLimiter {
+// NewRateLimiter creates a new rate limiter with configuration
+func NewRateLimiter(config RateLimiterConfig) *RateLimiter {
 	return &RateLimiter{
 		limiters: make(map[string]*rate.Limiter),
-		rate:     rate.Limit(ratePerSecond),
-		burst:    burst,
+		rate:     rate.Limit(config.RequestsPerSec),
+		burst:    config.Burst,
+		enabled:  config.Enabled,
 	}
 }
 
@@ -62,19 +70,24 @@ func (rl *RateLimiter) cleanupLimiters() {
 
 // Middleware returns the HTTP middleware function
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
-	// Start cleanup goroutine
-	go rl.cleanupLimiters()
+	// Start cleanup goroutine if enabled
+	if rl.enabled {
+		go rl.cleanupLimiters()
+	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Use API key as identifier if available, otherwise use IP
-		identifier := r.RemoteAddr
-		if apiKey, err := GetAPIKey(r.Context()); err == nil {
-			identifier = apiKey.Name
+		// If rate limiting is disabled, pass through
+		if !rl.enabled {
+			next.ServeHTTP(w, r)
+			return
 		}
+
+		// Get IP address from request
+		identifier := getIPFromRequest(r)
 
 		limiter := rl.getLimiter(identifier)
 		if !limiter.Allow() {
-			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+			http.Error(w, "Rate limit exceeded. Please try again later.", http.StatusTooManyRequests)
 			return
 		}
 
@@ -84,13 +97,12 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 
 // Allow checks if a request should be allowed
 func (rl *RateLimiter) Allow(ctx context.Context) error {
+	if !rl.enabled {
+		return nil
+	}
+
 	// Default identifier
 	identifier := "default"
-
-	// Use API key as identifier if available
-	if apiKey, err := GetAPIKey(ctx); err == nil {
-		identifier = apiKey.Name
-	}
 
 	limiter := rl.getLimiter(identifier)
 	if !limiter.Allow() {
@@ -98,4 +110,29 @@ func (rl *RateLimiter) Allow(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// getIPFromRequest extracts the client IP address from the request
+// It checks X-Forwarded-For, X-Real-IP headers first, then falls back to RemoteAddr
+func getIPFromRequest(r *http.Request) string {
+	// Check X-Forwarded-For header (may contain multiple IPs, first one is client)
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		ips := strings.Split(xff, ",")
+		if len(ips) > 0 {
+			return strings.TrimSpace(ips[0])
+		}
+	}
+
+	// Check X-Real-IP header
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		return strings.TrimSpace(xri)
+	}
+
+	// Fall back to RemoteAddr (remove port if present)
+	ip := r.RemoteAddr
+	if idx := strings.LastIndex(ip, ":"); idx != -1 {
+		ip = ip[:idx]
+	}
+
+	return ip
 }

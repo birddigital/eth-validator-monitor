@@ -1,0 +1,49 @@
+# Task ID: 3
+# Title: Design and implement PostgreSQL database schema
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create database schema for validators, validator_snapshots, alerts tables with proper indexes, implement migrations, and set up connection pooling
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Design TimescaleDB hypertable schema for validator data [done]
+### Dependencies: None
+### Description: Create the database schema design for validators and validator_snapshots tables using TimescaleDB hypertables for efficient time-series data storage.
+### Details:
+Design the validators table with fields for validator public key, index, name, and other metadata. Design validator_snapshots hypertable with time-based partitioning, including fields for balance, effectiveness, missed attestations, and performance metrics. Document the schema with entity relationship diagrams and data type specifications.
+
+## 2. Design alerts table schema and indexing strategy [done]
+### Dependencies: 3.1
+### Description: Create the database schema for the alerts table and determine optimal indexing strategy for all tables to support efficient querying patterns.
+### Details:
+Design alerts table with fields for alert type, severity, timestamp, validator reference, message, and resolution status. Implement appropriate indexes on all tables focusing on query patterns: time-range queries, validator-specific lookups, and alert filtering. Document index choices with justification for each based on expected query patterns.
+
+## 3. Implement database migration system [done]
+### Dependencies: 3.1, 3.2
+### Description: Set up a database migration tool and create initial migration scripts for schema creation and updates.
+### Details:
+Evaluate and implement a Go-compatible migration tool (e.g., golang-migrate, goose, or atlas). Create initial migration scripts for creating tables, indexes, and constraints. Implement versioning system for migrations. Document the migration process including how to apply and rollback migrations.
+
+## 4. Configure connection pooling with pgx [done]
+### Dependencies: 3.3
+### Description: Implement connection pooling using pgx library to efficiently manage database connections for high-throughput workloads.
+### Details:
+Set up pgx connection pool with appropriate configuration for concurrent connections. Implement connection pool metrics and monitoring. Configure optimal pool size based on expected workload. Create helper functions for common database operations. Document connection pooling strategy and configuration parameters.
+
+## 5. Optimize database for high write throughput [done]
+### Dependencies: 3.3, 3.4
+### Description: Implement database optimizations for handling high-frequency writes from 12-second validator snapshots across thousands of validators.
+### Details:
+Configure TimescaleDB chunk intervals appropriate for 12-second snapshots. Implement batch insert operations for validator snapshots. Optimize VACUUM and maintenance settings. Configure appropriate WAL (Write-Ahead Logging) settings. Document performance tuning parameters and their rationale.
+
+## 6. Create database access layer and query utilities [done]
+### Dependencies: 3.4, 3.5
+### Description: Implement a Go package with database access methods and query utilities for the application to interact with the database.
+### Details:
+Create a database access layer with CRUD operations for validators, snapshots, and alerts. Implement query utilities for common data access patterns including time-series aggregations. Create helper functions for transaction management. Document the API for the database access layer with usage examples.
+

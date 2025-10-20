@@ -1,0 +1,36 @@
+# Task ID: 13
+# Title: Test and Verify Docker Compose Environment
+# Status: done
+# Dependencies: 9, 7, 12
+# Priority: medium
+# Description: Conduct comprehensive testing of the Docker Compose setup to ensure all services start correctly, communicate with each other, and persist data as expected. This includes verifying health checks and the functionality of `docker-compose up` and `docker-compose down` commands.
+# Details:
+This task involves a full-stack verification of the local development environment defined in `docker-compose.yml`.
+1.  **Service Startup & Health:**
+    *   Execute `docker compose up -d --build`.
+    *   Confirm all services (`postgres`, `redis`, `prometheus`, `grafana`, `validator-monitor`) transition to a `healthy` state by checking `docker compose ps`.
+    *   Inspect the logs for each container (`docker compose logs <service>`) to ensure there are no startup errors or recurring warnings.
+2.  **Inter-Service Communication:**
+    *   **Validator-Monitor -> Postgres:** Verify the application successfully connects to the PostgreSQL database and runs all migrations, including the schema fix from Task #12.
+    *   **Validator-Monitor -> Redis:** Ensure the application can connect to and use the Redis instance for caching.
+    *   **Prometheus -> Validator-Monitor:** Access the Prometheus UI (default: `http://localhost:9090`) and confirm that the `validator-monitor` target is successfully discovered and scraped (`State` should be `UP`).
+    *   **Grafana -> Prometheus:** Access the Grafana UI (default: `http://localhost:3000`), log in, and verify that the Prometheus data source is pre-configured and tests successfully. Confirm that the provisioned dashboard from Task #7 can be viewed and is populated with data.
+3.  **Data Persistence:**
+    *   After the services have been running and have collected some data, execute `docker compose down`.
+    *   Relaunch the stack with `docker compose up -d`.
+    *   Verify that data within PostgreSQL (e.g., validator snapshot data) and Grafana (e.g., starred dashboards) has been persisted via the defined Docker volumes.
+4.  **Makefile Targets:**
+    *   Test the `make docker-up` target to ensure it correctly starts the services in detached mode.
+    *   Test the `make docker-down` target to ensure it cleanly stops and removes the containers.
+
+# Test Strategy:
+1.  Clone the latest version of the repository and switch to the relevant feature branch.
+2.  Run `make docker-up` or `docker compose up -d --build` from the project root.
+3.  Use `docker compose ps` to verify all services are listed with a `STATUS` indicating they are healthy.
+4.  Access the service UIs in a browser:
+    *   Prometheus: `http://localhost:9090`. Navigate to `Status -> Targets` and check the `validator-monitor` endpoint is `UP`.
+    *   Grafana: `http://localhost:3000`. Log in (e.g., admin/admin) and confirm the main validator dashboard is available and displaying metrics from Prometheus.
+5.  Execute `docker compose exec postgres psql -U user -d eth_validator_monitor -c "SELECT COUNT(*) FROM validators;"` to confirm the application has connected and migrations have run.
+6.  Run `make docker-down`. All containers should stop and be removed.
+7.  Run `make docker-up` again. Re-run the checks from steps 4 and 5 to confirm that data has been persisted through the restart cycle.
+8.  Finally, run `docker compose down -v` to stop containers and remove all associated volumes. Verify volumes are gone with `docker volume ls`.

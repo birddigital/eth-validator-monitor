@@ -1,0 +1,32 @@
+# Task ID: 20
+# Title: Design and implement base template layouts
+# Status: pending
+# Dependencies: 18
+# Priority: high
+# Description: Create reusable templ base layouts with navigation, footer, and responsive structure using TailwindCSS + DaisyUI
+# Details:
+Create base layout template with slots for content. Implement responsive navigation bar with mobile menu. Add user profile dropdown. Create footer with links. Implement dark mode toggle. Set up Tailwind build pipeline. Configure DaisyUI theme.
+
+# Test Strategy:
+Test responsive breakpoints (mobile, tablet, desktop). Verify dark mode toggle persistence. Test accessibility (keyboard navigation, ARIA labels). Visual regression testing with snapshots.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Base layout with navigation (light mode)
+- Screenshot: Base layout with navigation (dark mode)
+- Screenshot: Mobile navigation drawer (open/closed)
+- Screenshot: Responsive breakpoints (4 viewports)
+- Screenshot: Footer rendering
+- Screenshot: User profile dropdown (open/closed)
+- Verify dark mode toggle persists across page loads
+- Test all navigation links are clickable

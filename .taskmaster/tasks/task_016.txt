@@ -1,0 +1,25 @@
+# Task ID: 16
+# Title: Create Production-Ready README and Project Documentation
+# Status: done
+# Dependencies: 8, 9, 13, 14, 15
+# Priority: medium
+# Description: Create comprehensive, production-ready documentation including a detailed README.md with sections on architecture, setup, API, deployment, monitoring, and contribution guidelines, and add status badges.
+# Details:
+Expand the existing documentation into a comprehensive, production-grade guide. The primary deliverable is a single, well-structured README.md file in the project root. The file must include the following sections:
+1.  **Project Overview**: A high-level summary of the project's purpose and functionality.
+2.  **Architecture Diagram**: An SVG or Mermaid diagram illustrating the main components (Go service, PostgreSQL, Redis, Prometheus, Grafana) and their interactions.
+3.  **Setup Instructions**: Detailed, step-by-step guides for both local development using Docker Compose (based on the verified setup from Task #13) and manual setup.
+4.  **API Documentation**: Instructions on how to access the GraphQL Playground, with examples of key queries and mutations.
+5.  **Environment Variables Reference**: A complete reference table for all environment variables, derived from the `.env.example` file (from Task #14), explaining the purpose and default/example value for each.
+6.  **Deployment Guide**: A high-level guide on deploying the application to a production-like environment using Docker.
+7.  **Monitoring Setup**: Instructions on how to access and interpret the pre-configured Grafana dashboards for application monitoring.
+8.  **Troubleshooting Guide**: A guide to diagnosing common problems, including how to use the structured logs and request IDs (from Task #15) to trace issues.
+9.  **Contribution Guidelines**: Standards for contributing, including how to run tests, linting, and the pull request process.
+10. **Badges**: Add markdown for dynamic badges at the top of the README for Build Status (from CI), Code Coverage (from Task #8), and Go Version.
+
+# Test Strategy:
+1.  **Documentation Review**: Perform a peer review of the `README.md` file, checking for clarity, accuracy, and completeness against the requirements.
+2.  **Fresh Setup Test**: On a clean machine, clone the repository and follow the 'Setup Instructions' verbatim to ensure the local Docker environment starts successfully without any errors or undocumented steps.
+3.  **Variable Cross-Reference**: Compare the 'Environment Variables Reference' section against the `.env.example` file generated in Task #14 to ensure they are perfectly synchronized.
+4.  **Verify Diagram and Links**: Ensure the architecture diagram accurately represents the system and that all internal and external links in the document are valid and not broken.
+5.  **Badge Validation**: After the changes are merged to the main branch, confirm that the Build Status, Coverage, and Go Version badges are correctly rendering on the project's repository page.

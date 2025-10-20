@@ -1,0 +1,36 @@
+# Task ID: 27
+# Title: Build user settings and profile page
+# Status: pending
+# Dependencies: 21
+# Priority: medium
+# Description: Create settings page for profile management, notifications, API keys, and UI customization
+# Details:
+Create profile section. Build notification preferences. Implement API key generation. Add UI preferences (theme, items per page). Create 2FA setup (TOTP). Add session management. Implement account deletion.
+
+# Test Strategy:
+Test password change validation. Verify API key uniqueness. Test 2FA setup and validation. Test session revocation. Test account deletion flow.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Settings page (all tabs)
+- Screenshot: Profile section (edit mode)
+- Screenshot: Password change form (with validation)
+- Screenshot: Notification preferences
+- Screenshot: API key generation (before/after)
+- Screenshot: 2FA setup (QR code displayed)
+- Screenshot: Active sessions list
+- Screenshot: Session revocation confirmation
+- Screenshot: Account deletion confirmation modal
+- Screenshot: Theme selector (light/dark/auto)
+- Verify tabbed navigation works correctly
+- Verify form submissions update inline

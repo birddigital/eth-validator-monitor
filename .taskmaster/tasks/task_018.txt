@@ -1,0 +1,29 @@
+# Task ID: 18
+# Title: Set up HTMX infrastructure and routing
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Integrate Chi router, configure static file serving, set up templ template engine, and establish basic routing structure for HTML pages
+# Details:
+Install and configure Chi router as HTTP multiplexer. Set up static file serving from /web/static with cache headers. Configure templ template engine with hot-reload in development. Create base route structure: /, /login, /api/htmx/*. Implement content negotiation (text/html vs application/json). Add middleware: compression, logging, recovery.
+
+# Test Strategy:
+Unit test route registration and matching. Integration test static file serving with cache headers. Verify templ compilation and rendering. Test middleware ordering and execution.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Base layout rendering with navigation
+- Screenshot: Static assets loading correctly (CSS, JS, images)
+- Screenshot: 404 error page
+- Screenshot: 500 error page
+- Verify all routes return correct content-type headers

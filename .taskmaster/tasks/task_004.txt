@@ -1,0 +1,49 @@
+# Task ID: 4
+# Title: Build data collection service with goroutines
+# Status: done
+# Dependencies: 2, 3
+# Priority: high
+# Description: Implement multi-goroutine data collector that monitors validators every 12 seconds, calculates performance scores, and stores snapshots to database
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Design goroutine pool architecture for data collection [done]
+### Dependencies: None
+### Description: Create a robust goroutine pool architecture that efficiently manages worker goroutines for validator data collection.
+### Details:
+Implement a worker pool pattern with configurable number of goroutines. Include queue management for validator tasks, worker lifecycle management, and communication channels between workers and the main process. Design should handle backpressure and prevent resource exhaustion under high load.
+
+## 2. Implement validator data collection logic [done]
+### Dependencies: 4.1
+### Description: Create the core data collection functionality that fetches validator data from the Beacon Chain every 12 seconds.
+### Details:
+Utilize the BeaconClient interface from Task 2 to fetch validator statuses, balances, and attestation data. Implement retry logic with exponential backoff for failed requests. Ensure collection is synchronized with Ethereum's 12-second epoch timing. Include logging of collection statistics and error rates.
+
+## 3. Develop performance scoring algorithm implementation [done]
+### Dependencies: 4.2
+### Description: Implement Jim McDonald's attestation effectiveness formula and other performance metrics for validators.
+### Details:
+Create scoring functions that calculate attestation effectiveness, missed attestations, and overall validator health. Implement percentile calculations to rank validators against peers. Include time-weighted scoring to emphasize recent performance. Optimize calculations for minimal CPU usage during high-frequency updates.
+
+## 4. Build database storage and snapshot management [done]
+### Dependencies: 4.2, 4.3
+### Description: Implement concurrent database operations to store validator snapshots efficiently without blocking collection.
+### Details:
+Create a database writer service that batches validator snapshots for efficient PostgreSQL inserts. Implement connection pooling to handle concurrent writes. Add data validation before storage and handle database errors gracefully. Include cleanup logic for old snapshots based on configurable retention policy.
+
+## 5. Implement graceful shutdown and error recovery [done]
+### Dependencies: 4.1, 4.2, 4.4
+### Description: Ensure the data collection service can shut down gracefully and recover from errors without data loss.
+### Details:
+Add signal handling for graceful shutdown that completes in-progress collections and database writes. Implement error boundaries that prevent individual validator failures from affecting the entire system. Create a recovery mechanism that can resume collection after service restarts. Include comprehensive logging for operational visibility.
+
+## 6. Optimize for production performance and monitoring [done]
+### Dependencies: 4.1, 4.2, 4.3, 4.4, 4.5
+### Description: Tune the data collection service for production-level performance and add internal monitoring capabilities.
+### Details:
+Profile and optimize CPU/memory usage for handling thousands of validators. Implement internal metrics collection for operation rates, latencies, and error counts. Add health check endpoints for external monitoring. Create configuration options for tuning performance parameters based on deployment environment. Prepare for integration with Prometheus metrics (Task 7).
+

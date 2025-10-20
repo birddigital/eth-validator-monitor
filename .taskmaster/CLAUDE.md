@@ -412,6 +412,128 @@ These commands make AI calls and may take up to a minute:
 - Provides more informed task creation and updates
 - Recommended for complex technical tasks
 
+## UI Task Requirements
+
+### Visual Verification Standard (Playwright MCP)
+
+**MANDATORY for ALL UI-based tasks and subtasks:**
+
+Every UI task created with Task Master MUST include comprehensive Playwright MCP visual verification requirements in the test strategy. This is a non-negotiable quality standard.
+
+#### Required Components for UI Tasks:
+
+When using `task-master add-task` or `task-master parse-prd` for UI-related tasks, ensure the test strategy includes:
+
+```
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test framework-specific updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+
+[Component-specific screenshots:]
+- Screenshot: [specific state 1]
+- Screenshot: [specific state 2]
+- Verify: [specific behavior]
+```
+
+#### Implementation:
+
+When expanding UI tasks with `task-master expand`:
+
+1. Each subtask should specify which screenshots to capture
+2. Each subtask should define specific visual behaviors to verify
+3. Each subtask should include viewport-specific testing requirements
+4. Each subtask should specify accessibility visual checks
+
+#### Examples:
+
+**Good UI Task (with visual verification):**
+```bash
+task-master add-task --title="Build login page" --testStrategy="
+Unit test form validation.
+Integration test login flow.
+
+Visual Verification (Playwright MCP):
+- Screenshot: Login form (default state)
+- Screenshot: Login form (validation errors)
+- Screenshot: Login form (loading state)
+- Screenshot: Successful login redirect
+- Test across all 4 viewports
+- Verify WCAG 2.1 AA contrast ratios
+- Verify focus indicators visible
+"
+```
+
+**Bad UI Task (missing visual verification):**
+```bash
+task-master add-task --title="Build login page" --testStrategy="
+Unit test form validation.
+Integration test login flow.
+"
+# ❌ REJECTED - No visual verification requirements
+```
+
+#### Enforcement in PRD Parsing:
+
+When creating a PRD for UI features, include visual verification requirements for each task. Example PRD section:
+
+```
+Task: Build Login Page
+
+Description: Create user login interface with email and password fields
+
+Test Strategy:
+- Unit test form validation (email format, password strength)
+- Integration test login flow with backend API
+- Test CSRF token handling
+
+Visual Verification (Playwright MCP):
+- Screenshot: Login page default state (all 4 viewports)
+- Screenshot: Form validation errors (inline and summary)
+- Screenshot: Loading state during submission
+- Screenshot: Success redirect
+- Screenshot: Error states (network error, invalid credentials)
+- Verify: No layout shift during form submission
+- Verify: Focus indicators on all interactive elements
+- Verify: WCAG 2.1 AA color contrast on all text
+- Test: Dark mode rendering (if applicable)
+```
+
+#### Quality Checks:
+
+Before marking UI tasks as "done":
+
+1. ✅ All visual regression baselines captured
+2. ✅ All 4 viewports tested
+3. ✅ Dark mode tested (if applicable)
+4. ✅ Accessibility checks passed (focus, contrast, touch targets)
+5. ✅ No layout shift or visual flashing
+6. ✅ Error states and empty states captured
+7. ✅ Loading states verified
+
+Use `task-master update-subtask` to log visual test results:
+
+```bash
+task-master update-subtask --id=1.2.3 --prompt="
+Visual tests completed:
+- ✅ All viewports tested (mobile, tablet, desktop, wide)
+- ✅ Baselines captured in tests/visual-regression/baselines/login-page/
+- ✅ Dark mode rendering verified
+- ✅ WCAG 2.1 AA contrast ratios: all pass
+- ✅ Focus indicators visible on all interactive elements
+- ✅ No layout shift during HTMX form submission
+- ✅ All error states captured and verified
+"
+```
+
 ---
 
 _This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._

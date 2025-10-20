@@ -1,0 +1,21 @@
+# Task ID: 14
+# Title: Implement Environment Variable Configuration and .env File Support
+# Status: done
+# Dependencies: 2, 3, 5, 6, 7, 9
+# Priority: medium
+# Description: Implement environment variable configuration using a .env file, add validation for required variables on startup, and create a comprehensive .env.example template.
+# Details:
+Integrate a library like `godotenv` to load environment variables from a `.env` file. Create a centralized configuration struct in a `config` package to hold all application settings. On application startup, implement a validation function that checks for the presence of all required environment variables and exits with a fatal error if any are missing, logging which variables are required. Create a `.env.example` file in the project root. This file must document every possible environment variable, with comments explaining its purpose. Required variables should be listed with placeholder values (e.g., `DB_PASSWORD=your_password`), while optional variables should have sensible defaults. The variables to be documented include:
+- Server: `HTTP_PORT`, `GIN_MODE`
+- Database: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL_MODE`
+- Redis: `REDIS_ADDR`, `REDIS_PASSWORD`, `REDIS_DB`
+- Beacon Chain: `BEACON_NODE_URL`
+- Monitoring: `PROMETHEUS_PORT`
+
+# Test Strategy:
+1. Write a unit test for the configuration loading logic. The test should mock environment variables and verify that the config struct is populated correctly. 
+2. Write a unit test for the validation logic. Assert that the application panics or exits when a required variable (e.g., `DB_HOST`) is missing. 
+3. Verify that the application starts successfully when all required variables are present, but an optional one is missing, confirming it falls back to a default value. 
+4. Manually verify the `.env.example` file is well-documented, clear, and contains all necessary variables. 
+5. Run the application locally using a copied `.env` file and confirm it connects to the database, Redis, and other services successfully. 
+6. Confirm that the application startup fails with a clear, informative error message when a required variable is commented out or removed from the `.env` file.

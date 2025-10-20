@@ -1,0 +1,60 @@
+# Task ID: 15
+# Title: Implement Comprehensive Error Handling and Structured Logging
+# Status: done
+# Dependencies: 2, 3, 4, 5, 6, 14
+# Priority: medium
+# Description: Integrate a structured logging library like zerolog for leveled and contextual logging, and implement a robust error handling strategy with error wrapping and request ID tracing across all services.
+# Details:
+Integrate `zerolog` to provide structured, leveled logging. The logger should be configured via environment variables (from Task 14), supporting different log levels (debug, info, warn, error) and output formats (JSON for production, pretty-printed console for development). Implement a middleware for the GraphQL API (from Task 5) that generates a unique request ID for each incoming request, embeds it in the request context, and includes it in all subsequent log lines. Refactor key services (data collection, database access, Beacon client) to accept a `context.Context` and use a context-aware logger. Implement a consistent error handling pattern using Go's `fmt.Errorf` with the `%w` verb to wrap errors with context, ensuring clear error trails. Configure log rotation using a library like `lumberjack` to manage log file size, backups, and retention, with settings configurable via environment variables.
+
+# Test Strategy:
+1. Write unit tests for the logger initialization to verify that it correctly parses environment variables for log level and format. 2. Write a unit test for the request ID middleware to ensure it injects a non-empty request ID into the context. 3. Implement an integration test for a GraphQL endpoint that intentionally causes an error; capture the log output and assert that it is in the correct JSON format, contains the request ID, and includes the wrapped error message. 4. Manually verify log output by running the application with `LOG_FORMAT=console` and `LOG_FORMAT=json` to confirm the output is correct. 5. Manually test log rotation by generating a large volume of logs and verifying that files are rotated according to the configured size and count limits.
+
+# Subtasks:
+## 1. Integrate and Configure `zerolog` for Structured Logging [done]
+### Dependencies: None
+### Description: Add the `zerolog` library to the project and create an initial global logger instance. Configure the logger's level (debug, info, warn, error) and output format (JSON for production, pretty-printed console for development) based on environment variables.
+### Details:
+Add `github.com/rs/zerolog` as a project dependency. Create a new `logging` package to encapsulate logger initialization. Implement a function that reads `LOG_LEVEL` and `LOG_FORMAT` from the application configuration (provided by Task 14) and returns a configured `zerolog.Logger`. Initialize this logger in the `main` function.
+<info added on 2025-10-18T20:04:57.502Z>
+"Integration complete. Created `internal/logger` package with config-based initialization, context-aware logging with request ID support, and comprehensive unit tests (8/8). Added `LoggingConfig` struct to `config.go` with settings for level, format, output path, and rotation. Implemented log rotation using `lumberjack`. Updated `.env.example` with all logging configuration options and replaced standard log calls in `main.go` with `zerolog`."
+</info added on 2025-10-18T20:04:57.502Z>
+
+## 2. Implement GraphQL Middleware for Request ID Tracing [done]
+### Dependencies: 15.1
+### Description: Create a new middleware for the GraphQL API server that generates a unique request ID for each incoming request. This ID must be embedded into the request's context for downstream use.
+### Details:
+Develop an HTTP middleware compatible with the GraphQL server (from Task 5). The middleware should generate a unique ID (e.g., a UUID) for every request. It will then create a request-scoped logger by embedding the request ID into a child logger (`logger.With().Str("request_id", id).Logger()`). This new logger and the ID string will be added to the request's `context.Context`.
+<info added on 2025-10-18T21:19:26.540Z>
+["Implementation is complete. A new middleware was created in graph/middleware/requestid.go which generates a UUID for each request. This ID, along with a request-scoped logger, is embedded into the request context. The ID is also added to the X-Request-ID response header for client correlation. Helper functions were created for accessing the ID and logger from the context. Comprehensive tests with 100% coverage were added in graph/middleware/requestid_test.go, and benchmarks show an acceptable overhead of ~1µs per request. The middleware has been integrated as the outermost layer in the server's middleware chain."]
+</info added on 2025-10-18T21:19:26.540Z>
+
+## 3. Refactor Core Services to Use Context-Aware Logger [done]
+### Dependencies: 15.2
+### Description: Modify key services, such as data collection, database access, and the Beacon client, to accept a `context.Context` and utilize the request-scoped logger for all logging activities.
+### Details:
+Update the function signatures of methods in the primary service packages to accept `context.Context` as the first argument. Within these methods, retrieve the request-scoped logger from the context. Replace all existing logging statements (e.g., `log.Printf`) with calls to the context logger, ensuring all logs related to a single request are traceable via the request ID.
+<info added on 2025-10-18T21:49:17.852Z>
+Completed refactoring of core services to use a context-aware logger. Refactored internal/collector/validator_collector.go (16 log statements replaced) and internal/collector/shutdown.go (9 replaced). All logging now uses logger.FromContext(ctx) with structured zerolog fields. Background goroutines create a context with a request ID. Logging in BeaconClient and PostgresStorage was also updated. The collector package builds successfully and is ready for integration testing to verify end-to-end request ID propagation.
+</info added on 2025-10-18T21:49:17.852Z>
+
+## 4. Establish Consistent Error Wrapping Pattern [done]
+### Dependencies: 15.3
+### Description: Refactor error handling across the application to consistently use Go's `fmt.Errorf` with the `%w` verb. This will create clear, traceable error chains that enhance debugging when logged.
+### Details:
+Audit the codebase, focusing on functions that propagate errors. Where a function catches an error from a dependency and returns it, wrap the error with additional context using `fmt.Errorf("operation failed: %w", err)`. In top-level handlers like GraphQL resolvers, log the complete error chain using `zerolog`'s `Err()` method, which will automatically serialize the wrapped errors.
+<info added on 2025-10-18T22:10:32.456Z>
+"Successfully implemented consistent error wrapping pattern across the codebase.\n\nCHANGES MADE:\n1. Fixed postgres.go:150 - Wrapped sql.ErrNoRows with %w for error chain preservation\n2. Fixed redis.go (7 instances) - Wrapped redis.Nil errors with %w at lines 141, 177, 207, 237, 267, 328, 487\n3. Added error logging to GraphQL Validators resolver using zerolog with structured fields\n4. Created comprehensive test suites:\n   - internal/storage/postgres_error_test.go - Tests sql.ErrNoRows wrapping and multi-layer chains\n   - internal/cache/redis_error_test.go - Tests redis.Nil wrapping across all cache operations\n\nTEST RESULTS:\n✓ TestGetValidator_ErrorWrapping - Passed\n✓ TestErrorChainPreservation - Passed (4-layer error chain: DB→Storage→Service→Resolver)\n✓ TestErrorUnwrapping - Passed\n✓ TestRedisNil_ErrorWrapping - Passed\n✓ TestRedisNil_MultiLayerChain - Passed\n✓ TestDifferentCacheMissScenarios - Passed (all 7 cache operations)\n✓ TestErrorIsVsEquality - Passed (demonstrates importance of %w)\n\nPATTERN ESTABLISHED:\n- Database layer: fmt.Errorf(\"validator %d not found: %w\", index, err)\n- Cache layer: fmt.Errorf(\"validator %d not in cache: %w\", index, err)\n- Resolver layer: logger.Error().Err(err).Str(\"operation\", ...).Msg(...)\n- All errors use %w for wrapping, enabling errors.Is() to detect sentinel errors through the entire chain\n\nThe codebase now has consistent error wrapping that creates clear, traceable error chains for debugging."
+</info added on 2025-10-18T22:10:32.456Z>
+
+## 5. Configure Log Rotation using `lumberjack` [done]
+### Dependencies: 15.1
+### Description: Integrate the `lumberjack` library to manage log file rotation, including size limits, backups, and retention policies, ensuring log files do not consume unbounded disk space in production.
+### Details:
+Add `gopkg.in/natefinch/lumberjack.v2` as a dependency. Modify the logger initialization logic from subtask 1. When the output format is 'json' (for production), configure the `zerolog` output writer to be a `lumberjack.Logger` instance. The properties of this logger (FilePath, MaxSize, MaxBackups, MaxAge, Compress) should be configurable via environment variables.
+<info added on 2025-10-18T22:19:57.933Z>
+```json
+"Task completed successfully. Findings show that the core lumberjack integration was already implemented in internal/logger/logger.go (lines 12, 54-62), using lumberjack.Logger as the io.Writer when LOG_OUTPUT_PATH is set. The configuration structure is defined in internal/config/config.go (lines 60-68) and initialized from documented environment variables in cmd/server/main.go. Comprehensive unit tests have been added in internal/logger/logger_test.go to cover file output, console output, and rotation configurations. The gopkg.in/natefinch/lumberjack.v2 dependency is present in go.mod and environment variables are documented in .env.example."
+```
+</info added on 2025-10-18T22:19:57.933Z>
+

@@ -1,0 +1,43 @@
+# Task ID: 1
+# Title: Set up Go project structure with modules and dependencies
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Initialize Go module, set up directory structure (cmd/, pkg/, internal/), and install core dependencies (go-ethereum, gqlgen, PostgreSQL driver, Redis client, Prometheus client)
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Initialize Go module and create basic project structure [done]
+### Dependencies: None
+### Description: Set up the Go module with proper naming and create the standard directory structure including cmd/, pkg/, and internal/ folders.
+### Details:
+Run 'go mod init' with appropriate module name, create the directory structure following Go project conventions (cmd/ for entry points, pkg/ for public packages, internal/ for private implementation), and set up a basic .gitignore file for Go projects.
+
+## 2. Install go-ethereum dependency and set up Ethereum client interfaces [done]
+### Dependencies: 1.1
+### Description: Add go-ethereum as a dependency and create the necessary interfaces for interacting with Ethereum networks.
+### Details:
+Run 'go get github.com/ethereum/go-ethereum', create interface definitions for Ethereum client interactions in internal/ethereum/, and implement basic connection configuration for both mainnet and testnet environments.
+
+## 3. Install and configure GraphQL dependencies with gqlgen [done]
+### Dependencies: 1.1
+### Description: Set up gqlgen for GraphQL API development including schema definition and resolver structure.
+### Details:
+Run 'go get github.com/99designs/gqlgen', initialize gqlgen with 'go run github.com/99designs/gqlgen init', create a basic schema.graphqls file with placeholder types, and generate the initial resolver code. Configure gqlgen.yml for the project's specific needs.
+
+## 4. Install and configure database dependencies [done]
+### Dependencies: 1.1
+### Description: Add PostgreSQL driver and set up database connection configuration and basic repository interfaces.
+### Details:
+Run 'go get github.com/lib/pq' for PostgreSQL driver, create database connection configuration in internal/database/, implement connection pooling, define repository interfaces for data access, and create migration scripts for initial schema setup.
+
+## 5. Install monitoring and caching dependencies [done]
+### Dependencies: 1.1
+### Description: Add Redis client for caching and Prometheus client for metrics collection and configure their basic setup.
+### Details:
+Run 'go get github.com/go-redis/redis/v8' for Redis client and 'go get github.com/prometheus/client_golang' for Prometheus, create configuration for both in internal/cache/ and internal/metrics/, implement basic client wrappers, and set up health check endpoints for both services.
+

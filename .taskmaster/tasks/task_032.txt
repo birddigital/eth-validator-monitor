@@ -1,0 +1,34 @@
+# Task ID: 32
+# Title: Optimize performance and implement caching
+# Status: pending
+# Dependencies: 22, 23, 24
+# Priority: medium
+# Description: Optimize page load times and ensure excellent Core Web Vitals scores
+# Details:
+Implement template caching. Add Redis caching for HTML fragments. Configure browser caching headers. Implement HTTP/2 server push. Add image optimization. Minify CSS/JS in production. Implement CDN integration. Add performance Prometheus metrics.
+
+# Test Strategy:
+Benchmark page load times. Test cache hit rates. Verify cache invalidation. Test with 1000 validators. Compare cached vs uncached.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Lighthouse performance report (desktop)
+- Screenshot: Lighthouse performance report (mobile)
+- Screenshot: Network waterfall (Chrome DevTools)
+- Screenshot: Cache hit/miss metrics (Redis)
+- Screenshot: Template render time metrics (Prometheus)
+- Screenshot: Core Web Vitals dashboard
+- Screenshot: Page load timeline
+- Verify LCP < 2.5s visually (no delayed content)
+- Verify CLS < 0.1 (no layout shift during load)
+- Test performance with throttled network (slow 3G)

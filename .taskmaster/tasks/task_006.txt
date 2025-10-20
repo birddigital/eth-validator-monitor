@@ -1,0 +1,43 @@
+# Task ID: 6
+# Title: Set up Redis caching layer
+# Status: done
+# Dependencies: 3
+# Priority: medium
+# Description: Implement Redis client for caching validator data, implement TTL strategies, add cache invalidation logic
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Set up Redis client configuration and connection pooling [done]
+### Dependencies: None
+### Description: Configure Redis client with proper connection settings, implement connection pooling, and establish error handling patterns
+### Details:
+Implement Redis client configuration with environment variables for host, port, password, and database number. Set up connection pooling with appropriate max connections and idle timeout settings. Implement robust error handling and reconnection logic. Create a singleton Redis client instance that can be used throughout the application.
+
+## 2. Design cache key structure and implement caching functions [done]
+### Dependencies: 6.1
+### Description: Create a consistent cache key naming convention and implement core caching functions for different validator data types
+### Details:
+Design hierarchical key structure (e.g., 'validator:{id}:metadata', 'validator:{id}:snapshot:{timestamp}'). Implement Get/Set/Delete functions with proper serialization/deserialization of validator data structures. Create batch operations using Redis pipelining for efficient multi-key operations. Implement helper functions for common validator data access patterns.
+
+## 3. Implement TTL strategies for different data types [done]
+### Dependencies: 6.2
+### Description: Define and implement appropriate TTL (Time-To-Live) strategies for different types of validator data based on update frequency and importance
+### Details:
+Implement sliding window TTL for frequently accessed validator metadata (longer TTL, e.g., 1 hour). Use shorter TTLs for validator snapshots (e.g., 15 minutes) to balance freshness and performance. Create configuration options for TTL values that can be adjusted based on system load. Implement TTL extension logic for frequently accessed keys to optimize cache hit rates.
+
+## 4. Develop cache invalidation patterns and consistency mechanisms [done]
+### Dependencies: 6.2, 6.3
+### Description: Implement cache invalidation logic to ensure data consistency between Redis and the PostgreSQL database
+### Details:
+Create event-based cache invalidation triggers for database updates. Implement version-based invalidation using Redis hash fields to track data versions. Add bulk invalidation capabilities for system-wide updates. Ensure atomic operations for critical data updates to maintain consistency. Implement background job for periodic cache cleanup of stale entries.
+
+## 5. Add cache monitoring and performance metrics [done]
+### Dependencies: 6.1, 6.2, 6.3, 6.4
+### Description: Implement monitoring for cache hit rates, memory usage, and performance metrics to optimize caching strategy
+### Details:
+Implement cache hit/miss counters for different data types. Add Redis memory usage monitoring. Create performance timing metrics for cache operations. Implement logging for cache-related errors and warnings. Set up alerting for low hit rates or high memory usage. Prepare integration with Task 7 (Prometheus metrics) by defining metric collection points.
+

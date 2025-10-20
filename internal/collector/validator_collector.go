@@ -3,12 +3,12 @@ package collector
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
 	"github.com/birddigital/eth-validator-monitor/internal/database/models"
 	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+	"github.com/birddigital/eth-validator-monitor/internal/logger"
 	"github.com/birddigital/eth-validator-monitor/pkg/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/birddigital/eth-validator-monitor/internal/cache"
@@ -104,7 +104,9 @@ func (c *ValidatorCollector) Start() error {
 	c.wg.Add(1)
 	go c.subscribeToHeadEvents()
 
-	log.Printf("Validator collector started monitoring %d validators", len(c.validators))
+	logger.FromContext(c.ctx).Info().
+		Int("validator_count", len(c.validators)).
+		Msg("Validator collector started monitoring validators")
 	return nil
 }
 
@@ -171,7 +173,10 @@ func (c *ValidatorCollector) collectAllValidators() {
 			}
 
 			if err := c.workerPool.Submit(task); err != nil {
-				log.Printf("Failed to submit collection task for validator %d: %v", validatorIndex, err)
+				logger.FromContext(c.ctx).Error().
+					Err(err).
+					Int64("validator_index", validatorIndex).
+					Msg("Failed to submit collection task")
 				c.mu.Lock()
 				c.errorsCount++
 				c.mu.Unlock()
@@ -207,7 +212,10 @@ func (c *ValidatorCollector) processResults() {
 			}
 
 			if result.Error != nil {
-				log.Printf("Collection error for validator %d: %v", result.ValidatorIndex, result.Error)
+				logger.FromContext(c.ctx).Error().
+					Err(result.Error).
+					Int64("validator_index", result.ValidatorIndex).
+					Msg("Collection error for validator")
 				c.mu.Lock()
 				c.errorsCount++
 				c.mu.Unlock()
@@ -217,7 +225,9 @@ func (c *ValidatorCollector) processResults() {
 			// Convert result to snapshot
 			snapshot, err := c.resultToSnapshot(result)
 			if err != nil {
-				log.Printf("Failed to convert result to snapshot: %v", err)
+				logger.FromContext(c.ctx).Error().
+					Err(err).
+					Msg("Failed to convert result to snapshot")
 				continue
 			}
 
@@ -247,7 +257,10 @@ func (c *ValidatorCollector) storeBatch(snapshots []*models.ValidatorSnapshot) {
 
 	// Store in database
 	if err := c.snapshotRepo.BatchInsertSnapshots(c.ctx, snapshots); err != nil {
-		log.Printf("Failed to store snapshot batch: %v", err)
+		logger.FromContext(c.ctx).Error().
+			Err(err).
+			Int("batch_size", len(snapshots)).
+			Msg("Failed to store snapshot batch")
 		return
 	}
 
@@ -259,10 +272,15 @@ func (c *ValidatorCollector) storeBatch(snapshots []*models.ValidatorSnapshot) {
 	}
 
 	if err := c.cache.BatchSet(c.ctx, cacheItems, cache.GetLatestSnapshotTTL()); err != nil {
-		log.Printf("Failed to update cache: %v", err)
+		logger.FromContext(c.ctx).Warn().
+			Err(err).
+			Int("cache_item_count", len(cacheItems)).
+			Msg("Failed to update cache")
 	}
 
-	log.Printf("Stored batch of %d snapshots", len(snapshots))
+	logger.FromContext(c.ctx).Debug().
+		Int("snapshot_count", len(snapshots)).
+		Msg("Stored batch of snapshots")
 }
 
 // resultToSnapshot converts a collection result to a validator snapshot
@@ -313,7 +331,9 @@ func (c *ValidatorCollector) subscribeToHeadEvents() {
 
 	headChan, err := c.beaconClient.SubscribeToHead(c.ctx)
 	if err != nil {
-		log.Printf("Failed to subscribe to head events: %v", err)
+		logger.FromContext(c.ctx).Error().
+			Err(err).
+			Msg("Failed to subscribe to head events")
 		return
 	}
 
@@ -323,19 +343,25 @@ func (c *ValidatorCollector) subscribeToHeadEvents() {
 			return
 		case head, ok := <-headChan:
 			if !ok {
-				log.Println("Head event channel closed, attempting to reconnect...")
+				logger.FromContext(c.ctx).Warn().
+					Msg("Head event channel closed, attempting to reconnect")
 				time.Sleep(time.Second * 5)
 
 				// Try to reconnect
 				headChan, err = c.beaconClient.SubscribeToHead(c.ctx)
 				if err != nil {
-					log.Printf("Failed to reconnect to head events: %v", err)
+					logger.FromContext(c.ctx).Error().
+						Err(err).
+						Msg("Failed to reconnect to head events")
 					continue
 				}
 			} else {
 				// Process head event
 				epoch := head.Slot / 32 // Calculate epoch from slot
-				log.Printf("New head: slot=%d, epoch=%d", head.Slot, epoch)
+				logger.FromContext(c.ctx).Debug().
+					Int64("slot", int64(head.Slot)).
+					Int64("epoch", int64(epoch)).
+					Msg("New head event received")
 				// Could trigger immediate collection for critical validators here
 			}
 		}
@@ -344,20 +370,22 @@ func (c *ValidatorCollector) subscribeToHeadEvents() {
 
 // Stop gracefully stops the collector
 func (c *ValidatorCollector) Stop() error {
-	log.Println("Stopping validator collector...")
+	logger.FromContext(c.ctx).Info().Msg("Stopping validator collector")
 
 	// Cancel context to stop all goroutines
 	c.cancel()
 
 	// Shutdown worker pool
 	if err := c.workerPool.Shutdown(time.Second * 30); err != nil {
-		log.Printf("Error shutting down worker pool: %v", err)
+		logger.FromContext(c.ctx).Error().
+			Err(err).
+			Msg("Error shutting down worker pool")
 	}
 
 	// Wait for all goroutines to finish
 	c.wg.Wait()
 
-	log.Println("Validator collector stopped")
+	logger.FromContext(c.ctx).Info().Msg("Validator collector stopped successfully")
 	return nil
 }
 
@@ -399,7 +427,10 @@ func (c *ValidatorCollector) AddValidator(validatorIndex int64) {
 	}
 
 	c.validators = append(c.validators, validatorIndex)
-	log.Printf("Added validator %d to monitoring list", validatorIndex)
+	logger.FromContext(c.ctx).Info().
+		Int64("validator_index", validatorIndex).
+		Int("total_validators", len(c.validators)).
+		Msg("Added validator to monitoring list")
 }
 
 // RemoveValidator removes a validator from the monitoring list
@@ -410,7 +441,10 @@ func (c *ValidatorCollector) RemoveValidator(validatorIndex int64) {
 	for i, v := range c.validators {
 		if v == validatorIndex {
 			c.validators = append(c.validators[:i], c.validators[i+1:]...)
-			log.Printf("Removed validator %d from monitoring list", validatorIndex)
+			logger.FromContext(c.ctx).Info().
+				Int64("validator_index", validatorIndex).
+				Int("total_validators", len(c.validators)).
+				Msg("Removed validator from monitoring list")
 			return
 		}
 	}

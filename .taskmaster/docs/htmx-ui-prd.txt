@@ -1,0 +1,827 @@
+# HTMX Web UI - Product Requirements Document
+
+## Project Overview
+
+Add a modern, server-rendered web interface to the Ethereum Validator Monitor using HTMX, Go templates, and TailwindCSS. The UI will provide validator operators with an intuitive dashboard to monitor performance, manage alerts, and view historical data without the complexity of a JavaScript SPA framework.
+
+## Goals and Objectives
+
+### Primary Goals
+1. Provide a user-friendly web interface accessible to non-technical users
+2. Enable real-time monitoring of validator performance with sub-second updates
+3. Maintain excellent performance with server-side rendering and minimal JavaScript
+4. Integrate seamlessly with existing Go backend without code duplication
+5. Ensure mobile responsiveness and accessibility compliance
+
+### Success Metrics
+- Page load time < 300ms (95th percentile)
+- Time to Interactive (TTI) < 500ms
+- Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- WCAG 2.1 AA accessibility compliance
+- Support 100+ concurrent users with SSE connections
+
+## Technical Architecture
+
+### Stack Selection
+- **Backend**: Go 1.21+ with Chi router (lightweight, compatible with existing code)
+- **Templates**: templ (type-safe, compiled templates with XSS protection)
+- **CSS**: TailwindCSS 3.x + DaisyUI (utility-first with component library)
+- **JavaScript**: HTMX 1.9+ (primary), Alpine.js 3.x (minimal interactions)
+- **Charts**: Chart.js 4.x (validator performance visualization)
+- **Auth**: Gorilla Sessions (cookie-based for HTML) + existing JWT (for GraphQL API)
+- **Real-time**: Server-Sent Events (SSE) with HTMX hx-sse extension
+
+### Integration Approach
+Monolithic integration - add HTML routes to existing server at :8080. This provides:
+- Single binary deployment
+- Zero network overhead (direct service access)
+- Shared authentication and middleware
+- Simplified operations and maintenance
+
+### Project Structure
+```
+eth-validator-monitor/
+├── cmd/server/main.go                    # Updated with HTMX routes
+├── internal/
+│   ├── web/                              # NEW: Web UI layer
+│   │   ├── handlers/                     # HTTP handlers
+│   │   │   ├── auth.go                  # Login, logout, register
+│   │   │   ├── dashboard.go             # Dashboard page
+│   │   │   ├── validators.go            # Validator list & detail
+│   │   │   ├── alerts.go                # Alerts management
+│   │   │   ├── settings.go              # User settings
+│   │   │   └── sse.go                   # Server-Sent Events streams
+│   │   ├── middleware/                   # Session & CSRF middleware
+│   │   │   ├── session.go               # Session management
+│   │   │   ├── csrf.go                  # CSRF protection
+│   │   │   └── htmx.go                  # HTMX detection & handling
+│   │   ├── templates/                    # templ template files
+│   │   │   ├── layout.templ             # Base layout with navbar, footer
+│   │   │   ├── login.templ              # Login/register page
+│   │   │   ├── dashboard.templ          # Dashboard page
+│   │   │   ├── validators.templ         # Validator list page
+│   │   │   ├── validator_detail.templ   # Single validator view
+│   │   │   ├── alerts.templ             # Alerts page
+│   │   │   ├── settings.templ           # Settings page
+│   │   │   └── components/              # Reusable components
+│   │   │       ├── navbar.templ         # Navigation bar
+│   │   │       ├── card.templ           # Card component
+│   │   │       ├── table.templ          # Table component
+│   │   │       ├── pagination.templ     # Pagination controls
+│   │   │       └── chart.templ          # Chart wrapper
+│   │   └── router.go                    # HTMX route definitions
+│   ├── graph/                            # Existing GraphQL (unchanged)
+│   ├── auth/                             # Existing auth (reuse)
+│   ├── storage/                          # Existing storage (reuse)
+│   └── cache/                            # Existing cache (reuse)
+├── web/                                  # NEW: Frontend assets
+│   ├── static/
+│   │   ├── css/
+│   │   │   ├── input.css               # Tailwind source
+│   │   │   └── output.css              # Compiled CSS
+│   │   ├── js/
+│   │   │   ├── htmx.min.js            # HTMX library
+│   │   │   ├── htmx-sse.min.js        # SSE extension
+│   │   │   ├── alpine.min.js          # Alpine.js
+│   │   │   └── chart.min.js           # Chart.js
+│   │   └── img/
+│   │       └── logo.svg               # Application logo
+│   └── package.json                     # npm config for Tailwind build
+```
+
+## Feature Requirements
+
+### Phase 1: Foundation & Authentication (Tasks 18-21)
+
+#### Task 18: Set up HTMX infrastructure and routing
+**Description**: Integrate Chi router, configure static file serving, set up templ template engine, and establish basic routing structure for HTML pages.
+
+**Technical Requirements**:
+- Install and configure Chi router as HTTP multiplexer
+- Set up static file serving from /web/static with cache headers
+- Configure templ template engine with hot-reload in development
+- Create base route structure: /, /login, /api/htmx/*
+- Implement content negotiation (text/html vs application/json)
+- Add middleware: compression, logging, recovery
+
+**Deliverables**:
+- Chi router configured in cmd/server/main.go
+- Static file server with proper MIME types
+- Base template compilation working
+- Hello world page rendering at /
+- Middleware stack operational
+
+**Testing Strategy**:
+- Unit test route registration and matching
+- Integration test static file serving with cache headers
+- Verify templ compilation and rendering
+- Test middleware ordering and execution
+
+---
+
+#### Task 19: Implement session-based authentication system
+**Description**: Create cookie-based session management using Gorilla Sessions for HTML routes, implement registration/login flows, and integrate with existing user database.
+
+**Technical Requirements**:
+- Configure Gorilla Sessions with Redis backend
+- Create session middleware with cookie security (HttpOnly, Secure, SameSite)
+- Implement session store with 7-day expiration
+- Create auth handlers: login, logout, register
+- Add password hashing with bcrypt (cost 12)
+- Integrate with existing auth.UserRepository
+- Implement "remember me" functionality
+
+**Deliverables**:
+- Session middleware protecting routes
+- Login/logout handlers with session management
+- Registration flow with email validation
+- Session persistence in Redis
+- CSRF token generation and validation
+
+**Testing Strategy**:
+- Test session creation and persistence
+- Verify cookie security flags
+- Test session expiration and renewal
+- Integration test login/logout flow
+- Test CSRF protection on forms
+
+---
+
+#### Task 20: Design and implement base template layouts
+**Description**: Create reusable templ base layouts with navigation, footer, and responsive structure using TailwindCSS + DaisyUI.
+
+**Technical Requirements**:
+- Create base layout template with slots for content
+- Implement responsive navigation bar with mobile menu
+- Add user profile dropdown (login status, logout)
+- Create footer with links and version info
+- Implement dark mode toggle with persistence
+- Set up Tailwind build pipeline (PostCSS)
+- Configure DaisyUI theme with custom colors
+
+**Deliverables**:
+- layout.templ with flexible content areas
+- navbar.templ with responsive mobile menu
+- footer.templ with sitemap and attribution
+- Tailwind configuration file
+- npm build script for CSS compilation
+- Dark mode implementation
+
+**Testing Strategy**:
+- Test responsive breakpoints (mobile, tablet, desktop)
+- Verify dark mode toggle persistence
+- Test accessibility (keyboard navigation, ARIA labels)
+- Visual regression testing with snapshots
+
+---
+
+#### Task 21: Build login and registration pages
+**Description**: Create complete login and registration UI with HTMX form handling, validation, and error messaging.
+
+**Technical Requirements**:
+- Design login form with email/password fields
+- Create registration form with email, password, name
+- Implement client-side validation (HTML5)
+- Add server-side validation with descriptive errors
+- Use HTMX for form submission without page reload
+- Display inline error messages on validation failure
+- Add "forgot password" link (stub for future)
+- Implement loading states during submission
+
+**Deliverables**:
+- login.templ with styled form
+- Registration form with all fields
+- HTMX form handlers in auth.go
+- Inline validation error display
+- Loading indicators during submission
+- Success/error toast notifications
+
+**Testing Strategy**:
+- Test form validation (client and server)
+- Verify HTMX submission prevents page reload
+- Test error message display
+- Integration test complete auth flow
+- Test accessibility of form inputs
+
+---
+
+### Phase 2: Core Dashboard & Validator Pages (Tasks 22-25)
+
+#### Task 22: Implement dashboard with key metrics
+**Description**: Create main dashboard page displaying overview statistics, recent alerts, top-performing validators, and system health indicators with real-time updates via SSE.
+
+**Technical Requirements**:
+- Fetch and display aggregate metrics: total validators, average effectiveness, total balance
+- Show last 5 critical alerts with severity badges
+- Display top 10 validators by effectiveness score
+- Create system health indicators (DB status, Redis, API)
+- Implement SSE endpoint for real-time metric updates
+- Use hx-sse to update dashboard every 10 seconds
+- Add skeleton loaders for lazy-loaded sections
+- Create responsive grid layout (cards)
+
+**Deliverables**:
+- dashboard.templ with metrics cards
+- dashboard.go handler fetching data
+- SSE stream endpoint /api/htmx/stream/dashboard
+- Real-time metric updates without full reload
+- Responsive card grid (1 column mobile, 3 desktop)
+- Chart showing 24h effectiveness trend
+
+**Testing Strategy**:
+- Unit test metric calculation accuracy
+- Test SSE connection establishment and data push
+- Verify dashboard renders with no data (empty state)
+- Load test 100 concurrent SSE connections
+- Test graceful SSE reconnection on disconnect
+
+---
+
+#### Task 23: Create validator list page with search and filtering
+**Description**: Build comprehensive validator list with pagination, search by pubkey/index, filter by status, and sort by effectiveness.
+
+**Technical Requirements**:
+- Create paginated validator table (20 per page)
+- Implement search input with 300ms debounce (HTMX)
+- Add status filter dropdown (all, active, pending, exited)
+- Implement sort by: effectiveness, balance, index
+- Use infinite scroll for pagination (HTMX revealed trigger)
+- Cache rendered table fragments in Redis (30s TTL)
+- Add loading skeleton during fetch
+- Display: index, pubkey (truncated), status, effectiveness, balance
+
+**Deliverables**:
+- validators.templ with responsive table
+- Search handler with LIKE query optimization
+- Filter and sort handlers
+- Infinite scroll implementation
+- Redis caching for table fragments
+- Mobile card view (hidden table on small screens)
+- Export to CSV button (server-generated)
+
+**Testing Strategy**:
+- Test search with various queries
+- Verify filter combinations work correctly
+- Test pagination with large datasets (1000+ validators)
+- Load test cached vs uncached performance
+- Test mobile card view responsiveness
+
+---
+
+#### Task 24: Build validator detail page with performance charts
+**Description**: Create detailed individual validator view with historical performance charts, attestation statistics, and alert history.
+
+**Technical Requirements**:
+- Display validator metadata: pubkey, index, status, activation epoch
+- Show current metrics: balance, effectiveness score, missed attestations
+- Create line chart: 7-day effectiveness trend (Chart.js)
+- Create bar chart: monthly attestation success rate
+- Display last 20 alerts for this validator
+- Implement SSE for real-time metric updates on this page
+- Add "Export Report" button (PDF generation - future task)
+- Show validator timeline (activation, proposals, exits)
+
+**Deliverables**:
+- validator_detail.templ with charts
+- Chart.js integration with Alpine.js controller
+- validators.go handler fetching detail data
+- SSE endpoint for single validator updates
+- Historical data query with date range selector
+- Alert history table with pagination
+- Responsive chart sizing
+
+**Testing Strategy**:
+- Test chart rendering with various data sizes
+- Verify SSE updates chart data points
+- Test date range filtering
+- Test with validators in different states
+- Accessibility test for chart alternative text
+
+---
+
+#### Task 25: Implement real-time updates with Server-Sent Events
+**Description**: Create SSE infrastructure for pushing real-time validator metrics to connected clients without polling.
+
+**Technical Requirements**:
+- Implement SSE handler with proper headers (Content-Type: text/event-stream)
+- Create broadcaster pattern for publishing updates to multiple clients
+- Integrate with existing collector service to broadcast metrics
+- Support multiple event types: validator-metrics, alerts, system-status
+- Implement graceful client disconnection handling
+- Add heartbeat every 30s to keep connection alive
+- Create HTMX hx-sse integration in templates
+- Handle client reconnection with exponential backoff
+
+**Deliverables**:
+- sse.go with broadcaster implementation
+- SSE endpoints: /stream/dashboard, /stream/validators, /stream/validator/{id}
+- Integration with collector to publish updates
+- HTMX hx-sse attributes in templates
+- Connection pool management
+- Metrics for active SSE connections (Prometheus)
+
+**Testing Strategy**:
+- Test multiple concurrent SSE connections
+- Verify heartbeat keeps connection alive
+- Test graceful disconnection and cleanup
+- Load test 200 concurrent SSE connections
+- Test event filtering per client
+
+---
+
+### Phase 3: Advanced Features (Tasks 26-29)
+
+#### Task 26: Create alerts management page
+**Description**: Build alerts page with filtering by severity/status, batch operations (mark as read, dismiss), and real-time alert notifications.
+
+**Technical Requirements**:
+- Display alerts table with: timestamp, type, severity, validator, message
+- Implement filters: severity (critical, warning, info), status (unread, read)
+- Add batch selection with checkboxes
+- Create batch actions: mark as read, dismiss
+- Implement real-time alert toasts via SSE
+- Add pagination (50 alerts per page)
+- Color-code severity levels (red, yellow, blue)
+- Show alert count badge in navbar
+
+**Deliverables**:
+- alerts.templ with filterable table
+- alerts.go handlers for CRUD operations
+- Batch update handler with HTMX
+- SSE alert notifications as toast popups
+- Alert badge counter in navbar
+- Archive feature for old alerts
+
+**Testing Strategy**:
+- Test batch operations with 100+ selected alerts
+- Verify real-time alert toasts appear
+- Test filter combinations
+- Test alert badge updates in real-time
+- Accessibility test for toast notifications
+
+---
+
+#### Task 27: Build user settings and profile page
+**Description**: Create settings page for user profile management, notification preferences, API key generation, and UI customization.
+
+**Technical Requirements**:
+- Create profile section: name, email, password change
+- Build notification preferences: email alerts, alert threshold
+- Implement API key generation for programmatic access
+- Add UI preferences: theme (light/dark/auto), items per page
+- Create two-factor authentication setup (TOTP)
+- Add session management: view active sessions, revoke sessions
+- Implement account deletion with confirmation
+
+**Deliverables**:
+- settings.templ with tabbed sections
+- settings.go handlers for each section
+- API key generation with secure random
+- 2FA QR code generation
+- Session list and revocation
+- Form validation with HTMX
+
+**Testing Strategy**:
+- Test password change validation
+- Verify API key generation uniqueness
+- Test 2FA setup and validation
+- Test session revocation immediately logs out
+- Test account deletion flow
+
+---
+
+#### Task 28: Add export and reporting features
+**Description**: Implement data export functionality (CSV, PDF) for validators, alerts, and custom reports with date range selection.
+
+**Technical Requirements**:
+- Create CSV export for validator list with filters applied
+- Implement PDF report generation using go-pdf library
+- Add date range selector for reports
+- Generate validator performance report (PDF): metrics, charts, summary
+- Create alerts summary report with grouping by severity
+- Implement background job queue for large exports
+- Send export via email for large datasets
+- Add download history and cleanup
+
+**Deliverables**:
+- Export handlers in validators.go, alerts.go
+- PDF generation with charts embedded
+- Background job queue using Redis
+- Email notification for completed exports
+- Export history page
+- Automatic cleanup of old exports (7 days)
+
+**Testing Strategy**:
+- Test CSV export with 1000+ validators
+- Verify PDF generation with charts
+- Test background job processing
+- Test email delivery
+- Load test concurrent export requests
+
+---
+
+#### Task 29: Implement responsive design and mobile optimization
+**Description**: Ensure all pages work flawlessly on mobile devices with touch-friendly interactions and optimized layouts.
+
+**Technical Requirements**:
+- Implement mobile navigation drawer
+- Create mobile-optimized table views (cards instead of tables)
+- Add touch gestures: swipe to delete alerts, pull-to-refresh
+- Optimize chart rendering for small screens
+- Implement lazy image loading
+- Add progressive web app (PWA) manifest
+- Optimize for slow networks (offline support basic)
+- Test on iOS Safari, Android Chrome
+
+**Deliverables**:
+- Mobile navigation drawer component
+- Responsive table → card transformations
+- Touch gesture handlers (Alpine.js)
+- PWA manifest.json
+- Service worker for offline support
+- Performance budget enforcement
+
+**Testing Strategy**:
+- Test on iPhone SE, iPad, Android phone
+- Verify touch targets >= 44px
+- Test offline mode functionality
+- Lighthouse score >= 90 on mobile
+- Test on slow 3G connection
+
+---
+
+### Phase 4: Polish & Production Readiness (Tasks 30-33)
+
+#### Task 30: Implement comprehensive error handling and user feedback
+**Description**: Create graceful error handling with user-friendly messages, retry mechanisms, and fallback UIs for failed requests.
+
+**Technical Requirements**:
+- Implement global error boundary for HTMX requests
+- Create error toast notifications with retry buttons
+- Add fallback UI for SSE disconnection
+- Implement retry logic with exponential backoff
+- Create custom error pages: 404, 500, 503
+- Add error logging with context (request ID, user ID)
+- Implement graceful degradation when JS disabled
+- Create maintenance mode page
+
+**Deliverables**:
+- Error handling middleware
+- Toast notification system
+- Custom error page templates
+- Retry mechanism for failed HTMX requests
+- Graceful degradation examples
+- Maintenance mode toggle
+
+**Testing Strategy**:
+- Test error scenarios (network failure, server error)
+- Verify retry mechanism works
+- Test custom error pages render correctly
+- Test graceful degradation with JS disabled
+- Test error logging captures context
+
+---
+
+#### Task 31: Add comprehensive testing suite
+**Description**: Create unit, integration, and end-to-end tests for all HTMX features with high code coverage.
+
+**Technical Requirements**:
+- Write unit tests for all handlers (httptest)
+- Create integration tests for HTMX interactions
+- Implement E2E tests using Playwright
+- Test session management and authentication flows
+- Test SSE connections and updates
+- Create visual regression tests for UI components
+- Test accessibility with axe-core
+- Achieve 80%+ code coverage for web package
+
+**Deliverables**:
+- handlers_test.go for all web handlers
+- Integration tests for key user flows
+- Playwright test suite (10+ scenarios)
+- Visual regression baseline images
+- Accessibility test suite
+- Code coverage reports
+
+**Testing Strategy**:
+- Run tests in CI on every commit
+- Test on multiple browsers (Chrome, Firefox, Safari)
+- Test on multiple devices (mobile, tablet, desktop)
+- Load test with k6 (100 concurrent users)
+- Security test with OWASP ZAP
+
+---
+
+#### Task 32: Optimize performance and implement caching strategies
+**Description**: Optimize page load times, implement strategic caching, and ensure excellent Core Web Vitals scores.
+
+**Technical Requirements**:
+- Implement template caching in production
+- Add Redis caching for rendered HTML fragments
+- Configure browser caching headers for static assets
+- Implement HTTP/2 server push for critical assets
+- Add image optimization and lazy loading
+- Minify and bundle CSS/JS in production
+- Implement CDN integration for static assets
+- Add performance monitoring (Prometheus metrics)
+
+**Deliverables**:
+- Template caching layer
+- Redis HTML fragment caching
+- Static asset build pipeline (minification)
+- Cache-Control headers configuration
+- Performance Prometheus metrics
+- Lighthouse score >= 95
+
+**Testing Strategy**:
+- Benchmark page load times (ab, k6)
+- Test cache hit rates
+- Verify cache invalidation works correctly
+- Test performance with 1000 validators
+- Compare cached vs uncached performance
+
+---
+
+#### Task 33: Create comprehensive documentation
+**Description**: Write complete documentation for users, operators, and developers covering setup, usage, and API reference.
+
+**Technical Requirements**:
+- Write user guide: getting started, features, FAQs
+- Create operator manual: deployment, monitoring, troubleshooting
+- Document all HTMX endpoints and responses
+- Create developer guide: architecture, adding features, testing
+- Write API reference for HTMX endpoints
+- Create video tutorials for key workflows
+- Add inline help text and tooltips throughout UI
+- Create changelog and migration guides
+
+**Deliverables**:
+- docs/USER_GUIDE.md
+- docs/OPERATOR_MANUAL.md
+- docs/DEVELOPER_GUIDE.md
+- docs/API_REFERENCE.md
+- CHANGELOG.md
+- Inline help tooltips in UI
+- Video tutorials (3-5 minutes each)
+
+**Testing Strategy**:
+- Validate documentation accuracy against code
+- Test all documented commands and examples
+- Peer review for clarity
+- Test video playback and quality
+
+---
+
+## Security Requirements
+
+### Authentication & Authorization
+- Implement secure session management with HttpOnly, Secure, SameSite cookies
+- Use bcrypt for password hashing (cost 12)
+- Enforce strong password requirements (12+ chars, mixed case, numbers, symbols)
+- Implement rate limiting on login attempts (5 attempts per 15 minutes)
+- Add account lockout after 10 failed attempts
+- Support two-factor authentication (TOTP)
+
+### CSRF Protection
+- Use gorilla/csrf for CSRF token generation and validation
+- Include CSRF tokens in all forms
+- Validate CSRF tokens on all state-changing requests
+- Use double-submit cookie pattern as backup
+
+### XSS Prevention
+- Use templ templates with automatic escaping
+- Sanitize all user input on server side
+- Implement Content Security Policy (CSP) headers
+- Validate and sanitize URL parameters
+- Use DOMPurify for any client-side HTML rendering
+
+### Input Validation
+- Validate all inputs server-side (never trust client)
+- Use allowlists for enum values
+- Sanitize SQL queries (use parameterized queries only)
+- Validate file uploads (type, size, content)
+- Implement request size limits
+
+### Session Security
+- Store sessions in Redis with encryption
+- Implement session rotation on privilege escalation
+- Add session timeout after 30 minutes inactivity
+- Implement concurrent session limits (3 per user)
+- Log all session creation/destruction events
+
+## Performance Requirements
+
+### Page Load Performance
+- Initial page load < 300ms (95th percentile)
+- Time to Interactive (TTI) < 500ms
+- First Contentful Paint (FCP) < 1.0s
+- Largest Contentful Paint (LCP) < 2.5s
+- Cumulative Layout Shift (CLS) < 0.1
+
+### Real-time Updates
+- SSE message delivery < 100ms from event occurrence
+- Support 200+ concurrent SSE connections per server instance
+- Maintain connections for 24+ hours without disconnection
+- Handle network interruptions with automatic reconnection
+
+### Database Performance
+- All queries < 100ms at 90th percentile
+- Use prepared statements for all SQL queries
+- Implement query result caching (Redis, 30s-5m TTL)
+- Add database query logging for slow queries (> 500ms)
+- Optimize with proper indexes on filtered/sorted columns
+
+### API Response Times
+- HTMX partial updates < 50ms
+- Search queries < 100ms
+- Dashboard load < 200ms
+- Validator detail load < 150ms
+
+## Scalability Requirements
+
+### Horizontal Scaling
+- Stateless request handling (sessions in Redis)
+- Support load balancing across multiple instances
+- Handle session affinity for SSE connections
+- Implement distributed rate limiting (Redis)
+
+### Vertical Scaling
+- Support 1000+ validators per instance
+- Handle 100+ concurrent users per instance
+- Maintain performance with 10,000+ alerts in database
+
+### Caching Strategy
+- Template caching in memory
+- HTML fragment caching in Redis (30s-5m)
+- Static asset caching in CDN
+- Database query result caching
+
+## Accessibility Requirements
+
+### WCAG 2.1 AA Compliance
+- Minimum color contrast ratio 4.5:1
+- All interactive elements keyboard accessible
+- Proper heading hierarchy (h1 → h2 → h3)
+- Alt text for all images
+- ARIA labels for icon buttons
+- Form labels associated with inputs
+
+### Screen Reader Support
+- Announce dynamic content changes (HTMX updates)
+- Provide skip navigation links
+- Use semantic HTML elements
+- Test with NVDA and VoiceOver
+
+### Keyboard Navigation
+- Tab order follows visual layout
+- Focus indicators visible and high contrast
+- No keyboard traps
+- All features accessible via keyboard
+
+## Browser & Device Support
+
+### Desktop Browsers
+- Chrome/Edge 90+ (last 2 versions)
+- Firefox 88+ (last 2 versions)
+- Safari 14+ (last 2 versions)
+
+### Mobile Browsers
+- iOS Safari 14+
+- Android Chrome 90+
+- Samsung Internet 14+
+
+### Screen Sizes
+- Mobile: 320px - 767px
+- Tablet: 768px - 1023px
+- Desktop: 1024px+
+- Wide: 1440px+
+
+## Deployment & Operations
+
+### Build Process
+- Go binary compilation with embedded templates
+- Tailwind CSS compilation and purging
+- JavaScript minification
+- Asset fingerprinting for cache busting
+- Docker multi-stage build
+
+### Environment Configuration
+- All secrets via environment variables
+- Feature flags for gradual rollout
+- Environment-specific configurations (dev, staging, prod)
+- Logging levels configurable
+
+### Monitoring
+- Prometheus metrics for all handlers
+- SSE connection count and latency metrics
+- Template render time metrics
+- Cache hit/miss rates
+- Error rate by endpoint
+
+### Logging
+- Structured logging with request IDs
+- Log levels: debug, info, warn, error
+- Log rotation and retention (7 days)
+- Sensitive data redaction
+
+## Migration Strategy
+
+### Backward Compatibility
+- Keep GraphQL API fully functional
+- Support both JWT (API) and session (HTML) authentication
+- Maintain existing database schema
+- No breaking changes to existing services
+
+### Rollout Plan
+1. Deploy HTMX routes alongside GraphQL (feature flag: UI_ENABLED=false)
+2. Internal testing with selected users
+3. Beta release to opt-in users
+4. Gradual rollout to all users
+5. Monitor metrics and gather feedback
+6. Make HTMX UI default with GraphQL fallback
+
+### Rollback Plan
+- Feature flag to disable HTMX UI
+- Automatic fallback to Grafana for monitoring
+- Database migrations reversible
+- No data loss on rollback
+
+## Success Criteria
+
+### User Adoption
+- 80% of users accessing UI within 1 month
+- < 5% users reverting to Grafana-only
+- Positive user feedback (NPS > 50)
+
+### Performance
+- All pages meet performance requirements
+- No degradation of GraphQL API performance
+- Cache hit rate > 70%
+
+### Reliability
+- 99.9% uptime
+- Zero data loss incidents
+- < 0.1% error rate
+
+### Security
+- Zero critical security vulnerabilities
+- Pass security audit (OWASP Top 10)
+- No authentication bypasses
+
+## Out of Scope (Future Enhancements)
+
+The following features are explicitly out of scope for the initial HTMX UI implementation:
+
+1. **Multi-language Support (i18n)**: English only initially
+2. **Advanced Analytics**: Beyond basic charts, ML-based predictions
+3. **Validator Comparison Tool**: Side-by-side validator comparison
+4. **Custom Alert Rules**: User-defined alert thresholds and rules
+5. **WebSocket Chat**: Operator collaboration features
+6. **Mobile Native Apps**: iOS/Android native applications
+7. **Advanced PDF Reports**: Multi-page reports with complex layouts
+8. **Email Digest Subscriptions**: Daily/weekly email summaries
+9. **SSO Integration**: SAML, OAuth providers (Google, GitHub)
+10. **GraphQL Playground in UI**: Keep as separate route
+
+These features may be considered for future iterations based on user feedback and demand.
+
+## Timeline Estimate
+
+- **Phase 1** (Foundation): 1-2 weeks (Tasks 18-21)
+- **Phase 2** (Core Pages): 2-3 weeks (Tasks 22-25)
+- **Phase 3** (Advanced): 2-3 weeks (Tasks 26-29)
+- **Phase 4** (Polish): 1-2 weeks (Tasks 30-33)
+
+**Total Estimated Time**: 6-10 weeks with 1 developer
+
+## Risk Assessment
+
+### Technical Risks
+- **Risk**: SSE connection instability on poor networks
+  - **Mitigation**: Implement heartbeat, auto-reconnect, fallback to polling
+
+- **Risk**: Template caching causing stale data display
+  - **Mitigation**: Short TTLs, cache invalidation on updates, version keys
+
+- **Risk**: HTMX compatibility issues across browsers
+  - **Mitigation**: Extensive cross-browser testing, polyfills, graceful degradation
+
+### Operational Risks
+- **Risk**: Increased server load from HTML rendering
+  - **Mitigation**: Aggressive caching, CDN for static assets, horizontal scaling
+
+- **Risk**: Session storage growth in Redis
+  - **Mitigation**: Session TTL, session cleanup job, Redis memory limits
+
+### Security Risks
+- **Risk**: Session hijacking
+  - **Mitigation**: Secure cookies, session rotation, IP validation
+
+- **Risk**: CSRF attacks on forms
+  - **Mitigation**: CSRF tokens on all forms, SameSite cookies
+
+## Conclusion
+
+This PRD defines a comprehensive, production-ready HTMX web UI for the Ethereum Validator Monitor. The implementation leverages Go's strengths in server-side rendering, minimizes JavaScript complexity, and provides an excellent user experience with real-time updates and responsive design.
+
+The phased approach allows for incremental delivery and validation, while the detailed technical requirements ensure consistency, security, and performance. Upon completion, users will have a modern, accessible, and performant web interface for monitoring their Ethereum validators.

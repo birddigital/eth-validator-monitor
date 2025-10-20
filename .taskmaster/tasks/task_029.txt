@@ -1,0 +1,36 @@
+# Task ID: 29
+# Title: Implement responsive design and mobile optimization
+# Status: pending
+# Dependencies: 20, 23, 24, 26
+# Priority: medium
+# Description: Ensure all pages work on mobile with touch-friendly interactions and optimized layouts
+# Details:
+Implement mobile navigation drawer. Create mobile table views (cards). Add touch gestures. Optimize chart rendering for small screens. Implement lazy image loading. Add PWA manifest. Optimize for slow networks. Test on iOS Safari and Android Chrome.
+
+# Test Strategy:
+Test on iPhone SE, iPad, Android. Verify touch targets >= 44px. Test offline mode. Lighthouse score >= 90 on mobile. Test on slow 3G.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: All pages on mobile (375px width)
+- Screenshot: All pages on tablet (768px width)
+- Screenshot: All pages on desktop (1440px width)
+- Screenshot: Mobile navigation drawer (hamburger menu)
+- Screenshot: Touch gesture feedback (swipe, tap)
+- Screenshot: Pull-to-refresh indicator
+- Screenshot: Lazy-loaded images (loading state)
+- Screenshot: PWA install prompt
+- Screenshot: Offline mode message
+- Verify touch targets >= 44px (accessibility)
+- Test gesture recognition (swipe to delete alerts)
+- Verify Lighthouse mobile score >= 90

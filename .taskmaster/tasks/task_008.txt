@@ -1,0 +1,49 @@
+# Task ID: 8
+# Title: Write comprehensive tests (unit + integration)
+# Status: done
+# Dependencies: 2, 3, 4, 5
+# Priority: high
+# Description: Create unit tests for all packages with 80%+ coverage, write integration tests for API endpoints, add end-to-end tests for data collection flow
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Set up unit testing framework and coverage reporting [done]
+### Dependencies: None
+### Description: Configure Go testing framework with testify, set up code coverage reporting tools, and establish testing patterns for the project
+### Details:
+Install and configure testify for assertions and mocking, set up code coverage reporting with go test -cover, create helper functions for common test operations, and establish patterns for table-driven tests. Configure CI pipeline to enforce 80%+ coverage requirements.
+
+## 2. Implement unit tests for database layer [done]
+### Dependencies: 8.1
+### Description: Create comprehensive unit tests for database models, repositories, and query functions with proper mocking of external dependencies
+### Details:
+Write unit tests for all database models and repositories using gomock to mock database connections. Implement table-driven tests for query functions covering normal, edge, and error cases. Focus on validator, validator_snapshots, and alerts tables with proper test fixtures and assertions.
+
+## 3. Create integration tests for database operations [done]
+### Dependencies: 8.1, 8.2
+### Description: Implement integration tests for database operations using dockertest to spin up real PostgreSQL instances
+### Details:
+Set up dockertest to create temporary PostgreSQL containers for testing. Write integration tests that verify database migrations, connection pooling, and complex query operations against real database instances. Include tests for indexes and performance-critical queries with appropriate fixtures.
+
+## 4. Develop unit and integration tests for Redis caching layer [done]
+### Dependencies: 8.1
+### Description: Create unit tests for Redis client functions and integration tests for cache operations using dockertest
+### Details:
+Write unit tests for Redis client functions with mocked Redis connections. Implement integration tests using dockertest to spin up temporary Redis instances. Test TTL strategies, cache invalidation logic, and error handling scenarios. Verify cache hit/miss behavior and performance characteristics.
+
+## 5. Implement GraphQL API endpoint tests [done]
+### Dependencies: 8.1, 8.2, 8.4
+### Description: Create comprehensive tests for GraphQL resolvers, queries, and mutations with both unit and integration approaches
+### Details:
+Write unit tests for GraphQL resolvers with mocked dependencies. Create integration tests that execute GraphQL queries against test server instances. Test pagination, filtering, error handling, and response validation. Include performance tests for complex queries and verify proper caching behavior.
+
+## 6. Create end-to-end tests for data collection flow [done]
+### Dependencies: 8.1, 8.2, 8.3, 8.4, 8.5
+### Description: Implement end-to-end tests that verify the complete data collection, processing, and API serving pipeline
+### Details:
+Develop end-to-end tests that simulate the entire data flow from collection to storage to API responses. Set up test fixtures that represent real-world validator data. Verify data is correctly processed, stored in PostgreSQL, cached in Redis, and retrievable via GraphQL API. Include tests for error recovery and edge cases in the data collection process.
+

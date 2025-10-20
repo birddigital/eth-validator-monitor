@@ -1,4 +1,4 @@
-.PHONY: help build test run clean migrate-up migrate-down docker-up docker-down lint
+.PHONY: help build test run clean migrate-up migrate-down docker-up docker-down lint templ-generate templ-watch dev install-dev css-dev css-build css-clean test-visual test-visual-ui test-visual-update playwright-install
 
 # Variables
 BINARY_NAME=eth-validator-monitor
@@ -9,7 +9,9 @@ MIGRATION_DIR=migrations
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-build: ## Build the application binaries
+build: css-build ## Build the application binaries
+	@echo "Generating templ templates..."
+	@go run github.com/a-h/templ/cmd/templ@latest generate
 	@echo "Building server..."
 	@go build -o $(SERVER_BINARY) ./cmd/server
 	@echo "Building CLI..."
@@ -34,12 +36,33 @@ test-e2e: ## Run end-to-end tests
 	@echo "Running E2E tests..."
 	@go test -v -tags=e2e ./tests/e2e/...
 
+test-static: ## Run static file serving tests
+	@echo "Running static file serving tests..."
+	@go test -v ./internal/web -run TestCacheControl
+	@go test -v ./internal/web -run TestStaticFileServing
+
 test-coverage: ## Generate detailed coverage report
 	@echo "Generating coverage report..."
 	@go test -coverprofile=coverage.out -covermode=atomic ./...
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
 	@go tool cover -func=coverage.out
+
+test-visual: ## Run Playwright visual regression tests
+	@echo "Running visual regression tests..."
+	@npm run test:visual
+
+test-visual-ui: ## Run Playwright tests in UI mode (interactive)
+	@echo "Running Playwright tests in UI mode..."
+	@npm run test:visual:ui
+
+test-visual-update: ## Update Playwright baseline screenshots
+	@echo "Updating visual regression baselines..."
+	@npm run test:visual:update
+
+playwright-install: ## Install Playwright browsers
+	@echo "Installing Playwright browsers..."
+	@npm run playwright:install
 
 benchmark: ## Run all benchmarks with memory tracking
 	@echo "Running comprehensive benchmarks..."
@@ -97,7 +120,7 @@ run-cli: ## Run the CLI
 	@echo "Running CLI..."
 	@go run ./cmd/cli
 
-clean: ## Clean build artifacts
+clean: css-clean ## Clean build artifacts
 	@echo "Cleaning..."
 	@rm -rf bin/
 	@rm -f coverage.out coverage.html
@@ -146,5 +169,44 @@ install-tools: ## Install development tools
 	@go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@go install golang.org/x/perf/cmd/benchstat@latest
 	@echo "All development tools installed successfully"
+
+install-dev: install-tools ## Install development dependencies (including templ and air)
+	@echo "Installing development dependencies..."
+	@go install github.com/a-h/templ/cmd/templ@latest
+	@go install github.com/cosmtrek/air@latest
+	@echo "Installing Node.js dependencies for TailwindCSS..."
+	@npm install
+	@echo "Development dependencies installed successfully"
+
+templ-generate: ## Generate templ templates
+	@echo "Generating templ templates..."
+	@go run github.com/a-h/templ/cmd/templ@latest generate
+
+templ-watch: ## Watch templ files for changes (alternative to air)
+	@echo "Watching templ files..."
+	@go run github.com/a-h/templ/cmd/templ@latest generate --watch
+
+css-dev: ## Watch and rebuild CSS on changes
+	@echo "Starting TailwindCSS watcher..."
+	@npm run css:dev
+
+css-build: ## Build production CSS with minification
+	@echo "Building production CSS..."
+	@npm run css:build
+
+css-clean: ## Remove generated CSS files
+	@echo "Cleaning generated CSS..."
+	@rm -f web/static/css/output.css
+
+dev: templ-generate css-build ## Start development server with hot-reload
+	@echo "Starting development server with hot-reload..."
+	@air
+
+dev-all: ## Start all watchers (templ, CSS, air) - requires multiple terminals
+	@echo "Starting all development watchers..."
+	@echo "Run these commands in separate terminals:"
+	@echo "  Terminal 1: make css-dev"
+	@echo "  Terminal 2: make templ-watch"
+	@echo "  Terminal 3: air"
 
 .DEFAULT_GOAL := help

@@ -1,0 +1,32 @@
+# Task ID: 25
+# Title: Implement real-time updates with Server-Sent Events
+# Status: pending
+# Dependencies: 22
+# Priority: high
+# Description: Create SSE infrastructure for pushing real-time validator metrics without polling
+# Details:
+Implement SSE handler with proper headers. Create broadcaster pattern for multiple clients. Integrate with collector service. Support event types: validator-metrics, alerts, system-status. Handle disconnections. Add 30s heartbeat. Create HTMX hx-sse integration.
+
+# Test Strategy:
+Test multiple concurrent SSE connections. Verify heartbeat keeps connection alive. Test disconnection cleanup. Load test 200 concurrent connections. Test event filtering.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: SSE connection established (indicator)
+- Screenshot: SSE disconnected state (with retry button)
+- Screenshot: Real-time data update (before/after)
+- Screenshot: Heartbeat indicator
+- Screenshot: Multiple SSE streams (dashboard + validator detail)
+- Verify SSE event updates DOM correctly
+- Verify reconnection after network interruption
+- Test SSE performance with 50+ concurrent connections

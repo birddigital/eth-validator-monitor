@@ -138,7 +138,7 @@ func (c *RedisCache) GetValidator(ctx context.Context, index int) (*types.Valida
 	key := c.validatorKey(index)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("validator %d not in cache", index)
+		return nil, fmt.Errorf("validator %d not in cache: %w", index, err)
 	}
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (c *RedisCache) GetValidatorSnapshot(ctx context.Context, index int) (*type
 	key := c.validatorSnapshotKey(index)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("snapshot for validator %d not in cache", index)
+		return nil, fmt.Errorf("snapshot for validator %d not in cache: %w", index, err)
 	}
 	if err != nil {
 		return nil, err
@@ -204,7 +204,7 @@ func (c *RedisCache) GetNetworkStats(ctx context.Context) (*types.NetworkStats, 
 	key := c.networkStatsKey()
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("network stats not in cache")
+		return nil, fmt.Errorf("network stats not in cache: %w", err)
 	}
 	if err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ func (c *RedisCache) GetPerformance(ctx context.Context, index int, epoch int) (
 	key := c.performanceKey(index, epoch)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("performance for validator %d epoch %d not in cache", index, epoch)
+		return nil, fmt.Errorf("performance for validator %d epoch %d not in cache: %w", index, epoch, err)
 	}
 	if err != nil {
 		return nil, err
@@ -264,7 +264,7 @@ func (c *RedisCache) GetAlerts(ctx context.Context, index int) ([]*types.Alert, 
 	key := c.alertsKey(index)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("alerts for validator %d not in cache", index)
+		return nil, fmt.Errorf("alerts for validator %d not in cache: %w", index, err)
 	}
 	if err != nil {
 		return nil, err
@@ -325,7 +325,7 @@ func (c *RedisCache) GetHeadEvent(ctx context.Context) (*types.HeadEvent, error)
 	key := c.headEventKey()
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return nil, fmt.Errorf("head event not in cache")
+		return nil, fmt.Errorf("head event not in cache: %w", err)
 	}
 	if err != nil {
 		return nil, err
@@ -484,7 +484,7 @@ func GetLatestSnapshotTTL() time.Duration {
 func (c *RedisCache) Get(ctx context.Context, key string, dest interface{}) error {
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
-		return fmt.Errorf("key %s not in cache", key)
+		return fmt.Errorf("key %s not in cache: %w", key, err)
 	}
 	if err != nil {
 		return err

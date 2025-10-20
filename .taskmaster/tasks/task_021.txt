@@ -1,0 +1,33 @@
+# Task ID: 21
+# Title: Build login and registration pages
+# Status: pending
+# Dependencies: 19, 20
+# Priority: high
+# Description: Create complete login and registration UI with HTMX form handling, validation, and error messaging
+# Details:
+Design login form with email/password fields. Create registration form. Implement client-side validation (HTML5). Add server-side validation. Use HTMX for form submission without page reload. Display inline error messages. Add loading states.
+
+# Test Strategy:
+Test form validation (client and server). Verify HTMX submission prevents page reload. Test error message display. Integration test complete auth flow. Test accessibility of form inputs.
+
+Visual Verification (Playwright MCP):
+- Capture screenshots at key interaction points
+- Establish visual regression baselines for comparison
+- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)
+- Verify dark mode rendering (if applicable)
+- Test HTMX partial updates (ensure no layout shift or flashing)
+- Validate accessibility: focus indicators, color contrast ratios
+- Screenshot error states and empty states
+- Verify loading states and skeleton screens render correctly
+- Use Playwright MCP to navigate, interact, and capture all states
+- Store screenshots in tests/visual-regression/baselines/
+- Compare against baselines on subsequent runs (fail on >5% diff)
+- Screenshot: Login page (default state)
+- Screenshot: Login page (with errors)
+- Screenshot: Registration page (default state)
+- Screenshot: Registration page (with validation errors)
+- Screenshot: Password strength indicator
+- Screenshot: Loading state during submission
+- Screenshot: Success state (toast notification)
+- Verify HTMX form submission (no page reload)
+- Verify inline error message positioning

@@ -1,0 +1,64 @@
+package pages
+
+import (
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
+)
+
+// LoginPageData contains data for the login page
+type LoginPageData struct {
+	ErrorMessage string
+	RedirectURL  string
+}
+
+// LoginPage renders the login form
+templ LoginPage(data LoginPageData) {
+	<div class="login-container">
+		<div class="login-card">
+			<h1>Login</h1>
+			<p class="login-subtitle">Access your validator dashboard</p>
+			if data.ErrorMessage != "" {
+				<div class="alert alert-error" role="alert">
+					<strong>Error:</strong> { data.ErrorMessage }
+				</div>
+			}
+			<form method="POST" action="/login" class="login-form">
+				<div class="form-group">
+					<label for="username">Username</label>
+					<input
+						type="text"
+						id="username"
+						name="username"
+						required
+						autocomplete="username"
+						placeholder="Enter your username"
+					/>
+				</div>
+				<div class="form-group">
+					<label for="password">Password</label>
+					<input
+						type="password"
+						id="password"
+						name="password"
+						required
+						autocomplete="current-password"
+						placeholder="Enter your password"
+					/>
+				</div>
+				if data.RedirectURL != "" {
+					<input type="hidden" name="redirect" value={ data.RedirectURL }/>
+				}
+				<button type="submit" class="btn btn-primary btn-block">Login</button>
+			</form>
+			<div class="login-footer">
+				<p>
+					<a href="/forgot-password">Forgot password?</a>
+				</p>
+			</div>
+		</div>
+	</div>
+}
+
+// LoginPageWithLayout wraps LoginPage in the base layout
+templ LoginPageWithLayout(data LoginPageData) {
+	@layouts.Base("Login", LoginPage(data))
+}

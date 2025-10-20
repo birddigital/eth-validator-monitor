@@ -3,10 +3,35 @@ package database
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// SSLMode represents PostgreSQL SSL modes
+type SSLMode string
+
+const (
+	// SSLModeDisable - No SSL
+	SSLModeDisable SSLMode = "disable"
+
+	// SSLModeAllow - Try SSL, fallback to non-SSL
+	SSLModeAllow SSLMode = "allow"
+
+	// SSLModePrefer - Try SSL first, fallback to non-SSL (default)
+	SSLModePrefer SSLMode = "prefer"
+
+	// SSLModeRequire - Require SSL (no certificate verification)
+	SSLModeRequire SSLMode = "require"
+
+	// SSLModeVerifyCA - Require SSL and verify CA certificate
+	SSLModeVerifyCA SSLMode = "verify-ca"
+
+	// SSLModeVerifyFull - Require SSL, verify CA and hostname
+	SSLModeVerifyFull SSLMode = "verify-full"
 )
 
 // Config holds database configuration parameters
@@ -16,7 +41,10 @@ type Config struct {
 	User                  string
 	Password              string
 	Database              string
-	SSLMode               string
+	SSLMode               SSLMode
+	SSLCert               string // Path to client certificate (for verify-ca/verify-full)
+	SSLKey                string // Path to client key (for verify-ca/verify-full)
+	SSLRootCert           string // Path to root CA certificate (for verify-ca/verify-full)
 	MaxConnections        int32
 	MinConnections        int32
 	MaxConnectionLifetime time.Duration
@@ -36,7 +64,7 @@ func DefaultConfig() *Config {
 		Port:                  5432,
 		User:                  "validator_monitor",
 		Database:              "validator_monitor",
-		SSLMode:               "prefer",
+		SSLMode:               SSLModeRequire, // Default to require SSL
 		MaxConnections:        25,
 		MinConnections:        5,
 		MaxConnectionLifetime: time.Hour,
@@ -71,21 +99,57 @@ func (c *Config) Validate() error {
 	if c.ConnectTimeout <= 0 {
 		return fmt.Errorf("connect timeout must be positive")
 	}
+
+	// Validate SSL mode
+	validModes := map[SSLMode]bool{
+		SSLModeDisable:    true,
+		SSLModeAllow:      true,
+		SSLModePrefer:     true,
+		SSLModeRequire:    true,
+		SSLModeVerifyCA:   true,
+		SSLModeVerifyFull: true,
+	}
+
+	if !validModes[c.SSLMode] {
+		return fmt.Errorf("invalid SSL mode: %s (valid: disable, allow, prefer, require, verify-ca, verify-full)", c.SSLMode)
+	}
+
+	// For production, enforce secure SSL modes
+	if os.Getenv("ENV") == "production" {
+		if c.SSLMode == SSLModeDisable || c.SSLMode == SSLModeAllow || c.SSLMode == SSLModePrefer {
+			return fmt.Errorf("production environment requires SSL mode 'require', 'verify-ca', or 'verify-full'")
+		}
+	}
+
 	return nil
 }
 
 // BuildDSN creates a database connection string
 func (c *Config) BuildDSN() string {
-	return fmt.Sprintf(
+	// Base connection string
+	connStr := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s&connect_timeout=%d",
-		c.User,
-		c.Password,
+		url.QueryEscape(c.User),
+		url.QueryEscape(c.Password),
 		c.Host,
 		c.Port,
 		c.Database,
 		c.SSLMode,
 		int(c.ConnectTimeout.Seconds()),
 	)
+
+	// Add SSL certificate paths if provided
+	if c.SSLCert != "" {
+		connStr += "&sslcert=" + url.QueryEscape(c.SSLCert)
+	}
+	if c.SSLKey != "" {
+		connStr += "&sslkey=" + url.QueryEscape(c.SSLKey)
+	}
+	if c.SSLRootCert != "" {
+		connStr += "&sslrootcert=" + url.QueryEscape(c.SSLRootCert)
+	}
+
+	return connStr
 }
 
 // BuildPoolConfig creates a pgxpool configuration
@@ -136,9 +200,10 @@ func (c *Config) BuildPoolConfig() (*pgxpool.Config, error) {
 
 		_, err = conn.Prepare(ctx, "insert_snapshot", `
 			INSERT INTO validator_snapshots (
-				time, validator_index, balance, effective_balance,
-				attestation_effectiveness, is_online, consecutive_missed_attestations
-			) VALUES ($1, $2, $3, $4, $5, $6, $7)
+				epoch, slot, timestamp, validator_index, balance, effective_balance,
+				attestation_success, attestation_inclusion_delay, proposal_success,
+				performance_score, network_percentile
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		`)
 		if err != nil {
 			return fmt.Errorf("failed to prepare insert_snapshot statement: %w", err)
@@ -166,6 +231,21 @@ func NewPool(ctx context.Context, cfg *Config) (*pgxpool.Pool, error) {
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	// Verify SSL is in use if required
+	if cfg.SSLMode != SSLModeDisable {
+		var sslInUse bool
+		err = pool.QueryRow(ctx, "SELECT pg_catalog.ssl_is_used()").Scan(&sslInUse)
+		if err != nil {
+			pool.Close()
+			return nil, fmt.Errorf("failed to check SSL status: %w", err)
+		}
+
+		if !sslInUse {
+			pool.Close()
+			return nil, fmt.Errorf("SSL is not in use despite sslmode=%s", cfg.SSLMode)
+		}
 	}
 
 	return pool, nil

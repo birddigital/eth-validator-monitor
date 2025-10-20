@@ -1,23 +1,194 @@
 {
-	"mcpServers": {
-		"task-master-ai": {
-			"type": "stdio",
-			"command": "npx",
-			"args": [
-				"-y",
-				"task-master-ai"
-			],
-			"env": {
-				"ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE",
-				"PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE",
-				"OPENAI_API_KEY": "YOUR_OPENAI_KEY_HERE",
-				"GOOGLE_API_KEY": "YOUR_GOOGLE_KEY_HERE",
-				"XAI_API_KEY": "YOUR_XAI_KEY_HERE",
-				"OPENROUTER_API_KEY": "YOUR_OPENROUTER_KEY_HERE",
-				"MISTRAL_API_KEY": "YOUR_MISTRAL_KEY_HERE",
-				"AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE",
-				"OLLAMA_API_KEY": "YOUR_OLLAMA_API_KEY_HERE"
-			}
-		}
-	}
+  "version": "1.0.0",
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/bird/Desktop",
+        "/Users/bird/Downloads",
+        "/Users/bird/Documents",
+        "/Users/bird/sources"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "settings": {
+        "allowed_directories": [
+          "/Users/bird/Desktop",
+          "/Users/bird/Downloads",
+          "/Users/bird/Documents",
+          "/Users/bird/sources"
+        ]
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer@latest"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "settings": {
+        "headless": true
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@latest"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory@latest"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "settings": {
+        "storage_path": "/Users/bird/.mcp/memory"
+      }
+    },
+    "context-7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "chroma": {
+      "command": "uvx",
+      "args": [
+        "chroma-mcp",
+        "--client-type",
+        "persistent",
+        "--data-dir",
+        "/Users/bird/sources/chroma-db"
+      ],
+      "env": {
+        "PYTHONPATH": "/opt/homebrew/lib/python3.11/site-packages"
+      }
+    },
+    "taskmaster-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "env": {
+        "OLLAMA_BASE_URL": "http://localhost:11434",
+        "NODE_ENV": "production",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "MODEL": "claude-3-7-sonnet-20250219",
+        "MAX_TOKENS": "8000",
+        "TEMPERATURE": "0.2"
+      }
+    },
+    "desktop-commander": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@desktop-commander/mcp-server"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "settings": {
+        "allowed_directories": [
+          "/Users/bird/Desktop",
+          "/Users/bird/Downloads",
+          "/Users/bird/Documents",
+          "/Users/bird/sources"
+        ]
+      }
+    },
+    "ai-logging": {
+      "command": "python3",
+      "args": [
+        "/Users/bird/sources/mcp-unified-config/ai_logging/cli.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/bird/sources/mcp-unified-config"
+      }
+    },
+    "workflow-commands": {
+      "command": "python3",
+      "args": [
+        "/Users/bird/sources/mcp-unified-config/mcp_workflow_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/bird/sources/mcp-unified-config"
+      }
+    },
+    "railway-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@mh8974/railway-mcp",
+        "--key",
+        "986a55e5-eab3-4406-9603-dd79f3c111cd",
+        "--profile",
+        "attractive-alligator-vvXHaf"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "applescript_execute": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@peakmojo/applescript-mcp"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "notionApi": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@notionhq/notion-mcp-server"
+      ],
+      "env": {
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer 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\", \"Notion-Version\": \"2022-06-28\" }"
+      }
+    },
+    "task-master-ai": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "task-master-ai"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE",
+        "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE",
+        "OPENAI_API_KEY": "YOUR_OPENAI_KEY_HERE",
+        "GOOGLE_API_KEY": "YOUR_GOOGLE_KEY_HERE",
+        "XAI_API_KEY": "YOUR_XAI_KEY_HERE",
+        "OPENROUTER_API_KEY": "YOUR_OPENROUTER_KEY_HERE",
+        "MISTRAL_API_KEY": "YOUR_MISTRAL_KEY_HERE",
+        "AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE",
+        "OLLAMA_API_KEY": "YOUR_OLLAMA_API_KEY_HERE"
+      }
+    }
+  },
+  "settings": {}
 }

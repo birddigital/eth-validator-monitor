@@ -1,0 +1,1079 @@
+{
+	"Golang errors": {
+		"": [
+			{
+				"line": 0,
+				"column": 0,
+				"error": "# command-line-arguments\ncmd/cli/main.go:249:34: cfg.Database.BuildPoolConfig undefined (type config.DatabaseConfig has no field or method BuildPoolConfig)"
+			},
+			{
+				"line": 0,
+				"column": 0,
+				"error": "# command-line-arguments\nbenchmarks/fixtures/validators.go:8:2: \"github.com/ethereum/go-ethereum/common\" imported and not used"
+			}
+		],
+		"/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go": [
+			{
+				"line": 8,
+				"column": 2,
+				"error": "\"github.com/ethereum/go-ethereum/common\" imported and not used"
+			}
+		],
+		"/Users/bird/sources/standalone-projects/eth-validator-monitor/cmd/cli/main.go": [
+			{
+				"line": 249,
+				"column": 34,
+				"error": "cfg.Database.BuildPoolConfig undefined (type config.DatabaseConfig has no field or method BuildPoolConfig)"
+			}
+		]
+	},
+	"Issues": [
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/metrics.go",
+			"code": "246: func (lh *LatencyHistogram) Record(latency time.Duration) {\n247: \tlatencyUs := uint64(latency.Microseconds())\n248: \n",
+			"line": "247",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/metrics.go",
+			"code": "63: \t// Record latency in microseconds\n64: \tlatencyUs := uint64(latency.Microseconds())\n65: \tmc.totalLatency.Add(latencyUs)\n",
+			"line": "64",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/http_metrics.go",
+			"code": "52: \t// Record latency\n53: \tlatencyMs := uint64(latency.Milliseconds())\n54: \tm.totalLatencyMs.Add(latencyMs)\n",
+			"line": "53",
+			"column": "21",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/cache/metrics.go",
+			"code": "93: \tcm.getOperations.Add(1)\n94: \tcm.totalLatencyUs.Add(uint64(latency.Microseconds()))\n95: }\n",
+			"line": "94",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "118: \t\t\t\tEpoch:              uint64(1000 + (t.Unix() / 384)), // ~6.4 min epoch\n119: \t\t\t\tSlot:               uint64(32000 + (t.Unix() / 12)), // 12 sec slots\n120: \t\t\t})\n",
+			"line": "119",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "117: \t\t\t\tProposalSuccess:    i%3 == 0,\n118: \t\t\t\tEpoch:              uint64(1000 + (t.Unix() / 384)), // ~6.4 min epoch\n119: \t\t\t\tSlot:               uint64(32000 + (t.Unix() / 12)), // 12 sec slots\n",
+			"line": "118",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "115: \t\t\t\tEffectiveness:      effectiveness,\n116: \t\t\t\tMissedAttestations: uint64(i % 10),\n117: \t\t\t\tProposalSuccess:    i%3 == 0,\n",
+			"line": "116",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "112: \t\t\t\tTimestamp:          t,\n113: \t\t\t\tBalance:            32000000000 + uint64(i*1000),\n114: \t\t\t\tEffectiveBalance:   32000000000,\n",
+			"line": "113",
+			"column": "45",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "110: \t\t\tsnapshots = append(snapshots, \u0026ValidatorSnapshot{\n111: \t\t\t\tValidatorIndex:     uint64(i),\n112: \t\t\t\tTimestamp:          t,\n",
+			"line": "111",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "91: \t\t\tEpoch:              uint64(1000 + i/32),\n92: \t\t\tSlot:               uint64(32000 + i),\n93: \t\t}\n",
+			"line": "92",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "90: \t\t\tProposalSuccess:    i%3 == 0,\n91: \t\t\tEpoch:              uint64(1000 + i/32),\n92: \t\t\tSlot:               uint64(32000 + i),\n",
+			"line": "91",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "88: \t\t\tEffectiveness:      effectiveness,\n89: \t\t\tMissedAttestations: uint64(i % 10),\n90: \t\t\tProposalSuccess:    i%3 == 0,\n",
+			"line": "89",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "85: \t\t\tTimestamp:          now.Add(-time.Duration(i) * time.Minute),\n86: \t\t\tBalance:            32000000000 + uint64(i*1000),\n87: \t\t\tEffectiveBalance:   32000000000,\n",
+			"line": "86",
+			"column": "44",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "83: \t\tsnapshots[i] = \u0026ValidatorSnapshot{\n84: \t\t\tValidatorIndex:     uint64(i),\n85: \t\t\tTimestamp:          now.Add(-time.Duration(i) * time.Minute),\n",
+			"line": "84",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "44: \t\t\tStatus:     \"active_ongoing\",\n45: \t\t\tBalance:    32000000000 + uint64(i*1000), // 32 ETH in Gwei + variation\n46: \t\t\tActivation: 0,\n",
+			"line": "45",
+			"column": "36",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "41: \t\tvalidators[i] = \u0026Validator{\n42: \t\t\tIndex:      uint64(i),\n43: \t\t\tPubkey:     pubkey,\n",
+			"line": "42",
+			"column": "22",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/shutdown.go",
+			"code": "254: func (er *ErrorRecovery) GetBackoff(attempt int) time.Duration {\n255: \tbackoff := er.retryBackoff * time.Duration(1\u003c\u003cuint(attempt))\n256: \tif backoff \u003e er.maxBackoff {\n",
+			"line": "255",
+			"column": "52",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "8084: \n8085: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n8086: \n",
+			"line": "8085",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "8025: \n8026: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n8027: \n",
+			"line": "8026",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7970: \n7971: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7972: \n",
+			"line": "7971",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7915: \n7916: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7917: \n",
+			"line": "7916",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7857: \n7858: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7859: \n",
+			"line": "7858",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7809: \n7810: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7811: \n",
+			"line": "7810",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7753: \n7754: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7755: \n",
+			"line": "7754",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7379: \n7380: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7381: \n",
+			"line": "7380",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7296: \n7297: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7298: \n",
+			"line": "7297",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7247: \n7248: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7249: \n",
+			"line": "7248",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "7049: \n7050: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n7051: \n",
+			"line": "7050",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6960: \n6961: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6962: \n",
+			"line": "6961",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6778: \n6779: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6780: \n",
+			"line": "6779",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6687: \n6688: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6689: \n",
+			"line": "6688",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6618: \n6619: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6620: \n",
+			"line": "6619",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6569: \n6570: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6571: \n",
+			"line": "6570",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e int32",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/graph/generated/generated.go",
+			"code": "6515: \n6516: \tatomic.AddInt32(\u0026ec.deferred, int32(len(deferred)))\n6517: \n",
+			"line": "6516",
+			"column": "37",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/pkg/types/scalars.go",
+			"code": "19: \ttt := time.Time(t)\n20: \tw.Write([]byte(strconv.Quote(tt.Format(time.RFC3339))))\n21: }\n",
+			"line": "20",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/testutil/helpers.go",
+			"code": "45: \t\tclient.FlushDB(ctx)\n46: \t\tclient.Close()\n47: \t})\n",
+			"line": "46",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "437: \t\t\tif len(batch) \u003e 0 {\n438: \t\t\t\ts.batchInsertAlerts(s.ctx, batch)\n439: \t\t\t\tbatch = batch[:0]\n",
+			"line": "438",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "431: \t\t\tif len(batch) \u003e= s.batchSize {\n432: \t\t\t\ts.batchInsertAlerts(s.ctx, batch)\n433: \t\t\t\tbatch = batch[:0]\n",
+			"line": "432",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "424: \t\t\tif len(batch) \u003e 0 {\n425: \t\t\t\ts.batchInsertAlerts(context.Background(), batch)\n426: \t\t\t}\n",
+			"line": "425",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "326: \t\t\tif len(batch) \u003e 0 {\n327: \t\t\t\ts.batchInsertPerformance(s.ctx, batch)\n328: \t\t\t\tbatch = batch[:0]\n",
+			"line": "327",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "320: \t\t\tif len(batch) \u003e= s.batchSize {\n321: \t\t\t\ts.batchInsertPerformance(s.ctx, batch)\n322: \t\t\t\tbatch = batch[:0]\n",
+			"line": "321",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "313: \t\t\tif len(batch) \u003e 0 {\n314: \t\t\t\ts.batchInsertPerformance(context.Background(), batch)\n315: \t\t\t}\n",
+			"line": "314",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "214: \t\t\tif len(batch) \u003e 0 {\n215: \t\t\t\ts.batchInsertSnapshots(s.ctx, batch)\n216: \t\t\t\tbatch = batch[:0]\n",
+			"line": "215",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "208: \t\t\tif len(batch) \u003e= s.batchSize {\n209: \t\t\t\ts.batchInsertSnapshots(s.ctx, batch)\n210: \t\t\t\tbatch = batch[:0]\n",
+			"line": "209",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/postgres.go",
+			"code": "201: \t\t\tif len(batch) \u003e 0 {\n202: \t\t\t\ts.batchInsertSnapshots(context.Background(), batch)\n203: \t\t\t}\n",
+			"line": "202",
+			"column": "5",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/metrics/server.go",
+			"code": "31: \t\tw.WriteHeader(http.StatusOK)\n32: \t\tw.Write([]byte(\"OK\"))\n33: \t})\n",
+			"line": "32",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/retry.go",
+			"code": "67: \t\t\tbody, _ := io.ReadAll(resp.Body)\n68: \t\t\tresp.Body.Close()\n69: \t\t\tlastErr = fmt.Errorf(\"attempt %d failed with status %d: %s\", attempt+1, resp.StatusCode, string(body))\n",
+			"line": "68",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/logging.go",
+			"code": "48: \t\tbodyBytes, _ := io.ReadAll(resp.Body)\n49: \t\tresp.Body.Close()\n50: \t\tresp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))\n",
+			"line": "49",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/logging.go",
+			"code": "26: \t\tbodyBytes, _ := io.ReadAll(req.Body)\n27: \t\treq.Body.Close()\n28: \t\treq.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))\n",
+			"line": "27",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "404: \t\t\t\t\t\tvar slot int\n405: \t\t\t\t\t\tfmt.Sscanf(event.Slot, \"%d\", \u0026slot)\n406: \n",
+			"line": "405",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "328: \t\tfmt.Sscanf(result.Data.Message.Slot, \"%d\", \u0026slotNum)\n329: \t\tfmt.Sscanf(result.Data.Message.ProposerIndex, \"%d\", \u0026proposerNum)\n330: \n",
+			"line": "329",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "327: \t\tvar slotNum, proposerNum int\n328: \t\tfmt.Sscanf(result.Data.Message.Slot, \"%d\", \u0026slotNum)\n329: \t\tfmt.Sscanf(result.Data.Message.ProposerIndex, \"%d\", \u0026proposerNum)\n",
+			"line": "328",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "324: \t\t}\n325: \t\tresp.Body.Close()\n326: \n",
+			"line": "325",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "321: \t\tif err := json.NewDecoder(resp.Body).Decode(\u0026result); err != nil {\n322: \t\t\tresp.Body.Close()\n323: \t\t\tcontinue\n",
+			"line": "322",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "306: \t\tif resp.StatusCode != http.StatusOK {\n307: \t\t\tresp.Body.Close()\n308: \t\t\tcontinue\n",
+			"line": "307",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "275: \t\t}\n276: \t\tresp.Body.Close()\n277: \n",
+			"line": "276",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "272: \t\tif err := json.NewDecoder(resp.Body).Decode(\u0026result); err != nil {\n273: \t\t\tresp.Body.Close()\n274: \t\t\tcontinue\n",
+			"line": "273",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/collector/beacon.go",
+			"code": "263: \t\tif resp.StatusCode != http.StatusOK {\n264: \t\t\tresp.Body.Close()\n265: \t\t\tcontinue\n",
+			"line": "264",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/api/rest/health.go",
+			"code": "100: \t\tw.WriteHeader(http.StatusOK)\n101: \t\tjson.NewEncoder(w).Encode(map[string]string{\n102: \t\t\t\"status\": \"alive\",\n103: \t\t})\n104: \t}\n",
+			"line": "101-103",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/api/rest/health.go",
+			"code": "89: \t\tw.WriteHeader(http.StatusOK)\n90: \t\tjson.NewEncoder(w).Encode(map[string]string{\n91: \t\t\t\"status\": \"ready\",\n92: \t\t})\n93: \t}\n",
+			"line": "90-92",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/api/rest/health.go",
+			"code": "81: \t\t\tw.WriteHeader(http.StatusServiceUnavailable)\n82: \t\t\tjson.NewEncoder(w).Encode(map[string]string{\n83: \t\t\t\t\"status\": \"not ready\",\n84: \t\t\t\t\"reason\": \"database unavailable\",\n85: \t\t\t})\n86: \t\t\treturn\n",
+			"line": "82-85",
+			"column": "4",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/api/rest/health.go",
+			"code": "68: \t\tw.Header().Set(\"Content-Type\", \"application/json\")\n69: \t\tjson.NewEncoder(w).Encode(status)\n70: \t}\n",
+			"line": "69",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "162: \t\trandBytes := make([]byte, 1)\n163: \t\trand.Read(randBytes)\n164: \t\tif float64(randBytes[0])/255.0 \u003c m.failureRate {\n",
+			"line": "163",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "55: \tpubkey := make([]byte, 48)\n56: \trand.Read(pubkey)\n57: \n",
+			"line": "56",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/bird/sources/standalone-projects/eth-validator-monitor/benchmarks/fixtures/validators.go",
+			"code": "38: \t\tpubkey := make([]byte, 48)\n39: \t\trand.Read(pubkey)\n40: \n",
+			"line": "39",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		}
+	],
+	"Stats": {
+		"files": 59,
+		"lines": 20655,
+		"nosec": 0,
+		"found": 65
+	},
+	"GosecVersion": "dev"
+}

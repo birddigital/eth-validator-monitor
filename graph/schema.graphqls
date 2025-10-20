@@ -133,6 +133,41 @@ input AlertFilter {
   offset: Int
 }
 
+# Authentication Types
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  roles: [String!]!
+  createdAt: Time!
+  lastLogin: Time
+}
+
+type AuthPayload {
+  """Access token for API authentication"""
+  accessToken: String!
+
+  """Refresh token for obtaining new access tokens"""
+  refreshToken: String!
+
+  """User information"""
+  user: User!
+
+  """Token expiration time (Unix timestamp)"""
+  expiresAt: Int!
+}
+
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
 # Queries
 type Query {
   """
@@ -164,10 +199,30 @@ type Query {
   Health check
   """
   health: String!
+
+  """
+  Get current authenticated user
+  """
+  me: User!
 }
 
 # Mutations
 type Mutation {
+  """
+  Register a new user account
+  """
+  register(input: RegisterInput!): AuthPayload!
+
+  """
+  Login with username and password
+  """
+  login(input: LoginInput!): AuthPayload!
+
+  """
+  Refresh access token using refresh token
+  """
+  refreshToken(refreshToken: String!): AuthPayload!
+
   """
   Add a new validator to monitor
   """

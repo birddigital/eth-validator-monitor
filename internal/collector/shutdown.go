@@ -3,12 +3,13 @@ package collector
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/birddigital/eth-validator-monitor/internal/logger"
 )
 
 // ShutdownManager handles graceful shutdown of the validator collector
@@ -37,7 +38,10 @@ func (sm *ShutdownManager) Start() {
 
 	go func() {
 		sig := <-sigChan
-		log.Printf("Received shutdown signal: %v", sig)
+		ctx := logger.WithRequestID(context.Background(), "shutdown")
+		logger.FromContext(ctx).Warn().
+			Str("signal", sig.String()).
+			Msg("Received shutdown signal")
 		sm.InitiateShutdown()
 	}()
 }
@@ -49,12 +53,13 @@ func (sm *ShutdownManager) InitiateShutdown() {
 		sm.shutdownStarted = true
 		sm.mu.Unlock()
 
-		log.Println("=== Starting Graceful Shutdown ===")
-		startTime := time.Now()
-
-		// Create shutdown context with timeout
-		ctx, cancel := context.WithTimeout(context.Background(), sm.shutdownTimeout)
+		// Create shutdown context with timeout and request ID
+		ctx := logger.WithRequestID(context.Background(), "shutdown")
+		ctx, cancel := context.WithTimeout(ctx, sm.shutdownTimeout)
 		defer cancel()
+
+		logger.FromContext(ctx).Info().Msg("=== Starting Graceful Shutdown ===")
+		startTime := time.Now()
 
 		// Execute shutdown phases
 		phases := []shutdownPhase{
@@ -66,16 +71,29 @@ func (sm *ShutdownManager) InitiateShutdown() {
 		}
 
 		for i, phase := range phases {
-			log.Printf("[%d/%d] %s...", i+1, len(phases), phase.name)
+			logger.FromContext(ctx).Info().
+				Int("phase", i+1).
+				Int("total_phases", len(phases)).
+				Str("phase_name", phase.name).
+				Msg("Starting shutdown phase")
+
 			if err := phase.fn(ctx); err != nil {
-				log.Printf("Warning: %s failed: %v", phase.name, err)
+				logger.FromContext(ctx).Warn().
+					Err(err).
+					Str("phase_name", phase.name).
+					Msg("Shutdown phase failed")
 			} else {
-				log.Printf("[%d/%d] %s - COMPLETE", i+1, len(phases), phase.name)
+				logger.FromContext(ctx).Info().
+					Int("phase", i+1).
+					Str("phase_name", phase.name).
+					Msg("Shutdown phase complete")
 			}
 		}
 
 		elapsed := time.Since(startTime)
-		log.Printf("=== Graceful Shutdown Complete (took %v) ===", elapsed)
+		logger.FromContext(ctx).Info().
+			Dur("duration", elapsed).
+			Msg("=== Graceful Shutdown Complete ===")
 		close(sm.shutdownChan)
 	})
 }
@@ -117,7 +135,7 @@ func (sm *ShutdownManager) waitForInProgressWork(ctx context.Context) error {
 func (sm *ShutdownManager) flushAllBuffers(ctx context.Context) error {
 	// The storage layer's Close() method handles buffer flushing
 	// This is handled in closeDatabaseConnections
-	log.Println("All buffers flushed via storage layer shutdown")
+	logger.FromContext(ctx).Debug().Msg("All buffers flushed via storage layer shutdown")
 	return nil
 }
 
@@ -125,14 +143,14 @@ func (sm *ShutdownManager) flushAllBuffers(ctx context.Context) error {
 func (sm *ShutdownManager) closeDatabaseConnections(ctx context.Context) error {
 	// Database connections are closed via the storage layer
 	// This should be handled by the main application's cleanup
-	log.Println("Database connections closed")
+	logger.FromContext(ctx).Debug().Msg("Database connections closed")
 	return nil
 }
 
 // closeCacheConnections closes Redis cache connections
 func (sm *ShutdownManager) closeCacheConnections(ctx context.Context) error {
 	// Cache connections are closed by the main application
-	log.Println("Cache connections closed")
+	logger.FromContext(ctx).Debug().Msg("Cache connections closed")
 	return nil
 }
 
@@ -265,8 +283,13 @@ func (er *ErrorRecovery) RetryWithBackoff(ctx context.Context, component string,
 		// Don't sleep on last attempt
 		if attempt < er.maxRetries-1 {
 			backoff := er.GetBackoff(attempt)
-			log.Printf("Retry attempt %d/%d for %s failed: %v (backing off %v)",
-				attempt+1, er.maxRetries, component, err, backoff)
+			logger.FromContext(ctx).Warn().
+				Err(err).
+				Str("component", component).
+				Int("attempt", attempt+1).
+				Int("max_retries", er.maxRetries).
+				Dur("backoff", backoff).
+				Msg("Retry attempt failed, backing off")
 
 			select {
 			case <-time.After(backoff):

@@ -3,7 +3,7 @@
 
 # Where to find the GraphQL schema
 schema:
-  - graph/schema/*.graphql
+  - graph/schema.graphqls
 
 # Where to generate the GraphQL server code
 exec:
