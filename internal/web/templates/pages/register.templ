@@ -41,112 +41,144 @@ templ RegisterPage(data RegisterPageData) {
 							<span>{ data.ErrorMessage }</span>
 						</div>
 					}
-					<!-- Registration Form -->
-					<form method="POST" action="/register" class="space-y-4">
-						<!-- Email Field -->
-						<div class="form-control w-full">
-							<label class="label" for="email">
-								<span class="label-text font-medium">Email</span>
-								<span class="label-text-alt text-error">*</span>
-							</label>
-							<input
-								type="email"
-								id="email"
-								name="email"
-								required
-								autocomplete="email"
-								placeholder="you@example.com"
-								value={ data.FormData["email"] }
-								class="input input-bordered w-full"
-							/>
-							<label class="label">
-								<span class="label-text-alt">We'll never share your email</span>
-							</label>
-						</div>
-						<!-- Username Field -->
-						<div class="form-control w-full">
-							<label class="label" for="username">
-								<span class="label-text font-medium">Username</span>
-								<span class="label-text-alt text-error">*</span>
-							</label>
-							<input
-								type="text"
-								id="username"
-								name="username"
-								required
-								autocomplete="username"
-								placeholder="Choose a username"
-								value={ data.FormData["username"] }
-								class="input input-bordered w-full"
-								minlength="3"
-								maxlength="20"
-							/>
-							<label class="label">
-								<span class="label-text-alt">3-20 characters</span>
-							</label>
-						</div>
-						<!-- Password Field -->
-						<div class="form-control w-full">
-							<label class="label" for="password">
-								<span class="label-text font-medium">Password</span>
-								<span class="label-text-alt text-error">*</span>
-							</label>
-							<input
-								type="password"
-								id="password"
-								name="password"
-								required
-								autocomplete="new-password"
-								placeholder="Create a strong password"
-								class="input input-bordered w-full"
-								minlength="8"
-							/>
-							<label class="label">
-								<span class="label-text-alt">Minimum 8 characters</span>
-							</label>
-						</div>
-						<!-- Confirm Password Field -->
-						<div class="form-control w-full">
-							<label class="label" for="password_confirm">
-								<span class="label-text font-medium">Confirm Password</span>
-								<span class="label-text-alt text-error">*</span>
-							</label>
-							<input
-								type="password"
-								id="password_confirm"
-								name="password_confirm"
-								required
-								autocomplete="new-password"
-								placeholder="Confirm your password"
-								class="input input-bordered w-full"
-								minlength="8"
-							/>
-						</div>
-						<!-- Terms Checkbox -->
-						<div class="form-control">
-							<label class="label cursor-pointer justify-start gap-4">
+					<!-- Registration Form with HTMX -->
+					<form
+						method="POST"
+						action="/register"
+						class="space-y-4"
+						hx-post="/register"
+						hx-target="#form-container"
+						hx-swap="outerHTML"
+						hx-indicator="#submit-spinner"
+					>
+						<div id="form-container">
+							<!-- Global Form Error -->
+							<div id="form-error"></div>
+							<!-- Email Field -->
+							<div class="form-control w-full">
+								<label class="label" for="email">
+									<span class="label-text font-medium">Email</span>
+									<span class="label-text-alt text-error">*</span>
+								</label>
 								<input
-									type="checkbox"
-									id="terms"
-									name="terms"
+									type="email"
+									id="email"
+									name="email"
 									required
-									class="checkbox checkbox-primary"
+									autocomplete="email"
+									placeholder="you@example.com"
+									value={ data.FormData["email"] }
+									class="input input-bordered w-full"
 								/>
-								<span class="label-text">
-									I agree to the
-									<a href="/terms" class="link link-primary" target="_blank">Terms of Service</a>
-									and
-									<a href="/privacy" class="link link-primary" target="_blank">Privacy Policy</a>
-								</span>
-							</label>
-						</div>
-						<!-- Submit Button -->
-						<div class="form-control mt-6">
-							<button type="submit" class="btn btn-primary btn-block">
-								Create Account
-							</button>
+								<div id="email-error" class="text-error text-sm mt-1"></div>
+								<label class="label">
+									<span class="label-text-alt">We'll never share your email</span>
+								</label>
+							</div>
+							<!-- Username Field -->
+							<div class="form-control w-full">
+								<label class="label" for="username">
+									<span class="label-text font-medium">Username</span>
+									<span class="label-text-alt text-error">*</span>
+								</label>
+								<input
+									type="text"
+									id="username"
+									name="username"
+									required
+									autocomplete="username"
+									placeholder="Choose a username"
+									value={ data.FormData["username"] }
+									class="input input-bordered w-full"
+									minlength="3"
+									maxlength="20"
+									pattern="[a-zA-Z0-9]+"
+									title="Username must contain only letters and numbers (no spaces or special characters)"
+								/>
+								<div id="username-error" class="text-error text-sm mt-1"></div>
+								<label class="label">
+									<span class="label-text-alt">3-20 characters</span>
+								</label>
+							</div>
+							<!-- Password Field -->
+							<div class="form-control w-full">
+								<label class="label" for="password">
+									<span class="label-text font-medium">Password</span>
+									<span class="label-text-alt text-error">*</span>
+								</label>
+								<input
+									type="password"
+									id="password"
+									name="password"
+									required
+									autocomplete="new-password"
+									placeholder="Create a strong password"
+									class="input input-bordered w-full"
+									minlength="8"
+									title="Password must be at least 8 characters"
+								/>
+								<div id="password-error" class="text-error text-sm mt-1"></div>
+								<label class="label">
+									<span class="label-text-alt">Minimum 8 characters</span>
+								</label>
+							</div>
+							<!-- Confirm Password Field -->
+							<div class="form-control w-full">
+								<label class="label" for="password_confirm">
+									<span class="label-text font-medium">Confirm Password</span>
+									<span class="label-text-alt text-error">*</span>
+								</label>
+								<input
+									type="password"
+									id="password_confirm"
+									name="password_confirm"
+									required
+									autocomplete="new-password"
+									placeholder="Confirm your password"
+									class="input input-bordered w-full"
+									minlength="8"
+									title="Please confirm your password"
+								/>
+								<div id="password_confirm-error" class="text-error text-sm mt-1"></div>
+							</div>
+							<!-- Terms Checkbox -->
+							<div class="form-control">
+								<label class="label cursor-pointer justify-start gap-4">
+									<input
+										type="checkbox"
+										id="terms"
+										name="terms"
+										required
+										class="checkbox checkbox-primary"
+									/>
+									<span class="label-text">
+										I agree to the
+										<a href="/terms" class="link link-primary" target="_blank">Terms of Service</a>
+										and
+										<a href="/privacy" class="link link-primary" target="_blank">Privacy Policy</a>
+									</span>
+								</label>
+								<div id="terms-error" class="text-error text-sm mt-1"></div>
+							</div>
+							<!-- Submit Button with Loading State -->
+							<div class="form-control mt-6">
+								<button type="submit" class="btn btn-primary btn-block" hx-disabled-elt="this">
+									<span id="submit-spinner" class="htmx-indicator loading loading-spinner loading-sm mr-2"></span>
+									Create Account
+								</button>
+							</div>
 						</div>
 					</form>
+					<!-- HTMX Loading Indicator CSS -->
+					<style>
+						.htmx-indicator {
+							display: none;
+						}
+						.htmx-request .htmx-indicator,
+						.htmx-request.htmx-indicator {
+							display: inline-block;
+						}
+					</style>
 					<!-- Divider -->
 					<div class="divider">OR</div>
 					<!-- Login Link -->

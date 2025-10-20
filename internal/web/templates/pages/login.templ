@@ -31,52 +31,79 @@ templ LoginPage(data LoginPageData) {
 							<span>{ data.ErrorMessage }</span>
 						</div>
 					}
-					<!-- Login Form -->
-					<form method="POST" action="/login" class="space-y-4">
-						<!-- Email Field -->
-						<div class="form-control w-full">
-							<label class="label" for="email">
-								<span class="label-text font-medium">Email</span>
-							</label>
-							<input
-								type="email"
-								id="email"
-								name="email"
-								required
-								autocomplete="email"
-								placeholder="you@example.com"
-								class="input input-bordered w-full"
-							/>
-						</div>
-						<!-- Password Field -->
-						<div class="form-control w-full">
-							<label class="label" for="password">
-								<span class="label-text font-medium">Password</span>
-							</label>
-							<input
-								type="password"
-								id="password"
-								name="password"
-								required
-								autocomplete="current-password"
-								placeholder="Enter your password"
-								class="input input-bordered w-full"
-							/>
-							<label class="label">
-								<a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
-							</label>
-						</div>
-						<!-- Hidden Redirect -->
-						if data.RedirectURL != "" {
-							<input type="hidden" name="redirect" value={ data.RedirectURL }/>
-						}
-						<!-- Submit Button -->
-						<div class="form-control mt-6">
-							<button type="submit" class="btn btn-primary btn-block">
-								Sign In
-							</button>
+					<!-- Login Form with HTMX -->
+					<form
+						method="POST"
+						action="/login"
+						class="space-y-4"
+						hx-post="/login"
+						hx-target="#form-container"
+						hx-swap="outerHTML"
+						hx-indicator="#submit-spinner"
+					>
+						<div id="form-container">
+							<!-- Global Form Error -->
+							<div id="form-error"></div>
+							<!-- Email Field -->
+							<div class="form-control w-full">
+								<label class="label" for="email">
+									<span class="label-text font-medium">Email</span>
+								</label>
+								<input
+									type="email"
+									id="email"
+									name="email"
+									required
+									autocomplete="email"
+									placeholder="you@example.com"
+									class="input input-bordered w-full"
+								/>
+								<div id="email-error" class="text-error text-sm mt-1"></div>
+							</div>
+							<!-- Password Field -->
+							<div class="form-control w-full">
+								<label class="label" for="password">
+									<span class="label-text font-medium">Password</span>
+								</label>
+								<input
+									type="password"
+									id="password"
+									name="password"
+									required
+									minlength="8"
+									autocomplete="current-password"
+									placeholder="Enter your password"
+									class="input input-bordered w-full"
+									title="Password must be at least 8 characters"
+								/>
+								<div id="password-error" class="text-error text-sm mt-1"></div>
+								<label class="label">
+									<a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
+								</label>
+							</div>
+							<!-- Hidden Redirect -->
+							if data.RedirectURL != "" {
+								<input type="hidden" name="redirect" value={ data.RedirectURL }/>
+							}
+							<!-- Submit Button with Loading State -->
+							<div class="form-control mt-6">
+								<button type="submit" class="btn btn-primary btn-block" hx-disabled-elt="this">
+									<span id="submit-spinner" class="htmx-indicator loading loading-spinner loading-sm mr-2"></span>
+									Sign In
+								</button>
+							</div>
 						</div>
 					</form>
+					<!-- HTMX Loading Indicator CSS -->
+					<style>
+						.htmx-indicator {
+							display: none;
+						}
+						.htmx-request .htmx-indicator,
+						.htmx-request.htmx-indicator {
+							display: inline-block;
+						}
+					</style>
 					<!-- Divider -->
 					<div class="divider">OR</div>
 					<!-- Register Link -->

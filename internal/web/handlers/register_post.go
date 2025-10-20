@@ -1,14 +1,15 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-	"regexp"
 
+	formflow "github.com/birddigital/formflow/go-formflow"
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
 	"github.com/birddigital/eth-validator-monitor/internal/web/templates/pages"
 )
 
-// RegisterPostHandler handles POST /register form submissions
+// RegisterPostHandler handles POST /register form submissions using formflow
 type RegisterPostHandler struct {
 	authService  *auth.Service
 	sessionStore *auth.SessionStore
@@ -22,113 +23,154 @@ func NewRegisterPostHandler(authService *auth.Service, sessionStore *auth.Sessio
 	}
 }
 
-// ServeHTTP implements http.Handler for POST form submissions
+// ServeHTTP implements http.Handler for POST form submissions with formflow
 func (h *RegisterPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Parse form data
-	if err := r.ParseForm(); err != nil {
-		h.renderError(w, r, "Invalid form data", nil)
-		return
-	}
+	var passwordValue string // Captured for password confirmation validation
 
-	email := r.FormValue("email")
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-	passwordConfirm := r.FormValue("password_confirm")
-	terms := r.FormValue("terms")
+	// Define registration form declaratively using formflow
+	form := formflow.NewForm("register-form").
+		AddField(formflow.Field{
+			Name:            "email",
+			Type:            "email",
+			Label:           "Email",
+			Required:        true,
+			ValidationRules: "required,email",
+		}).
+		AddField(formflow.Field{
+			Name:            "username",
+			Type:            "text",
+			Label:           "Username",
+			Required:        true,
+			ValidationRules: "required,min=3,max=20,alphanum",
+		}).
+		AddField(formflow.Field{
+			Name:            "password",
+			Type:            "password",
+			Label:           "Password",
+			Required:        true,
+			ValidationRules: "required,min=8",
+			CustomValidator: func(value string) error {
+				passwordValue = value // Capture for confirmation check
+				return nil
+			},
+		}).
+		AddField(formflow.Field{
+			Name:     "password_confirm",
+			Type:     "password",
+			Label:    "Confirm Password",
+			Required: true,
+			CustomValidator: func(value string) error {
+				return formflow.ValidatePasswordMatch(passwordValue, value)
+			},
+		}).
+		AddField(formflow.Field{
+			Name:     "terms",
+			Type:     "checkbox",
+			Label:    "Terms of Service",
+			Required: true,
+		}).
+		OnSuccess(func(data map[string]interface{}) error {
+			// Extract form data
+			email := data["email"].(string)
+			username := data["username"].(string)
+			password := data["password"].(string)
+			passwordConfirm := data["password_confirm"].(string)
 
-	// Store form data for repopulation on error
-	formData := map[string]string{
-		"email":    email,
-		"username": username,
-	}
-
-	// Validate required fields
-	if email == "" || username == "" || password == "" || passwordConfirm == "" {
-		h.renderError(w, r, "All fields are required", formData)
-		return
-	}
-
-	// Validate terms accepted
-	if terms != "on" {
-		h.renderError(w, r, "You must accept the Terms of Service and Privacy Policy", formData)
-		return
-	}
-
-	// Validate email format
-	if !isValidEmail(email) {
-		h.renderError(w, r, "Invalid email address", formData)
-		return
-	}
-
-	// Validate username (3-20 chars, alphanumeric)
-	if len(username) < 3 || len(username) > 20 {
-		h.renderError(w, r, "Username must be 3-20 characters", formData)
-		return
-	}
-	if !isAlphanumeric(username) {
-		h.renderError(w, r, "Username must contain only letters and numbers", formData)
-		return
-	}
-
-	// Validate password match
-	if password != passwordConfirm {
-		h.renderError(w, r, "Passwords do not match", formData)
-		return
-	}
-
-	// Validate password length (minimum 8 characters)
-	if len(password) < 8 {
-		h.renderError(w, r, "Password must be at least 8 characters", formData)
-		return
-	}
-
-	// Register user (service signature: username, password, confirmPassword, email, roles)
-	user, err := h.authService.Register(r.Context(), username, password, passwordConfirm, email, []string{"user"})
-	if err != nil {
-		// Handle validation errors with field-level details
-		if verr, ok := err.(*auth.ValidationError); ok {
-			// Aggregate all field errors into a single message for the web form
-			errorMsg := ""
-			for field, msg := range verr.Fields {
-				if errorMsg != "" {
-					errorMsg += "; "
-				}
-				errorMsg += field + ": " + msg
+			// Register user
+			user, err := h.authService.Register(r.Context(), username, password, passwordConfirm, email, []string{"user"})
+			if err != nil {
+				return err
 			}
-			h.renderError(w, r, errorMsg, formData)
+
+			// Create session for new user
+			session, err := h.sessionStore.Get(r)
+			if err != nil {
+				return err
+			}
+
+			h.sessionStore.SetUserSession(session, user.ID, user.Username)
+
+			if err := h.sessionStore.Save(r, w, session); err != nil {
+				return err
+			}
+
+			return nil
+		}).
+		Build()
+
+	// Validate request using formflow
+	data, errors := form.ValidateRequest(r)
+	if len(errors) > 0 {
+		// For HTMX requests, formflow handles partial rendering automatically
+		// For traditional requests, re-render full form with errors
+		if formflow.IsHTMXRequest(r) {
+			form.RenderError(w, r, errors, data)
+		} else {
+			h.renderErrorPage(w, r, aggregateErrors(errors), extractFormData(data))
+		}
+		return
+	}
+
+	// Execute success handler (registration + session creation)
+	if err := form.OnSuccess(data); err != nil {
+		// Handle validation errors from auth service
+		if verr, ok := err.(*auth.ValidationError); ok {
+			errors := make(formflow.ValidationErrors)
+			for field, msg := range verr.Fields {
+				errors[field] = msg
+			}
+
+			if formflow.IsHTMXRequest(r) {
+				form.RenderError(w, r, errors, data)
+			} else {
+				h.renderErrorPage(w, r, aggregateAuthErrors(verr), extractFormData(data))
+			}
 			return
 		}
 
+		// Handle specific auth errors
 		if err == auth.ErrUserAlreadyExists {
-			h.renderError(w, r, "Email or username already exists", formData)
-		} else if err == auth.ErrPasswordTooShort {
-			h.renderError(w, r, err.Error(), formData)
+			errors := formflow.ValidationErrors{
+				"_form": "Email or username already exists",
+			}
+			if formflow.IsHTMXRequest(r) {
+				form.RenderError(w, r, errors, data)
+			} else {
+				h.renderErrorPage(w, r, "Email or username already exists", extractFormData(data))
+			}
+			return
+		}
+
+		if err == auth.ErrPasswordTooShort {
+			errors := formflow.ValidationErrors{
+				"password": err.Error(),
+			}
+			if formflow.IsHTMXRequest(r) {
+				form.RenderError(w, r, errors, data)
+			} else {
+				h.renderErrorPage(w, r, err.Error(), extractFormData(data))
+			}
+			return
+		}
+
+		// Generic error
+		errors := formflow.ValidationErrors{
+			"_form": "Registration failed. Please try again.",
+		}
+		if formflow.IsHTMXRequest(r) {
+			form.RenderError(w, r, errors, data)
 		} else {
-			h.renderError(w, r, "Registration failed. Please try again.", formData)
+			h.renderErrorPage(w, r, "Registration failed. Please try again.", extractFormData(data))
 		}
 		return
 	}
 
-	// Create session for new user
-	session, err := h.sessionStore.Get(r)
-	if err != nil {
-		h.renderError(w, r, "Session error. Please try again.", formData)
-		return
-	}
-
-	h.sessionStore.SetUserSession(session, user.ID, user.Username)
-
-	if err := h.sessionStore.Save(r, w, session); err != nil {
-		h.renderError(w, r, "Failed to save session. Please try again.", formData)
-		return
-	}
-
-	// Redirect to dashboard on success
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	// Success - redirect to dashboard using formflow
+	form.RenderSuccess(w, r, "/dashboard")
 }
 
-// renderError renders the registration page with an error message
-func (h *RegisterPostHandler) renderError(w http.ResponseWriter, r *http.Request, errorMsg string, formData map[string]string) {
+// renderErrorPage renders the full registration page with error (for non-HTMX requests)
+func (h *RegisterPostHandler) renderErrorPage(w http.ResponseWriter, r *http.Request, errorMsg string, formData map[string]string) {
 	if formData == nil {
 		formData = make(map[string]string)
 	}
@@ -145,15 +187,30 @@ func (h *RegisterPostHandler) renderError(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// isValidEmail validates email format using regex
-func isValidEmail(email string) bool {
-	// Simple email regex pattern
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	return emailRegex.MatchString(email)
+// extractFormData converts map[string]interface{} to map[string]string for template
+// Excludes password fields for security
+func extractFormData(data map[string]interface{}) map[string]string {
+	formData := make(map[string]string)
+	for key, val := range data {
+		// Don't repopulate password fields
+		if key == "password" || key == "password_confirm" {
+			continue
+		}
+		if strVal, ok := val.(string); ok {
+			formData[key] = strVal
+		}
+	}
+	return formData
 }
 
-// isAlphanumeric checks if string contains only letters and numbers
-func isAlphanumeric(s string) bool {
-	alphanumericRegex := regexp.MustCompile(`^[a-zA-Z0-9]+$`)
-	return alphanumericRegex.MatchString(s)
+// aggregateAuthErrors combines multiple auth service validation errors into a single message
+func aggregateAuthErrors(verr *auth.ValidationError) string {
+	errorMsg := ""
+	for field, msg := range verr.Fields {
+		if errorMsg != "" {
+			errorMsg += "; "
+		}
+		errorMsg += fmt.Sprintf("%s: %s", field, msg)
+	}
+	return errorMsg
 }

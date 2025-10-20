@@ -121,7 +121,8 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await expect(page.locator('.dropdown-content a:has-text("Validators")')).toBeVisible();
       await expect(page.locator('.dropdown-content a:has-text("Metrics")')).toBeVisible();
       await expect(page.locator('.dropdown-content a:has-text("GraphQL")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Login")')).toBeVisible();
+      await expect(page.locator('.dropdown-content:has-text("Dark Mode")')).toBeVisible();
+      await expect(page.locator('.dropdown-content a:has-text("Profile")')).toBeVisible();
     });
 
     test('should hide desktop navigation links on tablet', async ({ page }) => {
@@ -210,6 +211,164 @@ test.describe('Navigation Bar - Visual Regression', () => {
 
       // Verify navigation occurred
       await expect(page).toHaveURL('/validators');
+    });
+  });
+
+  test.describe('Dark Mode Toggle', () => {
+    test.use({ viewport: { width: 1440, height: 900 } });
+
+    test('should toggle between light and dark themes', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Verify initial theme is light
+      const htmlElement = page.locator('html');
+      await expect(htmlElement).toHaveAttribute('data-theme', 'light');
+
+      // Screenshot: Light mode
+      await expect(page).toHaveScreenshot('theme-light-mode.png', {
+        threshold: 0.05,
+        fullPage: true,
+      });
+
+      // Click dark mode toggle
+      const themeToggle = page.locator('#theme-toggle');
+      await themeToggle.click();
+
+      // Wait for theme to change
+      await page.waitForTimeout(100);
+
+      // Verify theme changed to dark
+      await expect(htmlElement).toHaveAttribute('data-theme', 'dark');
+
+      // Screenshot: Dark mode
+      await expect(page).toHaveScreenshot('theme-dark-mode.png', {
+        threshold: 0.05,
+        fullPage: true,
+      });
+    });
+
+    test('should persist theme preference across page loads', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Toggle to dark mode
+      const themeToggle = page.locator('#theme-toggle');
+      await themeToggle.click();
+      await page.waitForTimeout(100);
+
+      // Verify dark mode
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+      // Reload page
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // Verify dark mode persisted
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+      // Screenshot: Dark mode persisted
+      await expect(page).toHaveScreenshot('theme-dark-mode-persisted.png', {
+        threshold: 0.05,
+        fullPage: true,
+      });
+    });
+
+    test('should sync desktop and mobile toggles', async ({ page }) => {
+      page.setViewportSize({ width: 375, height: 667 });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Open mobile menu
+      const hamburger = page.locator('button[aria-label="Open menu"]');
+      await hamburger.click();
+      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+
+      // Toggle dark mode from mobile menu
+      const mobileToggle = page.locator('.theme-controller-mobile');
+      await mobileToggle.click();
+      await page.waitForTimeout(100);
+
+      // Verify theme changed
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+      // Close mobile menu
+      await page.locator('main').click();
+
+      // Reload at desktop size
+      page.setViewportSize({ width: 1440, height: 900 });
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // Verify desktop toggle reflects dark mode
+      const desktopToggle = page.locator('#theme-toggle');
+      await expect(desktopToggle).toBeChecked();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    });
+  });
+
+  test.describe('User Profile Dropdown', () => {
+    test.use({ viewport: { width: 1440, height: 900 } });
+
+    test('should show user profile dropdown on desktop', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Screenshot: Profile dropdown closed
+      await expect(page.locator('nav.navbar')).toHaveScreenshot('desktop-profile-closed.png', {
+        threshold: 0.05,
+      });
+
+      // Click profile avatar button
+      const profileButton = page.locator('button[aria-label="User menu"]');
+      await expect(profileButton).toBeVisible();
+      await profileButton.click();
+
+      // Wait for dropdown
+      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+
+      // Screenshot: Profile dropdown open
+      await expect(page).toHaveScreenshot('desktop-profile-open.png', {
+        threshold: 0.05,
+        fullPage: false,
+      });
+
+      // Verify dropdown items
+      await expect(page.locator('.dropdown-content a:has-text("Profile")')).toBeVisible();
+      await expect(page.locator('.dropdown-content a:has-text("Settings")')).toBeVisible();
+      await expect(page.locator('.dropdown-content a:has-text("Logout")')).toBeVisible();
+      await expect(page.locator('.dropdown-content .badge:has-text("New")')).toBeVisible();
+    });
+
+    test('should have proper ARIA labels on profile button', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      const profileButton = page.locator('button[aria-label="User menu"]');
+      await expect(profileButton).toHaveAttribute('aria-label', 'User menu');
+      await expect(profileButton).toHaveAttribute('aria-haspopup', 'true');
+      await expect(profileButton).toHaveAttribute('tabindex', '0');
+    });
+
+    test('should close profile dropdown when clicking outside', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Open dropdown
+      const profileButton = page.locator('button[aria-label="User menu"]');
+      await profileButton.click();
+      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+
+      // Click outside
+      await page.locator('main').click();
+
+      // Wait for dropdown to close
+      await page.waitForSelector('.dropdown-content', { state: 'hidden' });
+
+      // Screenshot: Dropdown closed
+      await expect(page.locator('nav.navbar')).toHaveScreenshot('desktop-profile-closed-after-outside-click.png', {
+        threshold: 0.05,
+      });
     });
   });
 

@@ -3,11 +3,12 @@ package handlers
 import (
 	"net/http"
 
+	formflow "github.com/birddigital/formflow/go-formflow"
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
 	"github.com/birddigital/eth-validator-monitor/internal/web/templates/pages"
 )
 
-// LoginPostHandler handles POST /login form submissions
+// LoginPostHandler handles POST /login form submissions using formflow
 type LoginPostHandler struct {
 	authService  *auth.Service
 	sessionStore *auth.SessionStore
@@ -21,61 +22,102 @@ func NewLoginPostHandler(authService *auth.Service, sessionStore *auth.SessionSt
 	}
 }
 
-// ServeHTTP implements http.Handler for POST form submissions
+// ServeHTTP implements http.Handler for POST form submissions with formflow
 func (h *LoginPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Parse form data
-	if err := r.ParseForm(); err != nil {
-		h.renderError(w, r, "Invalid form data", "")
-		return
+	redirectURL := r.URL.Query().Get("redirect")
+	if redirectURL == "" {
+		redirectURL = "/dashboard"
 	}
 
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	redirectURL := r.FormValue("redirect")
+	// Define login form declaratively using formflow
+	form := formflow.NewForm("login-form").
+		AddField(formflow.Field{
+			Name:            "email",
+			Type:            "email",
+			Label:           "Email",
+			Required:        true,
+			ValidationRules: "required,email",
+		}).
+		AddField(formflow.Field{
+			Name:            "password",
+			Type:            "password",
+			Label:           "Password",
+			Required:        true,
+			ValidationRules: "required,min=8",
+		}).
+		OnSuccess(func(data map[string]interface{}) error {
+			// Extract form data
+			email := data["email"].(string)
+			password := data["password"].(string)
 
-	// Validate required fields
-	if email == "" || password == "" {
-		h.renderError(w, r, "Email and password are required", redirectURL)
-		return
-	}
+			// Authenticate user
+			user, err := h.authService.LoginByEmail(r.Context(), email, password)
+			if err != nil {
+				return err
+			}
 
-	// Authenticate user using email (since form uses email field)
-	// Note: auth.Service.Login() expects username, so we'll use LoginByEmail
-	// which we'll add to the auth service
-	user, err := h.authService.LoginByEmail(r.Context(), email, password)
-	if err != nil {
-		if err == auth.ErrInvalidCredentials {
-			h.renderError(w, r, "Invalid email or password", redirectURL)
+			// Create session
+			session, err := h.sessionStore.Get(r)
+			if err != nil {
+				return err
+			}
+
+			h.sessionStore.SetUserSession(session, user.ID, user.Username)
+
+			if err := h.sessionStore.Save(r, w, session); err != nil {
+				return err
+			}
+
+			return nil
+		}).
+		Build()
+
+	// Validate request using formflow
+	data, errors := form.ValidateRequest(r)
+	if len(errors) > 0 {
+		// For HTMX requests, formflow handles partial rendering automatically
+		// For traditional requests, re-render full form
+		if formflow.IsHTMXRequest(r) {
+			form.RenderError(w, r, errors, data)
 		} else {
-			h.renderError(w, r, "Login failed. Please try again.", redirectURL)
+			h.renderErrorPage(w, r, aggregateErrors(errors), redirectURL)
 		}
 		return
 	}
 
-	// Create session
-	session, err := h.sessionStore.Get(r)
-	if err != nil {
-		h.renderError(w, r, "Session error. Please try again.", redirectURL)
+	// Execute success handler (authentication + session creation)
+	if err := form.OnSuccess(data); err != nil {
+		// Handle authentication errors
+		if err == auth.ErrInvalidCredentials {
+			errors := formflow.ValidationErrors{
+				"_form": "Invalid email or password",
+			}
+			if formflow.IsHTMXRequest(r) {
+				form.RenderError(w, r, errors, data)
+			} else {
+				h.renderErrorPage(w, r, "Invalid email or password", redirectURL)
+			}
+			return
+		}
+
+		// Other errors (session, network, etc.)
+		errors := formflow.ValidationErrors{
+			"_form": "Login failed. Please try again.",
+		}
+		if formflow.IsHTMXRequest(r) {
+			form.RenderError(w, r, errors, data)
+		} else {
+			h.renderErrorPage(w, r, "Login failed. Please try again.", redirectURL)
+		}
 		return
 	}
 
-	h.sessionStore.SetUserSession(session, user.ID, user.Username)
-
-	if err := h.sessionStore.Save(r, w, session); err != nil {
-		h.renderError(w, r, "Failed to save session. Please try again.", redirectURL)
-		return
-	}
-
-	// Redirect to dashboard or specified URL
-	target := "/dashboard"
-	if redirectURL != "" {
-		target = redirectURL
-	}
-	http.Redirect(w, r, target, http.StatusSeeOther)
+	// Success - redirect using formflow
+	form.RenderSuccess(w, r, redirectURL)
 }
 
-// renderError renders the login page with an error message
-func (h *LoginPostHandler) renderError(w http.ResponseWriter, r *http.Request, errorMsg, redirectURL string) {
+// renderErrorPage renders the full login page with error (for non-HTMX requests)
+func (h *LoginPostHandler) renderErrorPage(w http.ResponseWriter, r *http.Request, errorMsg, redirectURL string) {
 	data := pages.LoginPageData{
 		ErrorMessage: errorMsg,
 		RedirectURL:  redirectURL,
@@ -86,4 +128,15 @@ func (h *LoginPostHandler) renderError(w http.ResponseWriter, r *http.Request, e
 	if err := component.Render(r.Context(), w); err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+// aggregateErrors combines multiple field errors into a single message
+func aggregateErrors(errors formflow.ValidationErrors) string {
+	if msg, ok := errors["_form"]; ok {
+		return msg
+	}
+	for _, msg := range errors {
+		return msg // Return first error
+	}
+	return "Validation failed"
 }
