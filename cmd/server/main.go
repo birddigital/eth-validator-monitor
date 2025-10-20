@@ -161,7 +161,7 @@ func main() {
 	router := server.NewRouter(routerCfg)
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authHandlers, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -197,6 +197,7 @@ func registerRoutes(
 	cfg *config.Config,
 	jwtService *auth.JWTService,
 	sessionStore *auth.SessionStore,
+	authService *auth.Service,
 	authHandlers *server.AuthHandlers,
 	logger *zerolog.Logger,
 ) {
@@ -241,16 +242,34 @@ func registerRoutes(
 	// HTML Page Routes (always available)
 	homeHandler := handlers.NewHomeHandler()
 	loginHandler := handlers.NewLoginHandler()
+	registerHandler := handlers.NewRegisterHandler()
 
 	// Home page route
 	r.Get("/", homeHandler.ServeHTTP)
 	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/", cfg.Server.HTTPPort)).
 		Msg("Home page route registered")
 
-	// Login page route
+	// Login page routes
 	r.Get("/login", loginHandler.ServeHTTP)
 	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/login", cfg.Server.HTTPPort)).
 		Msg("Login page route registered")
+
+	// Registration page routes
+	r.Get("/register", registerHandler.ServeHTTP)
+	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/register", cfg.Server.HTTPPort)).
+		Msg("Registration page route registered")
+
+	// HTML Form submission routes (require session store and auth service)
+	if sessionStore != nil && authService != nil {
+		loginPostHandler := handlers.NewLoginPostHandler(authService, sessionStore)
+		registerPostHandler := handlers.NewRegisterPostHandler(authService, sessionStore)
+
+		r.Post("/login", loginPostHandler.ServeHTTP)
+		logger.Info().Str("route", "POST /login").Msg("Login form submission route registered")
+
+		r.Post("/register", registerPostHandler.ServeHTTP)
+		logger.Info().Str("route", "POST /register").Msg("Registration form submission route registered")
+	}
 
 	// HTMX routes group for partial page updates
 	r.Route("/api/htmx", func(r chi.Router) {

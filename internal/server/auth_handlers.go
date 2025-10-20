@@ -23,10 +23,11 @@ func NewAuthHandlers(authService *auth.Service, sessionStore *auth.SessionStore)
 
 // RegisterRequest is the request body for user registration
 type RegisterRequest struct {
-	Username string   `json:"username"`
-	Password string   `json:"password"`
-	Email    string   `json:"email"`
-	Roles    []string `json:"roles,omitempty"` // Optional, defaults to ["user"]
+	Username        string   `json:"username"`
+	Password        string   `json:"password"`
+	ConfirmPassword string   `json:"confirmPassword"`
+	Email           string   `json:"email"`
+	Roles           []string `json:"roles,omitempty"` // Optional, defaults to ["user"]
 }
 
 // LoginRequest is the request body for user login
@@ -43,39 +44,40 @@ type UserResponse struct {
 	Roles    []string `json:"roles"`
 }
 
-// ErrorResponse is the standard error response
+// ErrorResponse is the standard error response with optional field-level errors
 type ErrorResponse struct {
-	Error string `json:"error"`
+	Error   string            `json:"error"`
+	Message string            `json:"message,omitempty"`
+	Fields  map[string]string `json:"fields,omitempty"` // Field-specific errors
 }
 
 // Register handles POST /api/auth/register
 func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+		respondValidationError(w, "Invalid request body", map[string]string{"body": "invalid JSON"}, http.StatusBadRequest)
 		return
 	}
 
-	// Validate required fields
-	if req.Username == "" || req.Password == "" || req.Email == "" {
-		respondError(w, "Username, password, and email are required", http.StatusBadRequest)
-		return
-	}
-
-	// Register user
-	user, err := h.authService.Register(r.Context(), req.Username, req.Password, req.Email, req.Roles)
+	// Register user (validation happens in service layer)
+	user, err := h.authService.Register(r.Context(), req.Username, req.Password, req.ConfirmPassword, req.Email, req.Roles)
 	if err != nil {
-		// Handle specific errors
-		switch err {
-		case auth.ErrPasswordTooShort:
-			respondError(w, err.Error(), http.StatusBadRequest)
-		default:
-			if err.Error() == "user already exists" {
-				respondError(w, "Username or email already exists", http.StatusConflict)
-			} else {
-				respondError(w, "Registration failed", http.StatusInternalServerError)
-			}
+		// Handle validation errors with field-level details
+		if verr, ok := err.(*auth.ValidationError); ok {
+			respondValidationError(w, "Validation failed", verr.Fields, http.StatusBadRequest)
+			return
 		}
+
+		// Handle duplicate user error
+		if err == auth.ErrUserAlreadyExists {
+			respondValidationError(w, "User already exists", map[string]string{
+				"username": "username or email already exists",
+			}, http.StatusConflict)
+			return
+		}
+
+		// Handle other errors
+		respondError(w, "Registration failed", http.StatusInternalServerError)
 		return
 	}
 
@@ -106,24 +108,29 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, "Invalid request body", http.StatusBadRequest)
+		respondValidationError(w, "Invalid request body", map[string]string{"body": "invalid JSON"}, http.StatusBadRequest)
 		return
 	}
 
-	// Validate required fields
-	if req.Username == "" || req.Password == "" {
-		respondError(w, "Username and password are required", http.StatusBadRequest)
-		return
-	}
-
-	// Authenticate user
+	// Authenticate user (validation happens in service layer)
 	user, err := h.authService.Login(r.Context(), req.Username, req.Password)
 	if err != nil {
-		if err == auth.ErrInvalidCredentials {
-			respondError(w, "Invalid username or password", http.StatusUnauthorized)
-		} else {
-			respondError(w, "Login failed", http.StatusInternalServerError)
+		// Handle validation errors
+		if verr, ok := err.(*auth.ValidationError); ok {
+			respondValidationError(w, "Validation failed", verr.Fields, http.StatusBadRequest)
+			return
 		}
+
+		// Handle invalid credentials (don't reveal if user exists)
+		if err == auth.ErrInvalidCredentials {
+			respondValidationError(w, "Invalid credentials", map[string]string{
+				"credentials": "invalid username or password",
+			}, http.StatusUnauthorized)
+			return
+		}
+
+		// Handle other errors
+		respondError(w, "Login failed", http.StatusInternalServerError)
 		return
 	}
 
@@ -201,4 +208,12 @@ func respondJSON(w http.ResponseWriter, data interface{}, statusCode int) {
 
 func respondError(w http.ResponseWriter, message string, statusCode int) {
 	respondJSON(w, ErrorResponse{Error: message}, statusCode)
+}
+
+func respondValidationError(w http.ResponseWriter, message string, fields map[string]string, statusCode int) {
+	respondJSON(w, ErrorResponse{
+		Error:   http.StatusText(statusCode),
+		Message: message,
+		Fields:  fields,
+	}, statusCode)
 }

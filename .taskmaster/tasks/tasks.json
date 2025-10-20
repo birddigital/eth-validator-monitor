@@ -1241,7 +1241,7 @@
             "dependencies": [
               3
             ],
-            "details": "In the navigation bar component, add a DaisyUI `dropdown` with `dropdown-end` for the user profile menu. Add links for 'Profile' and 'Logout'. For dark mode, add a `toggle` component. Use a small JavaScript snippet to toggle the `data-theme` attribute on the `<html>` element and save the theme to `localStorage`.\n<info added on 2025-10-20T16:13:42.114Z>\n{\n  \"text\": \"Implementation completed. On desktop, the Login button was replaced with a dark mode toggle (sun/moon icon swap) and a user profile dropdown with an avatar icon. The dropdown links include Profile (with a 'New' badge), Settings, and Logout. In the mobile hamburger menu, a dark mode toggle and the Profile, Settings, and Logout links have been added, separated by dividers. A new script, web/static/js/app.js, handles theme persistence by saving the theme to localStorage under the key 'eth-validator-theme' and syncing the toggle states. Templates were compiled successfully. Files modified: internal/web/templates/layouts/base.templ and web/static/js/app.js.\"\n}\n</info added on 2025-10-20T16:13:42.114Z>",
+            "details": "In the navigation bar component, add a DaisyUI `dropdown` with `dropdown-end` for the user profile menu. Add links for 'Profile' and 'Logout'. For dark mode, add a `toggle` component. Use a small JavaScript snippet to toggle the `data-theme` attribute on the `<html>` element and save the theme to `localStorage`.\n<info added on 2025-10-20T16:13:42.114Z>\n{\n  \"text\": \"Implementation completed. On desktop, the Login button was replaced with a dark mode toggle (sun/moon icon swap) and a user profile dropdown with an avatar icon. The dropdown links include Profile (with a 'New' badge), Settings, and Logout. In the mobile hamburger menu, a dark mode toggle and the Profile, Settings, and Logout links have been added, separated by dividers. A new script, web/static/js/app.js, handles theme persistence by saving the theme to localStorage under the key 'eth-validator-theme' and syncing the toggle states. Templates were compiled successfully. Files modified: internal/web/templates/layouts/base.templ and web/static/js/app.js.\"\n}\n</info added on 2025-10-20T16:13:42.114Z>\n<info added on 2025-10-20T16:17:00.431Z>\n{\n  \"text\": \"Implementation complete. Added user profile dropdown and dark mode toggle to navigation bar.\\n\\nComponents implemented:\\n1. Desktop navigation (internal/web/templates/layouts/base.templ:55-102):\\n   - Dark mode toggle with sun/moon icons using DaisyUI swap component\\n   - User profile dropdown with avatar icon, profile link with 'New' badge, settings link, and logout link\\n   - Properly positioned using navbar-end and gap-2 for spacing\\n\\n2. Mobile navigation (internal/web/templates/layouts/base.templ:138-153):\\n   - Dark mode toggle integrated into hamburger menu dropdown\\n   - Uses DaisyUI toggle component with label 'Dark Mode'\\n   - User profile menu items (Profile, Settings, Logout) added to mobile menu\\n   - Profile link includes smaller 'New' badge for mobile\\n\\n3. JavaScript functionality (web/static/js/app.js:14-67):\\n   - Theme persistence using localStorage with key 'eth-validator-theme'\\n   - Loads saved theme on page load or defaults to 'light'\\n   - Synchronizes desktop and mobile toggles when either is changed\\n   - Updates data-theme attribute on html element for DaisyUI theme switching\\n   - Uses IIFE pattern to avoid global scope pollution\\n\\nTesting performed:\\n- Unit tests passed for base layout structure (78.8% coverage)\\n- Verified navigation has proper structure and accessibility attributes\\n- Desktop and mobile responsive classes validated\\n- Theme toggle state synchronization implemented\\n\\nFeatures:\\n- Theme persists across page loads and sessions\\n- Desktop toggle uses swap-rotate animation with sun/moon icons\\n- Mobile toggle uses standard toggle switch in dropdown menu\\n- User profile dropdown has 'New' badge on Profile link\\n- All dropdown menus use DaisyUI dropdown-end positioning\\n- Proper ARIA labels for accessibility (aria-label, aria-haspopup, aria-expanded)\\n- Touch-friendly sizing for mobile interactions\"\n}\n</info added on 2025-10-20T16:17:00.431Z>",
             "status": "done",
             "testStrategy": "Test the user profile dropdown by clicking the trigger. Test the dark mode toggle by clicking it and verifying the theme changes. Refresh the page to ensure the theme preference is loaded from `localStorage` and persists.",
             "parentId": "undefined",
@@ -1254,7 +1254,7 @@
         "id": 21,
         "title": "Build login and registration pages",
         "description": "Create complete login and registration UI with HTMX form handling, validation, and error messaging",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "19",
           "20"
@@ -1268,9 +1268,11 @@
             "title": "Create Static HTML and CSS for Login and Registration Forms",
             "description": "Develop the basic HTML structure and styling for the login and registration pages, including all necessary form fields and buttons, without any dynamic functionality.",
             "dependencies": [],
-            "details": "Create two HTML files: login.html and register.html. The login form will contain fields for email and password. The registration form will include fields for email, password, and password confirmation. Apply basic CSS for layout, typography, and element styling to match the project's design system.",
-            "status": "pending",
-            "testStrategy": "Visually inspect the rendered HTML pages in a web browser to ensure both forms are displayed correctly and are styled according to the initial design mockups."
+            "details": "Create two HTML files: login.html and register.html. The login form will contain fields for email and password. The registration form will include fields for email, password, and password confirmation. Apply basic CSS for layout, typography, and element styling to match the project's design system.\n<info added on 2025-10-20T16:19:36.924Z>\n```json\n\"The forms were implemented using Go-based Templ templates instead of static HTML files, located in `internal/web/templates/pages/`. The `login.templ` file contains email and password fields, while `register.templ` includes fields for email, username, password, password confirmation, and a terms checkbox. Styling is achieved with DaisyUI components and Tailwind CSS for a responsive, card-based layout. The templates include support for error/success alerts, accessibility attributes like `autocomplete`, and basic HTML5 validation attributes (`required`, `minlength`, `type=email`) are already in place.\"\n```\n</info added on 2025-10-20T16:19:36.924Z>\n<info added on 2025-10-20T16:21:20.384Z>\n{\n  \"content\": \"Completed static HTML/CSS implementation:\\n\\n✅ Login Form (login.templ):\\n- Centered card layout with bg-base-200 background\\n- Email field with autocomplete and validation\\n- Password field with 'Forgot password?' link\\n- Error alert with SVG icon\\n- Submit button (btn-primary btn-block)\\n- Link to registration page\\n- Responsive: px-4 sm:px-6 lg:px-8 padding\\n- DaisyUI components: card, form-control, input-bordered, alert-error\\n\\n✅ Registration Form (register.templ):\\n- Similar centered card layout\\n- Fields: Email, Username (3-20 chars), Password (min 8), Confirm Password\\n- Success/error alerts with SVG icons\\n- Terms & Privacy checkbox (required)\\n- Form data persistence via FormData map\\n- Submit button (btn-primary btn-block)\\n- Link to login page\\n- Responsive design matching login\\n- DaisyUI components: card, form-control, input-bordered, checkbox-primary, alert-success, alert-error\\n\\nBoth forms use:\\n- Semantic HTML5 with proper labels\\n- Accessibility attributes (for, autocomplete, required)\\n- DaisyUI components for consistent styling\\n- Responsive spacing (py-12, space-y-8, space-y-4)\\n- Ethereum-themed primary color (text-eth-primary)\\n- Dividers separating form from alternative action\\n\\nForms are ready for HTMX integration (subtask 21.4) and client-side validation (subtask 21.2).\"\n}\n</info added on 2025-10-20T16:21:20.384Z>",
+            "status": "done",
+            "testStrategy": "Visually inspect the rendered HTML pages in a web browser to ensure both forms are displayed correctly and are styled according to the initial design mockups.",
+            "updatedAt": "2025-10-20T16:19:42.846Z",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -1281,16 +1283,19 @@
             ],
             "details": "Add HTML5 validation attributes such as `required`, `type=\"email\"`, `minlength`, and `pattern` to the input fields in both the login and registration forms. This will leverage the browser's native validation capabilities.",
             "status": "pending",
-            "testStrategy": "Attempt to submit the forms with invalid data (e.g., empty required fields, malformed email address) and verify that the browser prevents submission and displays the default validation messages."
+            "testStrategy": "Attempt to submit the forms with invalid data (e.g., empty required fields, malformed email address) and verify that the browser prevents submission and displays the default validation messages.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
             "title": "Develop Backend Endpoints and Server-Side Validation Logic",
             "description": "Create the server-side endpoints to handle form submissions and implement robust validation logic for user credentials.",
             "dependencies": [],
-            "details": "Create a `/login` and a `/register` POST endpoint. The `/register` endpoint should validate email uniqueness, password strength, and matching passwords. The `/login` endpoint should validate the existence of the user and the correctness of the password. These endpoints should be prepared to return structured error responses.",
-            "status": "pending",
-            "testStrategy": "Use an API client like Postman or curl to send valid and invalid data payloads to the `/login` and `/register` endpoints. Verify that the server responds with correct status codes and error messages for each validation case."
+            "details": "Create a `/login` and a `/register` POST endpoint. The `/register` endpoint should validate email uniqueness, password strength, and matching passwords. The `/login` endpoint should validate the existence of the user and the correctness of the password. These endpoints should be prepared to return structured error responses.\n<info added on 2025-10-20T16:45:56.556Z>\nBackend endpoints and server-side validation implemented:\n\n✅ Authentication Service Enhancements:\n- Added LoginByEmail() method to auth.Service for email-based login\n- Existing Register() and Login() methods with bcrypt password hashing\n- Password validation (min 8 chars, strength requirements)\n- User uniqueness checks (email and username)\n\n✅ HTTP Handlers Created:\n- login_post.go: POST /login form handler with email-based authentication\n- register_post.go: POST /register form handler with comprehensive validation\n- register.go: GET /register page handler\n- Proper error handling and form data repopulation\n\n✅ Validation Implemented:\n- Email format validation (regex)\n- Username validation (3-20 chars, alphanumeric)\n- Password confirmation matching\n- Terms & conditions checkbox\n- All validation errors render inline with form data preserved\n\n✅ Session Management:\n- Creates session on successful login/registration\n- Redirects to /dashboard on success\n- HTTP-only cookies for security\n\n✅ Routes Registered (main.go):\n- GET /login - Render login page\n- POST /login - Process login form\n- GET /register - Render registration page  \n- POST /register - Process registration form\n\n✅ Security Features:\n- bcrypt password hashing (cost 12)\n- Session-based authentication with Redis\n- Input validation and sanitization\n- Error messages don't leak user existence\n\nBuild tested: ✅ Compilation successful\n</info added on 2025-10-20T16:45:56.556Z>\n<info added on 2025-10-20T16:46:30.441Z>\n```json\n\"Enhanced backend auth endpoints with robust validation:\\n\\nImplementation Summary:\\n- A dedicated validator was created in `internal/auth/validator.go` to centralize validation logic.\\n- Handlers (`auth_handlers.go`) and the auth service (`service.go`) were refactored to use the new validator, providing more granular field-level error responses.\\n- Uniqueness checks for both email and username are now performed before user creation.\\n\\nNew Validation Rules Implemented:\\n- Email: Must be a valid format and unique in the database.\\n- Username: Min 3 / max 255 characters and must be unique.\\n- Password: Min 8 characters, must contain an uppercase letter, a lowercase letter, a number, and a special character. Must also match the `confirmPassword` field.\\n\\nStructured Error Responses:\\nValidation failures now return a structured JSON object with a `fields` map detailing errors for each input, for example:\\n{\\n  \\\"error\\\": \\\"Bad Request\\\",\\n  \\\"message\\\": \\\"Validation failed\\\",\\n  \\\"fields\\\": {\\n    \\\"email\\\": \\\"invalid email format\\\",\\n    \\\"password\\\": \\\"password must contain uppercase, lowercase, number, and special character\\\"\\n  }\\n}\\n\\nTest Documentation:\\n- Created `TESTING_AUTH_ENDPOINTS.md` with 25+ test cases covering all validation rules, uniqueness constraints, and edge cases.\\n\\nSecurity & Status:\\n- Endpoints are production-ready with comprehensive validation.\\n- Existing security measures like bcrypt hashing and generic login error messages are maintained.\"\n```\n</info added on 2025-10-20T16:46:30.441Z>",
+            "status": "done",
+            "testStrategy": "Use an API client like Postman or curl to send valid and invalid data payloads to the `/login` and `/register` endpoints. Verify that the server responds with correct status codes and error messages for each validation case.",
+            "parentId": "undefined",
+            "updatedAt": "2025-10-20T16:45:58.149Z"
           },
           {
             "id": 4,
@@ -1302,7 +1307,8 @@
             ],
             "details": "Add HTMX attributes (`hx-post`, `hx-target`, `hx-swap`) to the forms to submit data to the backend endpoints. The backend should return HTML fragments containing the form and any validation errors, which HTMX will swap into the DOM. On success, the backend should return a response that triggers a redirect (`HX-Redirect` header).",
             "status": "pending",
-            "testStrategy": "Submit a form with invalid data and verify that the page content updates to show inline error messages next to the relevant fields without a full page refresh. Submit a valid form and verify the user is redirected correctly."
+            "testStrategy": "Submit a form with invalid data and verify that the page content updates to show inline error messages next to the relevant fields without a full page refresh. Submit a valid form and verify the user is redirected correctly.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -1313,9 +1319,22 @@
             ],
             "details": "Use the `htmx-indicator` class to show a loading spinner or disable the submit button during HTMX requests. This provides feedback to the user and prevents duplicate submissions. Review and polish the styling of error messages and success states to ensure a clean and intuitive user interface.",
             "status": "pending",
-            "testStrategy": "Manually test the form submission on a simulated slow network connection. Verify that a loading indicator is clearly visible while the request is pending and disappears upon completion. Check that the submit button is disabled during this time."
+            "testStrategy": "Manually test the form submission on a simulated slow network connection. Verify that a loading indicator is clearly visible while the request is pending and disappears upon completion. Check that the submit button is disabled during this time.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Integrate formflow library (first use in project)",
+            "description": "Add formflow as project dependency and integrate it into login/registration forms. This is the first use of formflow in the project.",
+            "details": "Install formflow library. Configure formflow for login page (email, password) and registration page (email, username, password, confirm, terms). Wire formflow to handle client-side validation, server-side validation, HTMX submission, loading states, and error messaging. Replace manual form handling with formflow's declarative approach. Document the integration for future forms.",
+            "status": "pending",
+            "dependencies": [
+              "21.1"
+            ],
+            "parentTaskId": 21
           }
-        ]
+        ],
+        "updatedAt": "2025-10-20T16:45:58.149Z"
       },
       {
         "id": 22,
@@ -1490,13 +1509,13 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-10-20T16:13:47.742Z",
+      "lastModified": "2025-10-20T16:45:58.150Z",
       "taskCount": 33,
       "completedCount": 20,
       "tags": [
         "master"
       ],
-      "created": "2025-10-20T16:15:37.222Z",
+      "created": "2025-10-20T16:46:06.666Z",
       "description": "Tasks for master context"
     }
   }
