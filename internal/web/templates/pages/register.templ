@@ -1,0 +1,168 @@
+package pages
+
+import (
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
+)
+
+// RegisterPageData contains data for the registration page
+type RegisterPageData struct {
+	ErrorMessage string
+	SuccessMessage string
+	FormData map[string]string // For repopulating form on validation errors
+}
+
+// RegisterPage renders the registration form
+templ RegisterPage(data RegisterPageData) {
+	<div class="min-h-screen flex items-center justify-center bg-base-200 py-12 px-4 sm:px-6 lg:px-8">
+		<div class="max-w-md w-full space-y-8">
+			<!-- Header -->
+			<div class="text-center">
+				<h1 class="text-4xl font-bold text-eth-primary">Create Account</h1>
+				<p class="mt-2 text-base-content/70">Start monitoring your validators</p>
+			</div>
+			<!-- Card -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<!-- Success Alert -->
+					if data.SuccessMessage != "" {
+						<div class="alert alert-success shadow-lg mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+							</svg>
+							<span>{ data.SuccessMessage }</span>
+						</div>
+					}
+					<!-- Error Alert -->
+					if data.ErrorMessage != "" {
+						<div class="alert alert-error shadow-lg mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+							</svg>
+							<span>{ data.ErrorMessage }</span>
+						</div>
+					}
+					<!-- Registration Form -->
+					<form method="POST" action="/register" class="space-y-4">
+						<!-- Email Field -->
+						<div class="form-control w-full">
+							<label class="label" for="email">
+								<span class="label-text font-medium">Email</span>
+								<span class="label-text-alt text-error">*</span>
+							</label>
+							<input
+								type="email"
+								id="email"
+								name="email"
+								required
+								autocomplete="email"
+								placeholder="you@example.com"
+								value={ data.FormData["email"] }
+								class="input input-bordered w-full"
+							/>
+							<label class="label">
+								<span class="label-text-alt">We'll never share your email</span>
+							</label>
+						</div>
+						<!-- Username Field -->
+						<div class="form-control w-full">
+							<label class="label" for="username">
+								<span class="label-text font-medium">Username</span>
+								<span class="label-text-alt text-error">*</span>
+							</label>
+							<input
+								type="text"
+								id="username"
+								name="username"
+								required
+								autocomplete="username"
+								placeholder="Choose a username"
+								value={ data.FormData["username"] }
+								class="input input-bordered w-full"
+								minlength="3"
+								maxlength="20"
+							/>
+							<label class="label">
+								<span class="label-text-alt">3-20 characters</span>
+							</label>
+						</div>
+						<!-- Password Field -->
+						<div class="form-control w-full">
+							<label class="label" for="password">
+								<span class="label-text font-medium">Password</span>
+								<span class="label-text-alt text-error">*</span>
+							</label>
+							<input
+								type="password"
+								id="password"
+								name="password"
+								required
+								autocomplete="new-password"
+								placeholder="Create a strong password"
+								class="input input-bordered w-full"
+								minlength="8"
+							/>
+							<label class="label">
+								<span class="label-text-alt">Minimum 8 characters</span>
+							</label>
+						</div>
+						<!-- Confirm Password Field -->
+						<div class="form-control w-full">
+							<label class="label" for="password_confirm">
+								<span class="label-text font-medium">Confirm Password</span>
+								<span class="label-text-alt text-error">*</span>
+							</label>
+							<input
+								type="password"
+								id="password_confirm"
+								name="password_confirm"
+								required
+								autocomplete="new-password"
+								placeholder="Confirm your password"
+								class="input input-bordered w-full"
+								minlength="8"
+							/>
+						</div>
+						<!-- Terms Checkbox -->
+						<div class="form-control">
+							<label class="label cursor-pointer justify-start gap-4">
+								<input
+									type="checkbox"
+									id="terms"
+									name="terms"
+									required
+									class="checkbox checkbox-primary"
+								/>
+								<span class="label-text">
+									I agree to the
+									<a href="/terms" class="link link-primary" target="_blank">Terms of Service</a>
+									and
+									<a href="/privacy" class="link link-primary" target="_blank">Privacy Policy</a>
+								</span>
+							</label>
+						</div>
+						<!-- Submit Button -->
+						<div class="form-control mt-6">
+							<button type="submit" class="btn btn-primary btn-block">
+								Create Account
+							</button>
+						</div>
+					</form>
+					<!-- Divider -->
+					<div class="divider">OR</div>
+					<!-- Login Link -->
+					<div class="text-center">
+						<p class="text-sm text-base-content/70">
+							Already have an account?
+							<a href="/login" class="link link-primary font-semibold">Sign in</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+// RegisterPageWithLayout wraps RegisterPage in the base layout
+templ RegisterPageWithLayout(data RegisterPageData) {
+	@layouts.Base("Register", RegisterPage(data))
+}
