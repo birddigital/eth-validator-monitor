@@ -29,7 +29,7 @@ func (m *MockClient) GetValidator(ctx context.Context, index int) (*types.Valida
 	return &types.ValidatorData{
 		Index:   index,
 		Balance: big.NewInt(32_000_000_000 + rand.Int63n(1_000_000_000)), // 32-33 ETH in Gwei
-		Status:  types.ValidatorStatusActive,
+		Status:  types.StatusActive,
 		Validator: types.ValidatorInfo{
 			Pubkey:                     fmt.Sprintf("0x%096d", index),
 			WithdrawalCredentials:      "0x00" + fmt.Sprintf("%062d", index),

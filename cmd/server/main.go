@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
@@ -103,6 +104,7 @@ func main() {
 	userRepo := storage.NewUserRepository(pool)
 	dashboardRepo := repository.NewDashboardRepository(pool)
 	validatorListRepo := repository.NewValidatorListRepository(pool)
+	validatorDetailRepo := repository.NewValidatorDetailRepository(pool)
 
 	// Initialize JWT service (optional - only if secret key is configured)
 	var jwtService *auth.JWTService
@@ -190,6 +192,9 @@ func main() {
 	validatorListService := validators.NewListService(validatorListRepo, validatorListCache)
 	validatorListHandler := handlers.NewValidatorListHandler(validatorListService)
 
+	// Initialize validator detail handler
+	validatorDetailHandler := handlers.NewValidatorDetailHandler(validatorDetailRepo, logger.Logger)
+
 	// Initialize SSE handler
 	sseHandler := handlers.NewSSEHandler(ctx)
 
@@ -198,7 +203,32 @@ func main() {
 	logger.Logger.Info().Msg("Mock beacon client initialized for development")
 
 	// Initialize Redis cache for collector
-	redisCache := cache.NewRedisCache(redisClient)
+	// Parse host and port from cfg.Redis.Addr (format: "host:port")
+	parts := strings.Split(cfg.Redis.Addr, ":")
+	redisHost := parts[0]
+	redisPort := 6379 // default Redis port
+	if len(parts) > 1 {
+		if p, err := strconv.Atoi(parts[1]); err == nil {
+			redisPort = p
+		}
+	}
+
+	cacheConfig := cache.Config{
+		Host:         redisHost,
+		Port:         redisPort,
+		Password:     cfg.Redis.Password,
+		DB:           cfg.Redis.DB,
+		MaxRetries:   3,
+		PoolSize:     10,
+		MinIdleConns: 2,
+		Strategy:     cache.DefaultTTLStrategy(),
+		KeyPrefix:    "validator:",
+	}
+
+	redisCache, err := cache.NewRedisCache(cacheConfig)
+	if err != nil {
+		logger.Logger.Fatal().Err(err).Msg("Failed to create Redis cache")
+	}
 
 	// Initialize validator collector with SSE broadcaster
 	collectorConfig := collector.DefaultCollectorConfig()
@@ -228,7 +258,7 @@ func main() {
 	}()
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -269,6 +299,7 @@ func registerRoutes(
 	dashboardHandler *handlers.DashboardHandler,
 	sseHandler *handlers.SSEHandler,
 	validatorListHandler *handlers.ValidatorListHandler,
+	validatorDetailHandler *handlers.ValidatorDetailHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -339,6 +370,16 @@ func registerRoutes(
 	r.Get("/validators/list", validatorListHandler.ServeHTTP)
 	logger.Info().Str("route", "/validators/list").
 		Msg("Validator list HTMX partial route registered")
+
+	// Validator detail page routes
+	r.Route("/validators/{index}", func(r chi.Router) {
+		r.Get("/", validatorDetailHandler.ServeHTTP)
+		r.Get("/sse", validatorDetailHandler.HandleSSE)
+		r.Get("/export", validatorDetailHandler.HandleExport)
+		r.Get("/alerts", validatorDetailHandler.HandleAlertsPartial)
+	})
+	logger.Info().Str("route", "/validators/{index}/*").
+		Msg("Validator detail routes registered (page, SSE, export, alerts)")
 
 	// Login page routes
 	r.Get("/login", loginHandler.ServeHTTP)

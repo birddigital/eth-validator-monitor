@@ -1,0 +1,268 @@
+package pages
+
+import (
+	"fmt"
+	"encoding/json"
+	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+)
+
+// ValidatorDetailPage renders the complete validator detail page
+templ ValidatorDetailPage(validator *repository.ValidatorDetails, effectiveness []repository.EffectivenessPoint, attestations []repository.AttestationStats, alerts []repository.Alert, timeline []repository.TimelineEvent) {
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900 page-container">
+		<div class="mb-6">
+			<h1 class="text-3xl font-bold mb-2">Validator { fmt.Sprintf("%d", validator.Index) }</h1>
+			if validator.Name != nil && *validator.Name != "" {
+				<p class="text-gray-600 dark:text-gray-400">{ *validator.Name }</p>
+			}
+		</div>
+		<!-- Validator Metadata Card -->
+		<div id="validator-metadata" class="mb-6">
+			@ValidatorMetadataPartial(validator)
+		</div>
+		<!-- Charts Section -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+			<!-- Effectiveness Chart -->
+			<div class="glass-card p-6">
+				<h2 class="text-xl font-semibold mb-4">7-Day Effectiveness</h2>
+				<div class="relative h-80">
+					<canvas id="effectiveness-chart"></canvas>
+				</div>
+			</div>
+			<!-- Attestation Stats Chart -->
+			<div class="glass-card p-6">
+				<h2 class="text-xl font-semibold mb-4">Monthly Attestations</h2>
+				<div class="relative h-80">
+					<canvas id="attestation-chart"></canvas>
+				</div>
+			</div>
+		</div>
+		<!-- Alert History -->
+		<div class="mb-6">
+			<div
+				hx-get={ fmt.Sprintf("/api/validators/%d/alerts", validator.Index) }
+				hx-trigger="load, every 30s"
+				hx-swap="innerHTML">
+				@AlertHistoryPartial(alerts)
+			</div>
+		</div>
+		<!-- Validator Timeline -->
+		<div class="glass-card p-6 mb-6">
+			<h2 class="text-xl font-semibold mb-4">Validator Timeline</h2>
+			@ValidatorTimelinePartial(timeline)
+		</div>
+		<!-- Export Buttons -->
+		<div class="flex gap-4">
+			<a
+				href={ templ.SafeURL(fmt.Sprintf("/api/validators/%d/export?format=csv", validator.Index)) }
+				class="btn btn-secondary"
+				download>
+				Export CSV
+			</a>
+			<a
+				href={ templ.SafeURL(fmt.Sprintf("/api/validators/%d/export?format=json", validator.Index)) }
+				class="btn btn-secondary"
+				download>
+				Export JSON
+			</a>
+		</div>
+		<!-- SSE Connection for Real-Time Updates -->
+		<div
+			hx-ext="sse"
+			sse-connect={ fmt.Sprintf("/api/validators/%d/sse", validator.Index) }
+			sse-swap="validator-update"
+			hx-target="#validator-metadata"
+			hx-swap="innerHTML"
+			style="display: none;">
+		</div>
+		<!-- Chart data for JavaScript -->
+		<div id="chart-data"
+			data-effectiveness={ marshalJSON(effectiveness) }
+			data-attestations={ marshalJSON(attestations) }
+			style="display:none;">
+		</div>
+	</div>
+}
+
+// ValidatorMetadataPartial renders the metadata section (for HTMX updates)
+templ ValidatorMetadataPartial(validator *repository.ValidatorDetails) {
+	<div class="glass-card p-6">
+		<h2 class="text-xl font-semibold mb-4">Validator Information</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Index</p>
+				<p class="font-semibold">{ fmt.Sprintf("%d", validator.Index) }</p>
+			</div>
+			<div>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Public Key</p>
+				<p class="font-mono text-sm truncate" title={ validator.Pubkey }>{ validator.Pubkey[:12] }...{ validator.Pubkey[len(validator.Pubkey)-8:] }</p>
+			</div>
+			<div>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Status</p>
+				<p>
+					if validator.Slashed {
+						<span class="badge badge-error">Slashed</span>
+					} else if validator.IsOnline != nil && *validator.IsOnline {
+						<span class="badge badge-success">Online</span>
+					} else {
+						<span class="badge badge-warning">Offline</span>
+					}
+				</p>
+			</div>
+			<div>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Effective Balance</p>
+				<p class="font-semibold">{ fmt.Sprintf("%d ETH", validator.EffectiveBalance / 1e9) }</p>
+			</div>
+			if validator.CurrentBalance != nil {
+				<div>
+					<p class="text-sm text-gray-600 dark:text-gray-400">Current Balance</p>
+					<p class="font-semibold">{ fmt.Sprintf("%.4f ETH", float64(*validator.CurrentBalance) / 1e9) }</p>
+				</div>
+			}
+			if validator.AttestationEffectiveness != nil {
+				<div>
+					<p class="text-sm text-gray-600 dark:text-gray-400">Effectiveness</p>
+					<p class="font-semibold">{ fmt.Sprintf("%.2f%%", *validator.AttestationEffectiveness * 100) }</p>
+				</div>
+			}
+			if validator.APR != nil {
+				<div>
+					<p class="text-sm text-gray-600 dark:text-gray-400">APR</p>
+					<p class="font-semibold">{ fmt.Sprintf("%.2f%%", *validator.APR) }</p>
+				</div>
+			}
+			if validator.ConsecutiveMissedAttestations != nil {
+				<div>
+					<p class="text-sm text-gray-600 dark:text-gray-400">Consecutive Misses</p>
+					<p class="font-semibold">{ fmt.Sprintf("%d", *validator.ConsecutiveMissedAttestations) }</p>
+				</div>
+			}
+			<div>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Activation Epoch</p>
+				<p class="font-semibold">{ fmt.Sprintf("%d", validator.ActivationEpoch) }</p>
+			</div>
+		</div>
+
+		if len(validator.Tags) > 0 {
+			<div class="mt-4">
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Tags</p>
+				<div class="flex flex-wrap gap-2">
+					for _, tag := range validator.Tags {
+						<span class="badge badge-neutral">{ tag }</span>
+					}
+				</div>
+			</div>
+		}
+
+		if validator.LastUpdate != nil {
+			<div class="mt-4">
+				<p class="text-xs text-gray-500 dark:text-gray-500">
+					Last updated: { validator.LastUpdate.Format("2006-01-02 15:04:05 MST") }
+				</p>
+			</div>
+		}
+	</div>
+}
+
+// AlertHistoryPartial renders the alert history section
+templ AlertHistoryPartial(alerts []repository.Alert) {
+	<div class="glass-card p-6">
+		<h2 class="text-xl font-semibold mb-4">Recent Alerts (Last 20)</h2>
+		if len(alerts) == 0 {
+			<div class="text-center py-8">
+				<p class="text-gray-600 dark:text-gray-400">No alerts for this validator</p>
+			</div>
+		} else {
+			<div class="overflow-x-auto">
+				<table class="table w-full">
+					<thead>
+						<tr>
+							<th>Time</th>
+							<th>Type</th>
+							<th>Severity</th>
+							<th>Message</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, alert := range alerts {
+							<tr>
+								<td class="text-sm">{ alert.CreatedAt.Format("2006-01-02 15:04") }</td>
+								<td>
+									<span class="badge badge-outline">{ alert.Type }</span>
+								</td>
+								<td>
+									if alert.Severity == "critical" {
+										<span class="badge badge-error">Critical</span>
+									} else if alert.Severity == "error" {
+										<span class="badge badge-error">Error</span>
+									} else if alert.Severity == "warning" {
+										<span class="badge badge-warning">Warning</span>
+									} else {
+										<span class="badge badge-info">Info</span>
+									}
+								</td>
+								<td class="max-w-md truncate">{ alert.Message }</td>
+								<td>
+									if alert.ResolvedAt != nil {
+										<span class="badge badge-success">Resolved</span>
+									} else {
+										<span class="badge badge-warning">Active</span>
+									}
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</div>
+}
+
+// ValidatorTimelinePartial renders the validator timeline
+templ ValidatorTimelinePartial(timeline []repository.TimelineEvent) {
+	if len(timeline) == 0 {
+		<div class="text-center py-8">
+			<p class="text-gray-600 dark:text-gray-400">No timeline events</p>
+		</div>
+	} else {
+		<div class="space-y-4">
+			for _, event := range timeline {
+				<div class="flex gap-4">
+					<div class="flex-shrink-0">
+						<div class="w-3 h-3 rounded-full bg-primary mt-1"></div>
+					</div>
+					<div class="flex-grow pb-4 border-b border-gray-200 dark:border-gray-700">
+						<div class="flex items-start justify-between">
+							<div>
+								if event.Type == "slashed" || event.Type == "missed_proposal" {
+									<span class="badge badge-sm badge-error">{ event.Type }</span>
+								} else if event.Type == "came_online" {
+									<span class="badge badge-sm badge-success">{ event.Type }</span>
+								} else if event.Type == "went_offline" {
+									<span class="badge badge-sm badge-warning">{ event.Type }</span>
+								} else if event.Type == "proposed_block" {
+									<span class="badge badge-sm badge-info">{ event.Type }</span>
+								} else {
+									<span class="badge badge-sm">{ event.Type }</span>
+								}
+							</div>
+							<time class="text-xs text-gray-500 dark:text-gray-500">
+								{ event.Timestamp.Format("2006-01-02 15:04:05") }
+							</time>
+						</div>
+						<p class="mt-1 text-sm">{ event.Description }</p>
+					</div>
+				</div>
+			}
+		</div>
+	}
+}
+
+// Helper function to marshal JSON for embedding in templates
+func marshalJSON(v interface{}) string {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
+}

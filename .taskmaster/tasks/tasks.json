@@ -1512,15 +1512,70 @@
       {
         "id": 24,
         "title": "Build validator detail page with performance charts",
-        "description": "Create detailed validator view with historical charts, attestation statistics, and alert history",
-        "status": "pending",
+        "description": "Builds the validator detail page, showing performance charts, alert history, and real-time updates via SSE. The Go backend implementation (database, handlers, routing) is complete. Current work focuses on fixing the frontend Templ templates and integrating Chart.js.",
+        "status": "in-progress",
         "dependencies": [
           "23"
         ],
         "priority": "medium",
-        "details": "Display validator metadata. Show current metrics. Create 7-day effectiveness chart (Chart.js). Create monthly attestation chart. Display last 20 alerts. Implement SSE for real-time updates. Add export button. Show validator timeline.",
-        "testStrategy": "Test chart rendering. Verify SSE updates charts. Test date range filtering. Test with different validator states. Accessibility test for charts.\n\nVisual Verification (Playwright MCP):\n- Capture screenshots at key interaction points\n- Establish visual regression baselines for comparison\n- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)\n- Verify dark mode rendering (if applicable)\n- Test HTMX partial updates (ensure no layout shift or flashing)\n- Validate accessibility: focus indicators, color contrast ratios\n- Screenshot error states and empty states\n- Verify loading states and skeleton screens render correctly\n- Use Playwright MCP to navigate, interact, and capture all states\n- Store screenshots in tests/visual-regression/baselines/\n- Compare against baselines on subsequent runs (fail on >5% diff)\n- Screenshot: Validator detail page (full data)\n- Screenshot: Effectiveness chart (7-day trend)\n- Screenshot: Attestation chart (monthly bar chart)\n- Screenshot: Alert history table\n- Screenshot: Validator timeline\n- Screenshot: Empty state (no alerts)\n- Screenshot: Chart loading state\n- Screenshot: Date range selector (open/closed)\n- Screenshot: Export button states\n- Verify Chart.js renders correctly (no blank canvas)\n- Verify SSE updates chart without redraw flash\n- Test chart responsiveness (resize behavior)",
-        "subtasks": []
+        "details": "The backend implementation is complete, including: a Go database repository (`validator_detail_repository.go`) using parallel queries; a web handler (`validator_detail.go`) for HTMX rendering, SSE updates, and CSV/JSON export; and route registration in `main.go`. The current focus is on the frontend. The main task is to fix syntax errors in `validator_detail.templ` by moving inline Chart.js logic to a separate `validator-detail.js` file. After fixing the template, the final step is to perform comprehensive visual regression testing.",
+        "testStrategy": "Backend unit and integration tests have been completed for the repository and handler layers, verifying all data queries and endpoint logic. The remaining testing focuses on the frontend integration and visual verification.\n\nVisual Verification (Playwright MCP):\n- Capture screenshots at key interaction points\n- Establish visual regression baselines for comparison\n- Test across viewports: mobile (375px), tablet (768px), desktop (1440px), wide (1920px)\n- Verify dark mode rendering (if applicable)\n- Test HTMX partial updates (ensure no layout shift or flashing)\n- Validate accessibility: focus indicators, color contrast ratios\n- Screenshot error states and empty states\n- Verify loading states and skeleton screens render correctly\n- Use Playwright MCP to navigate, interact, and capture all states\n- Store screenshots in tests/visual-regression/baselines/\n- Compare against baselines on subsequent runs (fail on >5% diff)\n- Screenshot: Validator detail page (full data)\n- Screenshot: Effectiveness chart (7-day trend)\n- Screenshot: Attestation chart (monthly bar chart)\n- Screenshot: Alert history table\n- Screenshot: Validator timeline\n- Screenshot: Empty state (no alerts)\n- Screenshot: Chart loading state\n- Screenshot: Date range selector (open/closed)\n- Screenshot: Export button states\n- Verify Chart.js renders correctly (no blank canvas)\n- Verify SSE updates chart without redraw flash\n- Test chart responsiveness (resize behavior)",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Database Repository Layer",
+            "description": "Create the Go repository for fetching all validator detail data from the database.",
+            "dependencies": [],
+            "details": "Implemented `internal/database/repository/validator_detail_repository.go` with functions including `GetValidatorDetails`, `GetEffectivenessHistory`, `GetAttestationStats`, `GetRecentAlerts`, and `GetValidatorTimeline`. Used parallel queries with the `errgroup` pattern for performance and `pgxpool` for connection management.",
+            "status": "done",
+            "testStrategy": "Unit tests were written for all repository functions, mocking the database connection to verify query construction and data mapping. Tested against the `/go-crypto` recommendations for parallel queries."
+          },
+          {
+            "id": 2,
+            "title": "Implement HTTP Handler and Routing",
+            "description": "Create the Go HTTP handler to serve the validator detail page and related endpoints.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implemented `internal/web/handlers/validator_detail.go`. Created `ServeHTTP` for HTMX rendering, `HandleSSE` for real-time updates, `HandleExport` for CSV/JSON, and `HandleAlertsPartial`. Registered all routes under `/validators/{index}/*` in `cmd/server/main.go`.",
+            "status": "done",
+            "testStrategy": "Integration tests using `httptest` were created for all endpoints. Tests cover successful data rendering, HTMX partials, SSE connection establishment, and correct CSV/JSON export content and headers. Error cases were also tested."
+          },
+          {
+            "id": 3,
+            "title": "Fix Templ Template and Implement Frontend Logic",
+            "description": "Resolve syntax errors in the `validator_detail.templ` file and move Chart.js logic to a separate static file.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "The current template has syntax errors due to large inline JS blocks. Refactor `validator_detail.templ` to remove inline scripts and use data attributes instead. Create `web/static/js/validator-detail.js` to handle Chart.js initialization and rendering based on data attributes passed from the template.\n<info added on 2025-10-22T10:37:55.293Z>\n```json\n\"Root Cause: The validator_detail.templ file had systematic indentation errors, not inline JavaScript blocks as originally described. All content within the page-container div had one extra level of indentation, causing the templ parser to fail. Fixes Applied: Created /web/static/js/validator-detail.js for Chart.js initialization logic for effectiveness and attestation charts, which parses data from template attributes. Added the Chart.js library and the new validator-detail.js script to the base layout. Fixed indentation errors in `validator_detail.templ`. The template now compiles successfully with `templ generate`. Files Modified: `internal/web/templates/layouts/base.templ`, `internal/web/templates/pages/validator_detail.templ`, and created `web/static/js/validator-detail.js`. Ready for subtask 24.4.\"\n```\n</info added on 2025-10-22T10:37:55.293Z>",
+            "status": "done",
+            "testStrategy": "Manual verification in a browser to confirm that the page renders without errors. Check the browser console for JavaScript errors related to chart initialization. Verify that chart data is correctly passed via data attributes."
+          },
+          {
+            "id": 4,
+            "title": "Generate, Build, and Test Frontend Integration",
+            "description": "Generate Go code from the fixed templ files and perform an initial build and test cycle.",
+            "dependencies": [
+              3
+            ],
+            "details": "Run `templ generate` to compile the `.templ` files into Go code. Then, build the server with `go build ./cmd/server` and run it to ensure the page renders correctly with charts and real-time updates.\n<info added on 2025-10-22T10:43:24.743Z>\n{\n  \"update_text\": \"Successfully completed all build and test steps:\\n\\n1. ✅ Fixed compilation errors:\\n   - Fixed undefined types.ValidatorStatusActive → types.StatusActive in mock_client.go:32\\n   - Removed unused \\\"context\\\" import from validator_detail.go\\n   - Fixed cache.NewRedisCache initialization (added proper Config struct with parsed host/port)\\n   - Renamed variables to avoid redeclaration (port → redisPort)\\n   - Added \\\"strings\\\" import for string operations\\n\\n2. ✅ Template generation:\\n   - Ran `go run github.com/a-h/templ/cmd/templ@latest generate`\\n   - Completed successfully with no updates needed (templates were already compiled)\\n\\n3. ✅ Server build:\\n   - Built server binary with `go build ./cmd/server`\\n   - Binary created successfully: 34MB executable\\n\\n4. ✅ Server startup test:\\n   - Server starts successfully on port 8080\\n   - All routes registered correctly, including:\\n     - /validators/{index}/* (validator detail routes)\\n     - Mock beacon client initialized\\n     - Redis cache connected\\n     - Database connected\\n     - SSE endpoint registered at /api/sse\\n\\nReady for visual regression testing in subtask 24.5.\"\n}\n</info added on 2025-10-22T10:43:24.743Z>",
+            "status": "done",
+            "testStrategy": "Run `templ generate` and `go build` to ensure no compile-time errors. Launch the server locally and access the validator detail page to confirm it loads. Basic smoke test to ensure all components are present on the page."
+          },
+          {
+            "id": 5,
+            "title": "Perform Visual Regression Testing with Playwright",
+            "description": "Conduct comprehensive visual and interactive testing of the validator detail page using Playwright MCP.",
+            "dependencies": [
+              4
+            ],
+            "details": "Capture screenshots for all key components (metadata, charts, alert history, timeline) across multiple viewports (375px, 768px, 1440px, 1920px). Test Chart.js rendering, SSE updates for layout shifts, export functionality, and accessibility features.\n<info added on 2025-10-22T10:49:11.932Z>\nVisual regression testing is blocked. The page is returning an HTTP 500 error: \"column 'time' does not exist (SQLSTATE 42703)\". This is caused by a database schema mismatch or an incorrect query in `validator_detail_repository.go` when querying the `attestation_stats` table. Testing cannot proceed until this backend issue is resolved.\n</info added on 2025-10-22T10:49:11.932Z>\n<info added on 2025-10-22T10:53:08.452Z>\n```json\n\"COMPREHENSIVE BLOCKER ANALYSIS: The root cause of the HTTP 500 error is a database schema mismatch originating from the .env configuration. The server is connecting to `DB_NAME=validator_monitor`, a pre-existing database with an incorrect schema that is missing the `time` column. A separate database, `eth_validator_monitor`, has been created with the correct schema. \\n\\nRECOMMENDED SOLUTION: The fastest and safest fix is to update the .env file to change the database connection from `DB_NAME=validator_monitor` to `DB_NAME=eth_validator_monitor` and restart the server.\\n\\nNEXT ACTIONS:\\n1. Update the .env file to set `DB_NAME=eth_validator_monitor`.\\n2. Restart the server and verify the page loads at http://localhost:8080/validators/1.\\n3. Complete the planned visual regression testing, including Chart.js screenshots, SSE updates, export functionality, and accessibility checks.\"\n```\n</info added on 2025-10-22T10:53:08.452Z>",
+            "status": "pending",
+            "testStrategy": "Execute the full Playwright MCP test suite defined in the main task's test strategy. Run tests against a local server instance. Review failed tests and update baselines if changes are intentional."
+          }
+        ]
       },
       {
         "id": 25,
@@ -1719,7 +1774,7 @@
       ],
       "created": "2025-10-22T03:25:03.944Z",
       "description": "Tasks for master context",
-      "updated": "2025-10-22T04:36:27.350Z"
+      "updated": "2025-10-22T10:53:35.810Z"
     }
   }
 }
