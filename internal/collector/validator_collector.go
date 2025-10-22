@@ -9,6 +9,7 @@ import (
 	"github.com/birddigital/eth-validator-monitor/internal/database/models"
 	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
 	"github.com/birddigital/eth-validator-monitor/internal/logger"
+	"github.com/birddigital/eth-validator-monitor/internal/web/sse"
 	"github.com/birddigital/eth-validator-monitor/pkg/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/birddigital/eth-validator-monitor/internal/cache"
@@ -20,6 +21,7 @@ type ValidatorCollector struct {
 	pool            *pgxpool.Pool
 	cache           *cache.RedisCache
 	workerPool      *WorkerPool
+	broadcaster     *sse.Broadcaster
 
 	// Repositories
 	validatorRepo   *repository.ValidatorRepository
@@ -64,6 +66,7 @@ func NewValidatorCollector(
 	beaconClient types.BeaconClient,
 	pool *pgxpool.Pool,
 	redisCache *cache.RedisCache,
+	broadcaster *sse.Broadcaster,
 	config *CollectorConfig,
 ) *ValidatorCollector {
 	collectorCtx, cancel := context.WithCancel(ctx)
@@ -72,6 +75,7 @@ func NewValidatorCollector(
 		beaconClient:       beaconClient,
 		pool:              pool,
 		cache:             redisCache,
+		broadcaster:       broadcaster,
 		workerPool:        NewWorkerPool(collectorCtx, config.WorkerPoolConfig),
 		validatorRepo:     repository.NewValidatorRepository(pool),
 		snapshotRepo:      repository.NewSnapshotRepository(pool),
@@ -278,6 +282,13 @@ func (c *ValidatorCollector) storeBatch(snapshots []*models.ValidatorSnapshot) {
 			Msg("Failed to update cache")
 	}
 
+	// Broadcast SSE events for real-time updates
+	if c.broadcaster != nil {
+		for _, snapshot := range snapshots {
+			c.broadcastMetricsUpdate(snapshot)
+		}
+	}
+
 	logger.FromContext(c.ctx).Debug().
 		Int("snapshot_count", len(snapshots)).
 		Msg("Stored batch of snapshots")
@@ -459,4 +470,37 @@ func extractInt64(data map[string]interface{}, key string) int64 {
 		return val
 	}
 	return 0
+}
+
+// broadcastMetricsUpdate broadcasts a metrics update event via SSE
+func (c *ValidatorCollector) broadcastMetricsUpdate(snapshot *models.ValidatorSnapshot) {
+	if c.broadcaster == nil {
+		return
+	}
+
+	// Convert snapshot to SSE metrics data
+	var effectiveness float64
+	if snapshot.AttestationEffectiveness != nil {
+		effectiveness = *snapshot.AttestationEffectiveness
+	}
+
+	status := "active"
+	if !snapshot.IsOnline {
+		status = "offline"
+	}
+
+	data := sse.MetricsUpdateData{
+		ValidatorIndex: uint64(snapshot.ValidatorIndex),
+		Balance:        uint64(snapshot.Balance),
+		Effectiveness:  effectiveness,
+		Status:         status,
+		LastUpdated:    snapshot.Time.Unix(),
+	}
+
+	// Broadcast the event
+	c.broadcaster.Broadcast(sse.Event{
+		Type: sse.EventTypeMetricsUpdate,
+		Data: data,
+		ID:   fmt.Sprintf("metrics-%d-%d", snapshot.ValidatorIndex, snapshot.Time.Unix()),
+	})
 }

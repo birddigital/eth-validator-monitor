@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
+	"github.com/birddigital/eth-validator-monitor/internal/beacon"
+	"github.com/birddigital/eth-validator-monitor/internal/cache"
+	"github.com/birddigital/eth-validator-monitor/internal/collector"
 	"github.com/birddigital/eth-validator-monitor/internal/config"
 	"github.com/birddigital/eth-validator-monitor/internal/database"
 	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
@@ -17,6 +20,7 @@ import (
 	"github.com/birddigital/eth-validator-monitor/internal/server"
 	"github.com/birddigital/eth-validator-monitor/internal/services/dashboard"
 	"github.com/birddigital/eth-validator-monitor/internal/services/health"
+	"github.com/birddigital/eth-validator-monitor/internal/services/validators"
 	"github.com/birddigital/eth-validator-monitor/internal/storage"
 	"github.com/birddigital/eth-validator-monitor/internal/web"
 	"github.com/birddigital/eth-validator-monitor/internal/web/handlers"
@@ -98,6 +102,7 @@ func main() {
 	// Initialize repositories
 	userRepo := storage.NewUserRepository(pool)
 	dashboardRepo := repository.NewDashboardRepository(pool)
+	validatorListRepo := repository.NewValidatorListRepository(pool)
 
 	// Initialize JWT service (optional - only if secret key is configured)
 	var jwtService *auth.JWTService
@@ -170,21 +175,60 @@ func main() {
 
 	// Initialize health monitor with SSE broadcaster
 	healthCfg := health.MonitorConfig{
-		DBCheckInterval:    30 * time.Second,
-		RedisCheckInterval: 30 * time.Second,
-		BroadcastInterval:  30 * time.Second,
+		CheckInterval: 30 * time.Second,
 	}
-	healthMonitor := health.NewMonitor(pool, redisClient, sseBroadcaster, healthCfg)
+	// Wrap pgxpool.Pool with adapter to satisfy health.DBPinger interface
+	dbPinger := newPgxPoolAdapter(pool)
+	healthMonitor := health.NewMonitor(dbPinger, redisClient, sseBroadcaster, healthCfg)
 
 	// Initialize dashboard service and handlers
 	dashboardService := dashboard.NewService(dashboardRepo)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService, healthMonitor)
 
+	// Initialize validator list cache and service
+	validatorListCache := cache.NewValidatorListCache(redisClient, 30*time.Second)
+	validatorListService := validators.NewListService(validatorListRepo, validatorListCache)
+	validatorListHandler := handlers.NewValidatorListHandler(validatorListService)
+
 	// Initialize SSE handler
 	sseHandler := handlers.NewSSEHandler(ctx)
 
+	// Initialize beacon client (mock for development)
+	beaconClient := beacon.NewMockClient()
+	logger.Logger.Info().Msg("Mock beacon client initialized for development")
+
+	// Initialize Redis cache for collector
+	redisCache := cache.NewRedisCache(redisClient)
+
+	// Initialize validator collector with SSE broadcaster
+	collectorConfig := collector.DefaultCollectorConfig()
+	validatorCollector := collector.NewValidatorCollector(
+		ctx,
+		beaconClient,
+		pool,
+		redisCache,
+		sseBroadcaster,
+		collectorConfig,
+	)
+
+	// Start collector in background
+	go func() {
+		logger.Logger.Info().Msg("Starting validator collector")
+		if err := validatorCollector.Start(); err != nil {
+			logger.Logger.Error().Err(err).Msg("Collector failed to start")
+		}
+	}()
+
+	// Ensure collector stops on shutdown
+	defer func() {
+		logger.Logger.Info().Msg("Stopping validator collector")
+		if err := validatorCollector.Stop(); err != nil {
+			logger.Logger.Error().Err(err).Msg("Error stopping collector")
+		}
+	}()
+
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -224,6 +268,7 @@ func registerRoutes(
 	authHandlers *server.AuthHandlers,
 	dashboardHandler *handlers.DashboardHandler,
 	sseHandler *handlers.SSEHandler,
+	validatorListHandler *handlers.ValidatorListHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -279,6 +324,21 @@ func registerRoutes(
 	r.Get("/dashboard", dashboardPageHandler.ServeHTTP)
 	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/dashboard", cfg.Server.HTTPPort)).
 		Msg("Dashboard page route registered")
+
+	// Validator list page route
+	r.Get("/validators", validatorListHandler.ServeHTTP)
+	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/validators", cfg.Server.HTTPPort)).
+		Msg("Validator list page route registered")
+
+	// Validator list API route (JSON)
+	r.Get("/api/validators/list", validatorListHandler.ServeJSON)
+	logger.Info().Str("route", "/api/validators/list").
+		Msg("Validator list JSON API route registered")
+
+	// Validator list HTMX partial route
+	r.Get("/validators/list", validatorListHandler.ServeHTTP)
+	logger.Info().Str("route", "/validators/list").
+		Msg("Validator list HTMX partial route registered")
 
 	// Login page routes
 	r.Get("/login", loginHandler.ServeHTTP)

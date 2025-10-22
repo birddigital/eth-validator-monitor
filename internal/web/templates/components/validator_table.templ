@@ -1,0 +1,279 @@
+package components
+
+import (
+	"fmt"
+	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+)
+
+// ValidatorTable renders the complete validator table with rows and infinite scroll
+templ ValidatorTable(result *repository.ValidatorListResult, filter repository.ValidatorListFilter) {
+	<!-- Desktop Table View -->
+	<div class="hidden md:block overflow-x-auto">
+		<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+			<thead class="bg-gray-50 dark:bg-gray-900">
+				<tr>
+					<th class="px-6 py-3 text-left">
+						<button
+							class="group inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
+							hx-get={ fmt.Sprintf("/validators/list?sort=index&order=%s", toggleOrder(filter.SortBy, filter.SortOrder, "index")) }
+							hx-target="#validator-table-body"
+							hx-swap="innerHTML"
+							hx-push-url="true"
+							hx-include="[name='search'],[name='status']"
+						>
+							Index
+							@SortIcon(filter.SortBy == "index", filter.SortOrder)
+						</button>
+					</th>
+					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Pubkey
+					</th>
+					<th class="px-6 py-3 text-left">
+						<button
+							class="group inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
+							hx-get={ fmt.Sprintf("/validators/list?sort=status&order=%s", toggleOrder(filter.SortBy, filter.SortOrder, "status")) }
+							hx-target="#validator-table-body"
+							hx-swap="innerHTML"
+							hx-push-url="true"
+							hx-include="[name='search'],[name='status']"
+						>
+							Status
+							@SortIcon(filter.SortBy == "status", filter.SortOrder)
+						</button>
+					</th>
+					<th class="px-6 py-3 text-left">
+						<button
+							class="group inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
+							hx-get={ fmt.Sprintf("/validators/list?sort=balance&order=%s", toggleOrder(filter.SortBy, filter.SortOrder, "balance")) }
+							hx-target="#validator-table-body"
+							hx-swap="innerHTML"
+							hx-push-url="true"
+							hx-include="[name='search'],[name='status']"
+						>
+							Balance
+							@SortIcon(filter.SortBy == "balance", filter.SortOrder)
+						</button>
+					</th>
+					<th class="px-6 py-3 text-left">
+						<button
+							class="group inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
+							hx-get={ fmt.Sprintf("/validators/list?sort=effectiveness&order=%s", toggleOrder(filter.SortBy, filter.SortOrder, "effectiveness")) }
+							hx-target="#validator-table-body"
+							hx-swap="innerHTML"
+							hx-push-url="true"
+							hx-include="[name='search'],[name='status']"
+						>
+							Effectiveness
+							@SortIcon(filter.SortBy == "effectiveness", filter.SortOrder)
+						</button>
+					</th>
+				</tr>
+			</thead>
+			<tbody id="validator-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+				@ValidatorTableRowsWithInfiniteScroll(result, filter)
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Mobile Card View -->
+	<div class="md:hidden space-y-4 p-4">
+		@ValidatorMobileCards(result, filter)
+	</div>
+}
+
+// ValidatorTableRowsWithInfiniteScroll renders table rows with infinite scroll trigger
+templ ValidatorTableRowsWithInfiniteScroll(result *repository.ValidatorListResult, filter repository.ValidatorListFilter) {
+	for _, v := range result.Validators {
+		<tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+			<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+				{ fmt.Sprintf("%d", v.Index) }
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+				<code class="bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded text-xs">
+					{ truncatePubkey(v.Pubkey) }
+				</code>
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap">
+				@ValidatorStatusBadge(v.Status)
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+				{ formatValidatorListBalance(v.Balance) } ETH
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+				{ formatEffectiveness(v.AttestationEffectiveness) }%
+			</td>
+		</tr>
+	}
+	if result.HasMore {
+		<tr
+			id="infinite-scroll-trigger"
+			hx-get={ fmt.Sprintf("/validators/list?offset=%d&limit=%d&search=%s&status=%s&sort=%s&order=%s",
+				filter.Offset + filter.Limit,
+				filter.Limit,
+				filter.Search,
+				filter.Status,
+				filter.SortBy,
+				filter.SortOrder,
+			) }
+			hx-trigger="revealed"
+			hx-swap="afterend"
+			hx-target="this"
+		>
+			<td colspan="5" class="px-6 py-4 text-center">
+				<div class="flex items-center justify-center text-gray-500 dark:text-gray-400">
+					<svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+					Loading more...
+				</div>
+			</td>
+		</tr>
+	}
+}
+
+// ValidatorMobileCards renders mobile-optimized cards with infinite scroll
+templ ValidatorMobileCards(result *repository.ValidatorListResult, filter repository.ValidatorListFilter) {
+	for _, v := range result.Validators {
+		<div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+			<div class="flex justify-between items-start mb-2">
+				<div class="text-sm font-medium text-gray-900 dark:text-white">
+					Validator #{ fmt.Sprintf("%d", v.Index) }
+				</div>
+				@ValidatorStatusBadge(v.Status)
+			</div>
+			<div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+				<code class="bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded">
+					{ truncatePubkey(v.Pubkey) }
+				</code>
+			</div>
+			<div class="grid grid-cols-2 gap-2 text-sm">
+				<div>
+					<div class="text-gray-500 dark:text-gray-400 text-xs">Balance</div>
+					<div class="text-gray-900 dark:text-white font-medium">{ formatValidatorListBalance(v.Balance) } ETH</div>
+				</div>
+				<div>
+					<div class="text-gray-500 dark:text-gray-400 text-xs">Effectiveness</div>
+					<div class="text-gray-900 dark:text-white font-medium">{ formatEffectiveness(v.AttestationEffectiveness) }%</div>
+				</div>
+			</div>
+		</div>
+	}
+	if result.HasMore {
+		<div
+			id="infinite-scroll-trigger-mobile"
+			hx-get={ fmt.Sprintf("/validators/list?offset=%d&limit=%d&search=%s&status=%s&sort=%s&order=%s",
+				filter.Offset + filter.Limit,
+				filter.Limit,
+				filter.Search,
+				filter.Status,
+				filter.SortBy,
+				filter.SortOrder,
+			) }
+			hx-trigger="revealed"
+			hx-swap="afterend"
+			hx-target="this"
+			class="text-center py-4"
+		>
+			<div class="flex items-center justify-center text-gray-500 dark:text-gray-400">
+				<svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+				</svg>
+				Loading more...
+			</div>
+		</div>
+	}
+}
+
+// ValidatorStatusBadge renders a validator status badge with appropriate styling
+templ ValidatorStatusBadge(status string) {
+	<span class={ validatorStatusBadgeClass(status) }>
+		{ formatValidatorStatus(status) }
+	</span>
+}
+
+// SortIcon renders sort indicator
+templ SortIcon(isActive bool, order string) {
+	<span class="ml-1">
+		if isActive {
+			if order == "asc" {
+				<svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+					<path d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"></path>
+				</svg>
+			} else {
+				<svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+					<path d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"></path>
+				</svg>
+			}
+		} else {
+			<svg class="w-4 h-4 inline opacity-0 group-hover:opacity-50" fill="currentColor" viewBox="0 0 20 20">
+				<path d="M5 12a1 1 0 102 0V6.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L5 6.414V12zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"></path>
+			</svg>
+		}
+	</span>
+}
+
+// Helper functions (Go code embedded in templ)
+func truncatePubkey(pubkey string) string {
+	if len(pubkey) > 12 {
+		return pubkey[:10] + "..."
+	}
+	return pubkey
+}
+
+func formatValidatorListBalance(balance uint64) string {
+	eth := float64(balance) / 1e9
+	return fmt.Sprintf("%.2f", eth)
+}
+
+func formatEffectiveness(effectiveness float64) string {
+	return fmt.Sprintf("%.1f", effectiveness*100)
+}
+
+func formatValidatorStatus(status string) string {
+	switch status {
+	case "active_ongoing":
+		return "Active"
+	case "pending_initialized":
+		return "Pending"
+	case "exited_slashed":
+		return "Slashed"
+	case "exited_unslashed":
+		return "Exited"
+	case "withdrawal_possible":
+		return "Withdrawal Possible"
+	case "withdrawal_done":
+		return "Withdrawn"
+	default:
+		return status
+	}
+}
+
+func validatorStatusBadgeClass(status string) string {
+	base := "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+	switch status {
+	case "active_ongoing":
+		return base + " bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+	case "pending_initialized":
+		return base + " bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+	case "exited_slashed":
+		return base + " bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+	case "exited_unslashed":
+		return base + " bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+	case "withdrawal_possible", "withdrawal_done":
+		return base + " bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+	default:
+		return base + " bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+	}
+}
+
+func toggleOrder(currentSortBy, currentOrder, newSortBy string) string {
+	if currentSortBy == newSortBy {
+		if currentOrder == "asc" {
+			return "desc"
+		}
+		return "asc"
+	}
+	return "asc"
+}
