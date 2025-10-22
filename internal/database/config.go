@@ -200,10 +200,13 @@ func (c *Config) BuildPoolConfig() (*pgxpool.Config, error) {
 
 		_, err = conn.Prepare(ctx, "insert_snapshot", `
 			INSERT INTO validator_snapshots (
-				epoch, slot, timestamp, validator_index, balance, effective_balance,
-				attestation_success, attestation_inclusion_delay, proposal_success,
-				performance_score, network_percentile
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+				time, validator_index, balance, effective_balance,
+				attestation_effectiveness, attestation_inclusion_delay,
+				attestation_head_vote, attestation_source_vote, attestation_target_vote,
+				proposals_scheduled, proposals_executed, proposals_missed,
+				sync_committee_participation, slashed, is_online,
+				consecutive_missed_attestations, daily_income, apr
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 		`)
 		if err != nil {
 			return fmt.Errorf("failed to prepare insert_snapshot statement: %w", err)
