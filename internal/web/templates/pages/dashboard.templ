@@ -1,0 +1,163 @@
+package pages
+
+import "github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
+
+// Dashboard renders the main dashboard page with skeleton loaders and SSE support
+templ Dashboard() {
+	<div class="page-container min-h-screen bg-gray-50 dark:bg-gray-900" hx-ext="sse" sse-connect="/api/sse">
+		<!-- Page Header -->
+		<div class="mb-8">
+			<h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Validator Dashboard</h1>
+			<p class="text-gray-600 dark:text-gray-400">Monitor your Ethereum validators in real-time</p>
+		</div>
+		<!-- Key Metrics Section -->
+		<section class="mb-8" aria-label="Key Metrics">
+			<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Key Metrics</h2>
+			<div
+				id="metrics-section"
+				role="status"
+				aria-live="polite"
+				aria-label="Aggregate metrics"
+				hx-get="/api/dashboard/metrics"
+				hx-trigger="load"
+				hx-swap="innerHTML swap:300ms"
+				hx-indicator="#metrics-skeleton"
+				sse-swap="metrics-update"
+			>
+				<!-- Metrics Skeleton Loader -->
+				<div id="metrics-skeleton" class="htmx-indicator">
+					<span class="sr-only">Loading metrics, please wait...</span>
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-hidden="true">
+						for i := 0; i < 4; i++ {
+							<div class="skeleton-card">
+								<div class="skeleton-shimmer skeleton-badge mb-3" style="width: 40%;"></div>
+								<div class="skeleton-shimmer skeleton-title mb-2" style="width: 60%;"></div>
+								<div class="skeleton-shimmer skeleton-text" style="width: 80%;"></div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- System Health Section -->
+		<section class="mb-8" aria-label="System Health">
+			<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Health</h2>
+			<div
+				id="health-section"
+				role="status"
+				aria-live="polite"
+				aria-label="System health status"
+				hx-get="/api/dashboard/health-indicators"
+				hx-trigger="load"
+				hx-swap="innerHTML swap:300ms"
+				hx-indicator="#health-skeleton"
+				sse-swap="health-status"
+			>
+				<!-- Health Skeleton Loader -->
+				<div id="health-skeleton" class="htmx-indicator">
+					<span class="sr-only">Loading system health, please wait...</span>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4" aria-hidden="true">
+						for i := 0; i < 2; i++ {
+							<div class="skeleton-card">
+								<div class="flex items-center gap-3 mb-3">
+									<div class="skeleton-shimmer skeleton-circle"></div>
+									<div class="flex-1">
+										<div class="skeleton-shimmer skeleton-badge mb-2" style="width: 50%;"></div>
+										<div class="skeleton-shimmer skeleton-text" style="width: 70%;"></div>
+									</div>
+								</div>
+								<div class="space-y-2">
+									<div class="skeleton-shimmer skeleton-text"></div>
+									<div class="skeleton-shimmer skeleton-text" style="width: 90%;"></div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- Recent Alerts Section -->
+		<section class="mb-8" aria-label="Recent Alerts">
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Alerts</h2>
+				<a href="/alerts" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+			</div>
+			<div
+				id="alerts-section"
+				role="status"
+				aria-live="polite"
+				aria-label="Recent alerts list"
+				hx-get="/api/dashboard/alerts"
+				hx-trigger="load"
+				hx-swap="innerHTML swap:300ms"
+				hx-indicator="#alerts-skeleton"
+				sse-swap="new-alert"
+			>
+				<!-- Alerts Skeleton Loader -->
+				<div id="alerts-skeleton" class="htmx-indicator">
+					<span class="sr-only">Loading recent alerts, please wait...</span>
+					<div class="skeleton-card" aria-hidden="true">
+						<div class="space-y-3">
+							for i := 0; i < 5; i++ {
+								<div class="flex items-start gap-3 pb-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+									<div class="skeleton-shimmer skeleton-circle" style="width: 2.5rem; height: 2.5rem;"></div>
+									<div class="flex-1 space-y-2">
+										<div class="skeleton-shimmer skeleton-badge" style="width: 30%;"></div>
+										<div class="skeleton-shimmer skeleton-text"></div>
+										<div class="skeleton-shimmer skeleton-text" style="width: 85%;"></div>
+										<div class="skeleton-shimmer skeleton-text" style="width: 40%;"></div>
+									</div>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- Top Validators Section -->
+		<section class="mb-8" aria-label="Top Validators">
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Top Performing Validators</h2>
+				<a href="/validators" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+			</div>
+			<div
+				id="validators-section"
+				role="status"
+				aria-live="polite"
+				aria-label="Top validators list"
+				hx-get="/api/dashboard/validators"
+				hx-trigger="load"
+				hx-swap="innerHTML swap:300ms"
+				hx-indicator="#validators-skeleton"
+			>
+				<!-- Validators Skeleton Loader -->
+				<div id="validators-skeleton" class="htmx-indicator">
+					<span class="sr-only">Loading top validators, please wait...</span>
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" aria-hidden="true">
+						for i := 0; i < 8; i++ {
+							<div class="skeleton-card">
+								<div class="flex items-center gap-3 mb-4">
+									<div class="skeleton-shimmer skeleton-circle"></div>
+									<div class="flex-1">
+										<div class="skeleton-shimmer skeleton-badge mb-2" style="width: 60%;"></div>
+										<div class="skeleton-shimmer skeleton-text" style="width: 80%;"></div>
+									</div>
+								</div>
+								<div class="space-y-2">
+									<div class="skeleton-shimmer skeleton-text"></div>
+									<div class="skeleton-shimmer skeleton-text"></div>
+									<div class="skeleton-shimmer skeleton-text" style="width: 70%;"></div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+}
+
+// DashboardWithLayout wraps the dashboard page in the base layout
+templ DashboardWithLayout() {
+	@layouts.Base("Dashboard - Ethereum Validator Monitor", Dashboard())
+}

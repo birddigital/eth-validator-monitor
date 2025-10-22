@@ -11,12 +11,16 @@ import (
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
 	"github.com/birddigital/eth-validator-monitor/internal/config"
 	"github.com/birddigital/eth-validator-monitor/internal/database"
+	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
 	"github.com/birddigital/eth-validator-monitor/internal/logger"
 	"github.com/birddigital/eth-validator-monitor/internal/metrics"
 	"github.com/birddigital/eth-validator-monitor/internal/server"
+	"github.com/birddigital/eth-validator-monitor/internal/services/dashboard"
+	"github.com/birddigital/eth-validator-monitor/internal/services/health"
 	"github.com/birddigital/eth-validator-monitor/internal/storage"
 	"github.com/birddigital/eth-validator-monitor/internal/web"
 	"github.com/birddigital/eth-validator-monitor/internal/web/handlers"
+	"github.com/birddigital/eth-validator-monitor/internal/web/sse"
 	"github.com/birddigital/eth-validator-monitor/graph"
 	"github.com/birddigital/eth-validator-monitor/graph/middleware"
 
@@ -93,6 +97,7 @@ func main() {
 
 	// Initialize repositories
 	userRepo := storage.NewUserRepository(pool)
+	dashboardRepo := repository.NewDashboardRepository(pool)
 
 	// Initialize JWT service (optional - only if secret key is configured)
 	var jwtService *auth.JWTService
@@ -160,8 +165,26 @@ func main() {
 
 	router := server.NewRouter(routerCfg)
 
+	// Initialize SSE broadcaster (needs to be created before health monitor)
+	sseBroadcaster := sse.NewBroadcaster(ctx)
+
+	// Initialize health monitor with SSE broadcaster
+	healthCfg := health.MonitorConfig{
+		DBCheckInterval:    30 * time.Second,
+		RedisCheckInterval: 30 * time.Second,
+		BroadcastInterval:  30 * time.Second,
+	}
+	healthMonitor := health.NewMonitor(pool, redisClient, sseBroadcaster, healthCfg)
+
+	// Initialize dashboard service and handlers
+	dashboardService := dashboard.NewService(dashboardRepo)
+	dashboardHandler := handlers.NewDashboardHandler(dashboardService, healthMonitor)
+
+	// Initialize SSE handler
+	sseHandler := handlers.NewSSEHandler(ctx)
+
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -199,6 +222,8 @@ func registerRoutes(
 	sessionStore *auth.SessionStore,
 	authService *auth.Service,
 	authHandlers *server.AuthHandlers,
+	dashboardHandler *handlers.DashboardHandler,
+	sseHandler *handlers.SSEHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -243,11 +268,17 @@ func registerRoutes(
 	homeHandler := handlers.NewHomeHandler()
 	loginHandler := handlers.NewLoginHandler()
 	registerHandler := handlers.NewRegisterHandler()
+	dashboardPageHandler := handlers.NewDashboardPageHandler()
 
 	// Home page route
 	r.Get("/", homeHandler.ServeHTTP)
 	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/", cfg.Server.HTTPPort)).
 		Msg("Home page route registered")
+
+	// Dashboard page route
+	r.Get("/dashboard", dashboardPageHandler.ServeHTTP)
+	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/dashboard", cfg.Server.HTTPPort)).
+		Msg("Dashboard page route registered")
 
 	// Login page routes
 	r.Get("/login", loginHandler.ServeHTTP)
@@ -271,25 +302,22 @@ func registerRoutes(
 		logger.Info().Str("route", "POST /register").Msg("Registration form submission route registered")
 	}
 
-	// HTMX routes group for partial page updates
-	r.Route("/api/htmx", func(r chi.Router) {
-		// All routes in this group automatically have HTMX middleware from the router stack
-		// Handlers in this group should check middleware.IsHTMXRequest(r.Context())
-		// to determine whether to return full HTML pages or just fragments
+	// Dashboard API routes for HTMX
+	r.Route("/api/dashboard", func(r chi.Router) {
+		r.Get("/metrics", dashboardHandler.GetMetrics)
+		r.Get("/alerts", dashboardHandler.GetAlerts)
+		r.Get("/validators", dashboardHandler.GetTopValidators)
+		r.Get("/health", dashboardHandler.GetSystemHealth)
+		r.Get("/", dashboardHandler.GetDashboard)
 
-		// Example handler demonstrating content negotiation
-		htmxExampleHandler := handlers.NewHTMXExampleHandler()
-		r.Get("/dashboard", htmxExampleHandler.ServeHTTP)
-
-		// Future HTMX endpoints:
-		// r.Get("/validators", validatorsPartialHandler.ServeHTTP)
-		// r.Get("/metrics", metricsPartialHandler.ServeHTTP)
-		// r.Get("/validator/{id}", validatorDetailPartialHandler.ServeHTTP)
-
-		logger.Info().Str("route_group", "/api/htmx/*").
-			Str("example_route", "/api/htmx/dashboard").
-			Msg("HTMX route group registered with example handler")
+		logger.Info().Str("route_group", "/api/dashboard/*").
+			Msg("Dashboard API routes registered")
 	})
+
+	// SSE endpoint for real-time updates
+	r.Get("/api/sse", sseHandler.ServeHTTP)
+	logger.Info().Str("route", "/api/sse").
+		Msg("SSE endpoint registered for real-time updates")
 
 	// GraphQL Playground (dev only) - accessible at /playground in debug mode
 	if cfg.Server.GinMode == "debug" {

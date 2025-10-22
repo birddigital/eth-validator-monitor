@@ -1,0 +1,41 @@
+package components
+
+import (
+	"fmt"
+	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+)
+
+// MetricsCards renders aggregate metrics as stat cards
+templ MetricsCards(data *repository.AggregateMetrics) {
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+		@MetricCard("Total Validators", fmt.Sprintf("%d", data.TotalValidators), "Tracked validators", "text-primary")
+		@MetricCard("Active Validators", fmt.Sprintf("%d", data.ActiveValidators), "Currently active", "text-secondary")
+		@MetricCard("Total Balance", formatBalance(data.TotalBalanceGwei), "Total staked ETH", "text-accent")
+		@MetricCard("Avg Effectiveness", fmt.Sprintf("%.2f%%", data.AvgEffectiveness), "Average attestation rate", getEffectivenessColor(data.AvgEffectiveness))
+	</div>
+}
+
+// MetricCard renders a single stat card
+templ MetricCard(title string, value string, description string, colorClass string) {
+	<div class="stat bg-base-100 shadow-lg rounded-box">
+		<div class="stat-title text-base-content/70">{ title }</div>
+		<div class={ "stat-value", colorClass }>{ value }</div>
+		<div class="stat-desc">{ description }</div>
+	</div>
+}
+
+// formatBalance converts gwei to ETH with 2 decimal places
+func formatBalance(gwei int64) string {
+	eth := float64(gwei) / 1_000_000_000
+	return fmt.Sprintf("%.2f ETH", eth)
+}
+
+// getEffectivenessColor returns color class based on effectiveness percentage
+func getEffectivenessColor(effectiveness float64) string {
+	if effectiveness >= 95.0 {
+		return "text-success"
+	} else if effectiveness >= 85.0 {
+		return "text-warning"
+	}
+	return "text-error"
+}

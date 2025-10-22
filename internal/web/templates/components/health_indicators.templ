@@ -1,0 +1,149 @@
+package components
+
+import (
+	"fmt"
+	"time"
+)
+
+// HealthStatus represents the status of a system component
+type HealthStatus struct {
+	Component   string
+	Status      string // "healthy", "degraded", "unhealthy", "unknown"
+	Message     string
+	LastChecked time.Time
+}
+
+// HealthIndicatorsData holds all health status information
+type HealthIndicatorsData struct {
+	Database ComponentHealth `json:"database"`
+	Redis    ComponentHealth `json:"redis"`
+	Updated  time.Time       `json:"updated"`
+}
+
+// ComponentHealth represents health information for a component
+type ComponentHealth struct {
+	Status  string `json:"status"`
+	Message string `json:"message,omitempty"`
+}
+
+// HealthIndicators renders health status indicators for all system components
+templ HealthIndicators(data HealthIndicatorsData) {
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="health-indicators">
+		@HealthIndicatorCard("database", "Database", data.Database.Status, data.Database.Message, data.Updated)
+		@HealthIndicatorCard("redis", "Redis Cache", data.Redis.Status, data.Redis.Message, data.Updated)
+	</div>
+}
+
+// HealthIndicatorCard renders a single health status card
+templ HealthIndicatorCard(id string, name string, status string, message string, lastChecked time.Time) {
+	<div
+		class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-all duration-300"
+		data-component={ id }
+		data-status={ status }
+	>
+		<div class="flex items-center gap-3 mb-4">
+			@HealthStatusIcon(status)
+			<div class="flex-1">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">{ name }</h3>
+				<p class="text-sm text-gray-500 dark:text-gray-400">
+					@StatusBadge(status)
+				</p>
+			</div>
+		</div>
+		if message != "" {
+			<div class="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
+				<p class="text-sm text-gray-700 dark:text-gray-300">{ message }</p>
+			</div>
+		}
+		<div class="mt-4 text-xs text-gray-400 dark:text-gray-500">
+			Last checked: { formatTimeAgo(lastChecked) }
+		</div>
+	</div>
+}
+
+// HealthStatusIcon renders the appropriate icon for a health status
+templ HealthStatusIcon(status string) {
+	<div class="flex-shrink-0">
+		if status == "healthy" {
+			<div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+				<svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+				</svg>
+			</div>
+		} else if status == "degraded" {
+			<div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+				<svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+				</svg>
+			</div>
+		} else if status == "unhealthy" {
+			<div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+				<svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+				</svg>
+			</div>
+		} else {
+			<div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+				<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+			</div>
+		}
+	</div>
+}
+
+// StatusBadge renders a status badge with appropriate styling
+templ StatusBadge(status string) {
+	if status == "healthy" {
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+			<span class="w-2 h-2 mr-1.5 rounded-full bg-green-400 animate-pulse"></span>
+			Healthy
+		</span>
+	} else if status == "degraded" {
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+			<span class="w-2 h-2 mr-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+			Degraded
+		</span>
+	} else if status == "unhealthy" {
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+			<span class="w-2 h-2 mr-1.5 rounded-full bg-red-400 animate-pulse"></span>
+			Unhealthy
+		</span>
+	} else {
+		<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400">
+			<span class="w-2 h-2 mr-1.5 rounded-full bg-gray-400"></span>
+			Unknown
+		</span>
+	}
+}
+
+// formatTimeAgo formats a time.Time as a relative time string
+func formatTimeAgo(t time.Time) string {
+	if t.IsZero() {
+		return "Never"
+	}
+
+	duration := time.Since(t)
+
+	if duration < time.Minute {
+		return fmt.Sprintf("%d seconds ago", int(duration.Seconds()))
+	} else if duration < time.Hour {
+		minutes := int(duration.Minutes())
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
+	} else if duration < 24*time.Hour {
+		hours := int(duration.Hours())
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
+	} else {
+		days := int(duration.Hours() / 24)
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	}
+}

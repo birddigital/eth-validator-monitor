@@ -1,4 +1,13 @@
-/* Ethereum Validator Monitor - Base Styles */
+/* Ethereum Validator Monitor - Modern Styles */
+
+/* ============================================
+   FONT IMPORTS
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
 :root {
   --primary-color: #627eea;
   --secondary-color: #454a75;
@@ -6,16 +15,474 @@
   --text: #333333;
 }
 
+[data-theme="eth-dark"] {
+  --primary-color: #7c93f5;
+  --secondary-color: #655ea8;
+  --background: #0f172a;
+  --text: #faf8f0;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0;
   padding: 0;
   background: var(--background);
   color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.font-display {
+  font-family: 'Crimson Pro', serif;
+}
+
+/* ============================================
+   GLASSMORPHISM EFFECTS
+   ============================================ */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+[data-theme="eth-dark"] .glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-navbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="eth-dark"] .glass-navbar {
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   GRADIENT SHADOWS (2025 Trend)
+   ============================================ */
+.card-gradient-shadow {
+  position: relative;
+}
+
+.card-gradient-shadow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  filter: blur(20px);
+  transition: opacity 300ms ease;
+  z-index: -1;
+}
+
+.card-gradient-shadow:hover::before {
+  opacity: 0.6;
+}
+
+/* ============================================
+   HTMX SMOOTH TRANSITIONS
+   ============================================ */
+
+/* Fade out during swap (0.25s) */
+.htmx-swapping {
+  opacity: 0;
+  transition: opacity 250ms ease-out;
+}
+
+/* Fade in after settle (0.5s) */
+.htmx-settling {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+/* Initial state */
+.htmx-added {
+  opacity: 0;
+}
+
+/* Slide transitions for better UX */
+.slide-in {
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: all 300ms ease-out;
+}
+
+.slide-in.htmx-settling {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Loading state styling */
+.htmx-request {
+  cursor: wait;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}
+
+/* ============================================
+   NAVIGATION ENHANCEMENTS
+   ============================================ */
+.nav-link {
+  position: relative;
+  transition: color 200ms ease;
+}
+
+.nav-link.active {
+  color: hsl(var(--p));
+  font-weight: 600;
+}
+
+/* Animated underline on active */
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--p)), hsl(var(--a)));
+  border-radius: 2px;
+  animation: slideInUnderline 300ms ease-out;
+}
+
+@keyframes slideInUnderline {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Hover effect for inactive links */
+.nav-link:not(.active):hover {
+  color: hsl(var(--p));
+}
+
+/* ============================================
+   DROPDOWN ANIMATIONS
+   ============================================ */
+.dropdown-content {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+.dropdown-open {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: auto !important;
+}
+
+/* Dropdown arrow indicator */
+[data-dropdown-toggle]::after {
+  content: '';
+  display: inline-block;
+  margin-left: 0.5rem;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid currentColor;
+  transition: transform 200ms ease;
+}
+
+[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   MOBILE MENU ANIMATION
+   ============================================ */
+@media (max-width: 1023px) {
+  .mobile-menu-content {
+    animation: slideDownMobile 250ms ease-out;
+  }
+}
+
+@keyframes slideDownMobile {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   MODERN BUTTON ENHANCEMENTS
+   ============================================ */
+.btn-primary {
+  transition: all 300ms ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(98, 126, 234, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Button with arrow animation (ether.fi style) */
+.btn-with-arrow {
+  position: relative;
+  overflow: hidden;
+  transition: all 500ms ease-in-out;
+}
+
+.btn-with-arrow .button-text {
+  transition: transform 500ms ease-in-out;
+  display: inline-block;
+}
+
+.btn-with-arrow .button-arrow {
+  position: absolute;
+  right: -20px;
+  opacity: 0;
+  transition: all 500ms ease-in-out;
+}
+
+.btn-with-arrow:hover .button-text {
+  transform: translateX(-8px);
+}
+
+.btn-with-arrow:hover .button-arrow {
+  right: 12px;
+  opacity: 1;
+}
+
+/* ============================================
+   STATUS BADGE ANIMATIONS
+   ============================================ */
+.badge-slashed {
+  animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ============================================
+   CARD HOVER EFFECTS
+   ============================================ */
+.card {
+  transition: all 300ms ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* ============================================
+   CUSTOM FOCUS INDICATORS
+   ============================================ */
+*:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+  transition: top 200ms ease;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ============================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   PROGRESS BARS WITH GRADIENTS
+   ============================================ */
+.progress-gradient {
+  position: relative;
+}
+
+.progress-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, hsl(var(--p)), hsl(var(--a)));
+  opacity: 0.5;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+/* ============================================
+   SKELETON LOADERS
+   ============================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--b2)) 0%,
+    hsl(var(--b3)) 20%,
+    hsl(var(--b2)) 40%,
+    hsl(var(--b2)) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* ============================================
+   GRADIENT TEXT
+   ============================================ */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--a)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.smooth-transition {
+  transition: all 300ms ease;
+}
+
+/* Loading bar (global) */
+#loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, hsl(var(--p)), hsl(var(--a)));
+  z-index: 9999;
+  animation: slideProgress 1s ease-in-out infinite;
+}
+
+@keyframes slideProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+/* ============================================
+   FORM ENHANCEMENTS
+   ============================================ */
+
+/* Alert animations */
+.alert {
+  animation: slideInDown 300ms ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Error message styling */
+.text-error {
+  font-weight: 500;
+  animation: fadeIn 200ms ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Input error states */
+.input:invalid:not(:placeholder-shown) {
+  border-color: hsl(var(--er));
+}
+
+.input:valid:not(:placeholder-shown) {
+  border-color: hsl(var(--su));
+}
+
+/* Button loading state enhancement */
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Form container smooth transitions */
+#form-container {
+  transition: all 300ms ease-in-out;
+}
+
+/* Loading spinner pulse effect */
+.loading-spinner {
+  animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }

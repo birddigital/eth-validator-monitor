@@ -1,0 +1,74 @@
+package components
+
+import (
+	"fmt"
+	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+)
+
+// ValidatorGrid renders top validators as cards
+templ ValidatorGrid(validators []*repository.ValidatorSummary) {
+	if len(validators) == 0 {
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-center">
+			<p class="text-gray-500 dark:text-gray-400">No validators found</p>
+		</div>
+	} else {
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+			for _, v := range validators {
+				@ValidatorCard(v)
+			}
+		</div>
+	}
+}
+
+// ValidatorCard renders a single validator card
+templ ValidatorCard(v *repository.ValidatorSummary) {
+	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+		<div class="flex items-center gap-3 mb-4">
+			<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+				<svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+				</svg>
+			</div>
+			<div class="flex-1 min-w-0">
+				<h4 class="font-semibold text-gray-900 dark:text-white truncate">
+					if v.Name != nil {
+						{ *v.Name }
+					} else {
+						Validator { fmt.Sprintf("%d", v.ValidatorIndex) }
+					}
+				</h4>
+				<p class="text-xs text-gray-500 dark:text-gray-400 truncate">Index: { fmt.Sprintf("%d", v.ValidatorIndex) }</p>
+			</div>
+		</div>
+		<div class="space-y-2">
+			<div class="flex justify-between text-sm">
+				<span class="text-gray-600 dark:text-gray-400">Effectiveness:</span>
+				<span class={ "font-medium", getEffectivenessColorClass(v.Effectiveness) }>{ fmt.Sprintf("%.2f%%", v.Effectiveness) }</span>
+			</div>
+			<div class="flex justify-between text-sm">
+				<span class="text-gray-600 dark:text-gray-400">Balance:</span>
+				<span class="font-medium text-gray-900 dark:text-white">{ formatValidatorBalance(v.Balance) } ETH</span>
+			</div>
+			<div class="flex justify-between text-sm">
+				<span class="text-gray-600 dark:text-gray-400">APR:</span>
+				<span class="font-medium text-gray-900 dark:text-white">{ fmt.Sprintf("%.2f%%", v.APR) }</span>
+			</div>
+		</div>
+	</div>
+}
+
+// formatValidatorBalance converts gwei to ETH
+func formatValidatorBalance(gwei int64) string {
+	eth := float64(gwei) / 1_000_000_000
+	return fmt.Sprintf("%.4f", eth)
+}
+
+// getEffectivenessColorClass returns color class
+func getEffectivenessColorClass(effectiveness float64) string {
+	if effectiveness >= 95.0 {
+		return "text-success"
+	} else if effectiveness >= 85.0 {
+		return "text-warning"
+	}
+	return "text-error"
+}

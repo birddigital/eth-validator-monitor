@@ -95,7 +95,7 @@ test.describe('Navigation Bar - Visual Regression', () => {
       });
 
       // Verify hamburger is visible
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await expect(hamburger).toBeVisible();
     });
 
@@ -104,11 +104,11 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Click hamburger menu
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
 
       // Wait for dropdown to appear
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Screenshot: Dropdown menu open
       await expect(page).toHaveScreenshot('tablet-nav-menu-open.png', {
@@ -117,12 +117,12 @@ test.describe('Navigation Bar - Visual Regression', () => {
       });
 
       // Verify all menu items visible
-      await expect(page.locator('.dropdown-content a:has-text("Home")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Validators")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Metrics")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("GraphQL")')).toBeVisible();
-      await expect(page.locator('.dropdown-content:has-text("Dark Mode")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Profile")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("Home")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("Validators")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("Metrics")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("GraphQL")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"]:has-text("Dark Mode")')).toBeVisible();
+      await expect(page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("Profile")')).toBeVisible();
     });
 
     test('should hide desktop navigation links on tablet', async ({ page }) => {
@@ -162,11 +162,11 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Click hamburger
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
 
       // Wait for dropdown
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Screenshot: Mobile dropdown menu
       await expect(page).toHaveScreenshot('mobile-nav-menu-open.png', {
@@ -180,15 +180,15 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Open menu
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Click outside (on main content)
       await page.locator('main').click();
 
       // Wait for dropdown to hide
-      await page.waitForSelector('.dropdown-content', { state: 'hidden' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'hidden' });
 
       // Screenshot: Menu closed after outside click
       await expect(page.locator('nav.navbar')).toHaveScreenshot('mobile-nav-closed-after-outside-click.png', {
@@ -201,12 +201,12 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Open menu
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Click Validators link
-      const validatorsLink = page.locator('.dropdown-content a:has-text("Validators")');
+      const validatorsLink = page.locator('[data-testid="mobile-menu-dropdown-content"] a:has-text("Validators")');
       await validatorsLink.click();
 
       // Verify navigation occurred
@@ -232,7 +232,7 @@ test.describe('Navigation Bar - Visual Regression', () => {
       });
 
       // Click dark mode toggle
-      const themeToggle = page.locator('#theme-toggle');
+      const themeToggle = page.locator('[data-testid="theme-toggle"] input');
       await themeToggle.click();
 
       // Wait for theme to change
@@ -253,7 +253,7 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Toggle to dark mode
-      const themeToggle = page.locator('#theme-toggle');
+      const themeToggle = page.locator('[data-testid="theme-toggle"] input');
       await themeToggle.click();
       await page.waitForTimeout(100);
 
@@ -280,9 +280,9 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Open mobile menu
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Toggle dark mode from mobile menu
       const mobileToggle = page.locator('.theme-controller-mobile');
@@ -320,12 +320,12 @@ test.describe('Navigation Bar - Visual Regression', () => {
       });
 
       // Click profile avatar button
-      const profileButton = page.locator('button[aria-label="User menu"]');
+      const profileButton = page.locator('button[data-testid="profile-button"]');
       await expect(profileButton).toBeVisible();
       await profileButton.click();
 
       // Wait for dropdown
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="profile-dropdown-menu"]', { state: 'visible' });
 
       // Screenshot: Profile dropdown open
       await expect(page).toHaveScreenshot('desktop-profile-open.png', {
@@ -334,17 +334,17 @@ test.describe('Navigation Bar - Visual Regression', () => {
       });
 
       // Verify dropdown items
-      await expect(page.locator('.dropdown-content a:has-text("Profile")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Settings")')).toBeVisible();
-      await expect(page.locator('.dropdown-content a:has-text("Logout")')).toBeVisible();
-      await expect(page.locator('.dropdown-content .badge:has-text("New")')).toBeVisible();
+      await expect(page.locator('[data-testid="profile-dropdown-menu"] a:has-text("Profile")')).toBeVisible();
+      await expect(page.locator('[data-testid="profile-dropdown-menu"] a:has-text("Settings")')).toBeVisible();
+      await expect(page.locator('[data-testid="profile-dropdown-menu"] a:has-text("Logout")')).toBeVisible();
+      await expect(page.locator('[data-testid="profile-dropdown-menu"] .badge:has-text("New")')).toBeVisible();
     });
 
     test('should have proper ARIA labels on profile button', async ({ page }) => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      const profileButton = page.locator('button[aria-label="User menu"]');
+      const profileButton = page.locator('button[data-testid="profile-button"]');
       await expect(profileButton).toHaveAttribute('aria-label', 'User menu');
       await expect(profileButton).toHaveAttribute('aria-haspopup', 'true');
       await expect(profileButton).toHaveAttribute('tabindex', '0');
@@ -355,15 +355,15 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Open dropdown
-      const profileButton = page.locator('button[aria-label="User menu"]');
+      const profileButton = page.locator('button[data-testid="profile-button"]');
       await profileButton.click();
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="profile-dropdown-menu"]', { state: 'visible' });
 
       // Click outside
       await page.locator('main').click();
 
       // Wait for dropdown to close
-      await page.waitForSelector('.dropdown-content', { state: 'hidden' });
+      await page.waitForSelector('[data-testid="profile-dropdown-menu"]', { state: 'hidden' });
 
       // Screenshot: Dropdown closed
       await expect(page.locator('nav.navbar')).toHaveScreenshot('desktop-profile-closed-after-outside-click.png', {
@@ -378,7 +378,7 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
 
       // Verify ARIA attributes
       await expect(hamburger).toHaveAttribute('aria-label', 'Open menu');
@@ -392,7 +392,7 @@ test.describe('Navigation Bar - Visual Regression', () => {
       await page.waitForLoadState('networkidle');
 
       // Measure hamburger button size
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       const box = await hamburger.boundingBox();
 
       // Verify >= 44px (WCAG 2.1 AA minimum touch target)
@@ -443,9 +443,9 @@ test.describe('Navigation Bar - Visual Regression', () => {
       const navbarBefore = await page.locator('nav.navbar').boundingBox();
 
       // Open menu
-      const hamburger = page.locator('button[aria-label="Open menu"]');
+      const hamburger = page.locator('button[data-testid="hamburger-button"]');
       await hamburger.click();
-      await page.waitForSelector('.dropdown-content', { state: 'visible' });
+      await page.waitForSelector('[data-testid="mobile-menu-dropdown-content"]', { state: 'visible' });
 
       // Capture navbar position after opening menu
       const navbarAfter = await page.locator('nav.navbar').boundingBox();
