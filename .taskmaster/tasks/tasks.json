@@ -1572,7 +1572,7 @@
               4
             ],
             "details": "Capture screenshots for all key components (metadata, charts, alert history, timeline) across multiple viewports (375px, 768px, 1440px, 1920px). Test Chart.js rendering, SSE updates for layout shifts, export functionality, and accessibility features.\n<info added on 2025-10-22T10:49:11.932Z>\nVisual regression testing is blocked. The page is returning an HTTP 500 error: \"column 'time' does not exist (SQLSTATE 42703)\". This is caused by a database schema mismatch or an incorrect query in `validator_detail_repository.go` when querying the `attestation_stats` table. Testing cannot proceed until this backend issue is resolved.\n</info added on 2025-10-22T10:49:11.932Z>\n<info added on 2025-10-22T10:53:08.452Z>\n```json\n\"COMPREHENSIVE BLOCKER ANALYSIS: The root cause of the HTTP 500 error is a database schema mismatch originating from the .env configuration. The server is connecting to `DB_NAME=validator_monitor`, a pre-existing database with an incorrect schema that is missing the `time` column. A separate database, `eth_validator_monitor`, has been created with the correct schema. \\n\\nRECOMMENDED SOLUTION: The fastest and safest fix is to update the .env file to change the database connection from `DB_NAME=validator_monitor` to `DB_NAME=eth_validator_monitor` and restart the server.\\n\\nNEXT ACTIONS:\\n1. Update the .env file to set `DB_NAME=eth_validator_monitor`.\\n2. Restart the server and verify the page loads at http://localhost:8080/validators/1.\\n3. Complete the planned visual regression testing, including Chart.js screenshots, SSE updates, export functionality, and accessibility checks.\"\n```\n</info added on 2025-10-22T10:53:08.452Z>",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "Execute the full Playwright MCP test suite defined in the main task's test strategy. Run tests against a local server instance. Review failed tests and update baselines if changes are intentional."
           }
         ]
@@ -1774,7 +1774,7 @@
       ],
       "created": "2025-10-22T03:25:03.944Z",
       "description": "Tasks for master context",
-      "updated": "2025-10-22T10:53:35.810Z"
+      "updated": "2025-10-22T10:56:40.631Z"
     }
   }
 }
