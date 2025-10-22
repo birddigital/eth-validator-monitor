@@ -17,6 +17,8 @@ templ Base(title string, content templ.Component) {
 			<link rel="stylesheet" href="/static/css/output.css"/>
 			<!-- HTMX for dynamic updates -->
 			<script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+			<!-- HTMX SSE Extension -->
+			<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/sse.js" defer></script>
 			<!-- Chart.js for data visualization -->
 			<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 		</head>
@@ -54,6 +56,7 @@ templ Nav() {
 				<ul class="menu menu-horizontal px-1 gap-2">
 					<li><a href="/" class="nav-link">Home</a></li>
 					<li><a href="/validators" class="nav-link">Validators</a></li>
+					<li><a href="/alerts" class="nav-link">Alerts</a></li>
 					<li><a href="/metrics" class="nav-link">Metrics</a></li>
 					<li><a href="/graphql" class="nav-link">GraphQL</a></li>
 				</ul>
@@ -61,6 +64,22 @@ templ Nav() {
 
 			<!-- Desktop: Dark mode toggle + User profile dropdown (hidden on mobile) -->
 			<div class="navbar-end hidden lg:flex gap-2">
+				<!-- Alert Badge -->
+				<a
+					href="/alerts"
+					class="btn btn-ghost btn-circle min-h-[44px] min-w-[44px] indicator"
+					hx-ext="sse"
+					sse-connect="/api/sse"
+					sse-swap="new-alert"
+					hx-swap="none"
+					hx-on:sse-new-alert="htmx.ajax('GET', '/alerts/count', {target: '#alert-count-badge'})"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+					</svg>
+					<span id="alert-count-badge" class="indicator-item badge badge-sm badge-error" hx-get="/alerts/count" hx-trigger="load"></span>
+				</a>
+
 				<!-- Dark Mode Toggle -->
 				<label class="swap swap-rotate btn btn-ghost btn-square min-h-[44px] min-w-[44px]" data-testid="theme-toggle">
 					<!-- Hidden checkbox for toggle state -->
@@ -142,6 +161,7 @@ templ Nav() {
 					>
 						<li><a href="/" class="nav-link">Home</a></li>
 						<li><a href="/validators" class="nav-link">Validators</a></li>
+						<li><a href="/alerts" class="nav-link">Alerts</a></li>
 						<li><a href="/metrics" class="nav-link">Metrics</a></li>
 						<li><a href="/graphql" class="nav-link">GraphQL</a></li>
 						<li class="mt-2 pt-2 border-t border-base-300">

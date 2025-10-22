@@ -55,6 +55,7 @@ type Alert struct {
 	Severity       Severity   `db:"severity"`
 	Title          string     `db:"title"`
 	Message        string     `db:"message"`
+	Source         string     `db:"source"` // Source of the alert (e.g., "validator_collector", "manual", "external_api")
 	Details        JSONB      `db:"details"`
 	Status         AlertStatus `db:"status"`
 	AcknowledgedAt *time.Time `db:"acknowledged_at"`
@@ -158,10 +159,16 @@ const (
 type AlertStatus string
 
 const (
+	// Legacy statuses (for backward compatibility)
 	AlertStatusActive       AlertStatus = "active"
 	AlertStatusAcknowledged AlertStatus = "acknowledged"
 	AlertStatusResolved     AlertStatus = "resolved"
 	AlertStatusIgnored      AlertStatus = "ignored"
+
+	// New statuses for alerts management page
+	AlertStatusNew       AlertStatus = "new"       // Newly created, unread alert
+	AlertStatusRead      AlertStatus = "read"      // Alert has been read by user
+	AlertStatusDismissed AlertStatus = "dismissed" // Alert dismissed by user
 )
 
 // IntervalType represents aggregation interval types

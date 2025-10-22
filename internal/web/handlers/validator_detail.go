@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/birddigital/eth-validator-monitor/internal/database/repository"
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
 	"github.com/birddigital/eth-validator-monitor/internal/web/templates/pages"
 )
 
@@ -137,7 +138,9 @@ func (h *ValidatorDetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 // renderFull renders the complete validator detail page
 func (h *ValidatorDetailHandler) renderFull(w http.ResponseWriter, r *http.Request, data ValidatorPageData) {
-	component := pages.ValidatorDetailPage(data.Validator, data.EffectivenessData, data.AttestationStats, data.Alerts, data.Timeline)
+	pageContent := pages.ValidatorDetailPage(data.Validator, data.EffectivenessData, data.AttestationStats, data.Alerts, data.Timeline)
+	title := fmt.Sprintf("Validator %d", data.Validator.Index)
+	component := layouts.Base(title, pageContent)
 	if err := component.Render(r.Context(), w); err != nil {
 		h.logger.Error().Err(err).Msg("Failed to render validator detail page")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

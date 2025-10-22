@@ -1,0 +1,274 @@
+package pages
+
+import (
+	"github.com/birddigital/eth-validator-monitor/internal/database/models"
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/components"
+	"github.com/birddigital/eth-validator-monitor/internal/web/templates/layouts"
+)
+
+type AlertsPageData struct {
+	Alerts []*models.Alert
+	Filter models.AlertFilter
+}
+
+templ AlertsPageWithLayout(data AlertsPageData) {
+	@layouts.Base("Alerts - Ethereum Validator Monitor", AlertsPage(data))
+}
+
+templ AlertsPage(data AlertsPageData) {
+	<div class="container mx-auto px-4 py-8">
+		<!-- Page Header -->
+		<div class="mb-8">
+			<h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Alerts</h1>
+			<p class="text-gray-600 dark:text-gray-400">Monitor and manage validator alerts</p>
+		</div>
+
+		<!-- Filters Section -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				<!-- Severity Filter -->
+				<div>
+					<label for="severity-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+						Severity
+					</label>
+					<select
+						id="severity-filter"
+						name="severity"
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+						hx-get="/alerts"
+						hx-target="#alerts-table-container"
+						hx-trigger="change"
+						hx-include="[name='status'],[name='type'],[name='validator']"
+						hx-push-url="true"
+					>
+						<option value="">All Severities</option>
+						<option value="critical" selected?={ data.Filter.Severity != nil && *data.Filter.Severity == models.SeverityCritical }>Critical</option>
+						<option value="warning" selected?={ data.Filter.Severity != nil && *data.Filter.Severity == models.SeverityWarning }>Warning</option>
+						<option value="info" selected?={ data.Filter.Severity != nil && *data.Filter.Severity == models.SeverityInfo }>Info</option>
+					</select>
+				</div>
+
+				<!-- Status Filter -->
+				<div>
+					<label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+						Status
+					</label>
+					<select
+						id="status-filter"
+						name="status"
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+						hx-get="/alerts"
+						hx-target="#alerts-table-container"
+						hx-trigger="change"
+						hx-include="[name='severity'],[name='type'],[name='validator']"
+						hx-push-url="true"
+					>
+						<option value="">All Statuses</option>
+						<option value="active" selected?={ data.Filter.Status != nil && *data.Filter.Status == models.AlertStatusActive }>Active</option>
+						<option value="acknowledged" selected?={ data.Filter.Status != nil && *data.Filter.Status == models.AlertStatusAcknowledged }>Acknowledged</option>
+						<option value="resolved" selected?={ data.Filter.Status != nil && *data.Filter.Status == models.AlertStatusResolved }>Resolved</option>
+						<option value="ignored" selected?={ data.Filter.Status != nil && *data.Filter.Status == models.AlertStatusIgnored }>Ignored</option>
+					</select>
+				</div>
+
+				<!-- Type Filter -->
+				<div>
+					<label for="type-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+						Alert Type
+					</label>
+					<select
+						id="type-filter"
+						name="type"
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+						hx-get="/alerts"
+						hx-target="#alerts-table-container"
+						hx-trigger="change"
+						hx-include="[name='severity'],[name='status'],[name='validator']"
+						hx-push-url="true"
+					>
+						<option value="">All Types</option>
+						<option value="offline">Offline</option>
+						<option value="slashed">Slashed</option>
+						<option value="performance_degraded">Performance Degraded</option>
+						<option value="missed_attestation">Missed Attestation</option>
+						<option value="missed_proposal">Missed Proposal</option>
+						<option value="balance_decreased">Balance Decreased</option>
+						<option value="low_peer_count">Low Peer Count</option>
+						<option value="validator_activated">Validator Activated</option>
+						<option value="rewards_milestone">Rewards Milestone</option>
+					</select>
+				</div>
+
+				<!-- Validator Filter -->
+				<div>
+					<label for="validator-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+						Validator Index
+					</label>
+					<input
+						type="number"
+						id="validator-filter"
+						name="validator"
+						placeholder="Filter by validator..."
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+						hx-get="/alerts"
+						hx-target="#alerts-table-container"
+						hx-trigger="keyup changed delay:300ms"
+						hx-include="[name='severity'],[name='status'],[name='type']"
+						hx-push-url="true"
+					/>
+				</div>
+			</div>
+
+			<!-- Batch Actions Bar -->
+			<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center space-x-4">
+						<label class="flex items-center">
+							<input
+								type="checkbox"
+								id="select-all"
+								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+								onclick="toggleSelectAll(this)"
+							/>
+							<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Select All</span>
+						</label>
+						<span id="selected-count" class="text-sm text-gray-600 dark:text-gray-400">0 selected</span>
+					</div>
+
+					<div class="flex items-center space-x-2">
+						<button
+							id="batch-mark-read"
+							type="button"
+							class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+							disabled
+							onclick="performBatchAction('mark_read')"
+						>
+							Mark as Read
+						</button>
+						<button
+							id="batch-dismiss"
+							type="button"
+							class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+							disabled
+							onclick="performBatchAction('dismiss')"
+						>
+							Dismiss
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Alerts Table Container -->
+		<div id="alerts-table-container">
+			@components.AlertsTable(data.Alerts, data.Filter, len(data.Alerts) == data.Filter.Limit)
+		</div>
+
+		<!-- Toast Container for Real-time Alerts -->
+		<div
+			id="alert-toast-container"
+			class="fixed top-4 right-4 z-50 space-y-2"
+			hx-ext="sse"
+			sse-connect="/api/sse"
+			sse-swap="new-alert"
+			hx-swap="afterbegin"
+		></div>
+	</div>
+
+	<!-- Batch Operations Script -->
+	<script>
+		function toggleSelectAll(checkbox) {
+			const checkboxes = document.querySelectorAll('.alert-checkbox');
+			checkboxes.forEach(cb => cb.checked = checkbox.checked);
+			updateBatchButtons();
+		}
+
+		function updateBatchButtons() {
+			const checkboxes = document.querySelectorAll('.alert-checkbox:checked');
+			const count = checkboxes.length;
+
+			document.getElementById('selected-count').textContent = `${count} selected`;
+
+			const markReadBtn = document.getElementById('batch-mark-read');
+			const dismissBtn = document.getElementById('batch-dismiss');
+
+			if (count > 0) {
+				markReadBtn.disabled = false;
+				dismissBtn.disabled = false;
+			} else {
+				markReadBtn.disabled = true;
+				dismissBtn.disabled = true;
+			}
+		}
+
+		function performBatchAction(action) {
+			const checkboxes = document.querySelectorAll('.alert-checkbox:checked');
+			const alertIds = Array.from(checkboxes).map(cb => cb.value);
+
+			if (alertIds.length === 0) {
+				return;
+			}
+
+			const formData = new FormData();
+			formData.append('action', action);
+			alertIds.forEach(id => formData.append('alert_ids[]', id));
+
+			fetch('/alerts/batch', {
+				method: 'POST',
+				body: formData
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					// Refresh the alerts table
+					htmx.ajax('GET', '/alerts', {target: '#alerts-table-container'});
+
+					// Show success toast
+					showToast(`Successfully updated ${data.updated} alert(s)`, 'success');
+				}
+			})
+			.catch(error => {
+				showToast('Failed to update alerts', 'error');
+				console.error('Batch action error:', error);
+			});
+		}
+
+		function showToast(message, type) {
+			const toast = document.createElement('div');
+			toast.className = `alert-toast p-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+			toast.textContent = message;
+
+			const container = document.getElementById('alert-toast-container');
+			container.appendChild(toast);
+
+			setTimeout(() => {
+				toast.remove();
+			}, 5000);
+		}
+
+		// Listen for checkbox changes
+		document.addEventListener('change', function(e) {
+			if (e.target.classList.contains('alert-checkbox')) {
+				updateBatchButtons();
+			}
+		});
+	</script>
+
+	<!-- Toast Animation Styles -->
+	<style>
+		.alert-toast {
+			animation: slideIn 0.3s ease-out;
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(100%);
+				opacity: 0;
+			}
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
+	</style>
+}

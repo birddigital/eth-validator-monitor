@@ -54,13 +54,13 @@ templ ValidatorDetailPage(validator *repository.ValidatorDetails, effectiveness 
 		<div class="flex gap-4">
 			<a
 				href={ templ.SafeURL(fmt.Sprintf("/api/validators/%d/export?format=csv", validator.Index)) }
-				class="btn btn-secondary"
+				class="btn btn-secondary btn-export"
 				download>
 				Export CSV
 			</a>
 			<a
 				href={ templ.SafeURL(fmt.Sprintf("/api/validators/%d/export?format=json", validator.Index)) }
-				class="btn btn-secondary"
+				class="btn btn-secondary btn-export"
 				download>
 				Export JSON
 			</a>

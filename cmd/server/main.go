@@ -105,6 +105,7 @@ func main() {
 	dashboardRepo := repository.NewDashboardRepository(pool)
 	validatorListRepo := repository.NewValidatorListRepository(pool)
 	validatorDetailRepo := repository.NewValidatorDetailRepository(pool)
+	alertRepo := repository.NewAlertRepository(pool)
 
 	// Initialize JWT service (optional - only if secret key is configured)
 	var jwtService *auth.JWTService
@@ -195,6 +196,9 @@ func main() {
 	// Initialize validator detail handler
 	validatorDetailHandler := handlers.NewValidatorDetailHandler(validatorDetailRepo, logger.Logger)
 
+	// Initialize alerts handler
+	alertsHandler := handlers.NewAlertsHandler(alertRepo, logger.Logger)
+
 	// Initialize SSE handler
 	sseHandler := handlers.NewSSEHandler(ctx)
 
@@ -258,7 +262,7 @@ func main() {
 	}()
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -300,6 +304,7 @@ func registerRoutes(
 	sseHandler *handlers.SSEHandler,
 	validatorListHandler *handlers.ValidatorListHandler,
 	validatorDetailHandler *handlers.ValidatorDetailHandler,
+	alertsHandler *handlers.AlertsHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -370,6 +375,21 @@ func registerRoutes(
 	r.Get("/validators/list", validatorListHandler.ServeHTTP)
 	logger.Info().Str("route", "/validators/list").
 		Msg("Validator list HTMX partial route registered")
+
+	// Alerts page route
+	r.Get("/alerts", alertsHandler.ServeHTTP)
+	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/alerts", cfg.Server.HTTPPort)).
+		Msg("Alerts page route registered")
+
+	// Alerts batch action route
+	r.Post("/alerts/batch", alertsHandler.HandleBatchAction)
+	logger.Info().Str("route", "POST /alerts/batch").
+		Msg("Alerts batch action route registered")
+
+	// Alerts count route for badge
+	r.Get("/alerts/count", alertsHandler.HandleAlertCount)
+	logger.Info().Str("route", "/alerts/count").
+		Msg("Alerts count route registered")
 
 	// Validator detail page routes
 	r.Route("/validators/{index}", func(r chi.Router) {

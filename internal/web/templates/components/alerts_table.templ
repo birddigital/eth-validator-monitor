@@ -1,0 +1,342 @@
+package components
+
+import (
+	"fmt"
+	"time"
+	"github.com/birddigital/eth-validator-monitor/internal/database/models"
+)
+
+templ AlertsTable(alerts []*models.Alert, filter models.AlertFilter, hasMore bool) {
+	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+		if len(alerts) == 0 {
+			@AlertsEmptyState()
+		} else {
+			<!-- Desktop Table View -->
+			<div class="hidden md:block overflow-x-auto">
+				<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+					<thead class="bg-gray-50 dark:bg-gray-900">
+						<tr>
+							<th scope="col" class="w-12 px-6 py-3">
+								<!-- Checkbox column -->
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Severity
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Alert
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Validator
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Status
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Time
+							</th>
+						</tr>
+					</thead>
+					<tbody id="alerts-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+						@AlertsTableRows(alerts, filter, hasMore)
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Mobile Card View -->
+			<div class="md:hidden">
+				<div id="alerts-table-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+					@AlertsMobileCards(alerts, filter, hasMore)
+				</div>
+			</div>
+		}
+	</div>
+}
+
+templ AlertsTableRows(alerts []*models.Alert, filter models.AlertFilter, hasMore bool) {
+	for _, alert := range alerts {
+		<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+			<td class="px-6 py-4 whitespace-nowrap">
+				<input
+					type="checkbox"
+					value={ fmt.Sprintf("%d", alert.ID) }
+					class="alert-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+				/>
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap">
+				@SeverityBadge(string(alert.Severity))
+			</td>
+			<td class="px-6 py-4">
+				<div class="flex items-start">
+					<div class="mr-3 flex-shrink-0">
+						@AlertIcon(string(alert.Severity))
+					</div>
+					<div>
+						<div class="text-sm font-medium text-gray-900 dark:text-white">
+							{ alert.Title }
+						</div>
+						<div class="text-sm text-gray-500 dark:text-gray-400">
+							{ alert.Message }
+						</div>
+						<div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+							Type: { alert.AlertType }
+						</div>
+					</div>
+				</div>
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap">
+				if alert.ValidatorIndex != nil {
+					<a
+						href={ templ.URL(fmt.Sprintf("/validators/%d", *alert.ValidatorIndex)) }
+						class="text-blue-600 dark:text-blue-400 hover:underline"
+					>
+						#{ fmt.Sprintf("%d", *alert.ValidatorIndex) }
+					</a>
+				} else {
+					<span class="text-gray-500 dark:text-gray-400 text-sm">System</span>
+				}
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap">
+				@AlertStatusBadge(alert.Status)
+			</td>
+			<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+				<time datetime={ alert.CreatedAt.Format(time.RFC3339) }>
+					{ timeAgo(alert.CreatedAt) }
+				</time>
+			</td>
+		</tr>
+	}
+	if hasMore {
+		@AlertsInfiniteScrollTrigger(filter)
+	}
+}
+
+templ AlertsTableRowsWithTrigger(alerts []*models.Alert, filter models.AlertFilter, hasMore bool) {
+	@AlertsTableRows(alerts, filter, hasMore)
+}
+
+templ AlertsMobileCards(alerts []*models.Alert, filter models.AlertFilter, hasMore bool) {
+	for _, alert := range alerts {
+		<div class="p-4 bg-white dark:bg-gray-800">
+			<div class="flex items-start justify-between mb-2">
+				<div class="flex items-center space-x-2">
+					<input
+						type="checkbox"
+						value={ fmt.Sprintf("%d", alert.ID) }
+						class="alert-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+					/>
+					@SeverityBadge(string(alert.Severity))
+				</div>
+				@AlertStatusBadge(alert.Status)
+			</div>
+
+			<div class="flex items-start mb-2">
+				<div class="mr-3 flex-shrink-0">
+					@AlertIcon(string(alert.Severity))
+				</div>
+				<div class="flex-1">
+					<div class="text-sm font-medium text-gray-900 dark:text-white mb-1">
+						{ alert.Title }
+					</div>
+					<div class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+						{ alert.Message }
+					</div>
+					<div class="text-xs text-gray-400 dark:text-gray-500">
+						Type: { alert.AlertType }
+					</div>
+				</div>
+			</div>
+
+			<div class="flex items-center justify-between text-sm">
+				<div>
+					if alert.ValidatorIndex != nil {
+						<a
+							href={ templ.URL(fmt.Sprintf("/validators/%d", *alert.ValidatorIndex)) }
+							class="text-blue-600 dark:text-blue-400 hover:underline"
+						>
+							Validator #{ fmt.Sprintf("%d", *alert.ValidatorIndex) }
+						</a>
+					} else {
+						<span class="text-gray-500 dark:text-gray-400">System Alert</span>
+					}
+				</div>
+				<time
+					datetime={ alert.CreatedAt.Format(time.RFC3339) }
+					class="text-gray-500 dark:text-gray-400"
+				>
+					{ timeAgo(alert.CreatedAt) }
+				</time>
+			</div>
+		</div>
+	}
+	if hasMore {
+		@AlertsInfiniteScrollTrigger(filter)
+	}
+}
+
+templ AlertsInfiniteScrollTrigger(filter models.AlertFilter) {
+	<tr
+		id="infinite-scroll-trigger"
+		hx-get={ fmt.Sprintf("/alerts?offset=%d&limit=%d&severity=%s&status=%s&type=%s&validator=%s",
+			filter.Offset + filter.Limit,
+			filter.Limit,
+			severityToString(filter.Severity),
+			statusToString(filter.Status),
+			typeToString(filter.AlertType),
+			validatorToString(filter.ValidatorIndex),
+		) }
+		hx-trigger="revealed"
+		hx-swap="afterend"
+		hx-target="this"
+	>
+		<td colspan="6" class="px-6 py-4">
+			<div class="flex justify-center">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+			</div>
+		</td>
+	</tr>
+}
+
+templ AlertsEmptyState() {
+	<div class="text-center py-12">
+		<svg
+			class="mx-auto h-12 w-12 text-gray-400"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			></path>
+		</svg>
+		<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No alerts</h3>
+		<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			No alerts match your current filters.
+		</p>
+	</div>
+}
+
+templ AlertStatusBadge(status models.AlertStatus) {
+	<span
+		class={
+			"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+			alertStatusBadgeClass(status),
+		}
+	>
+		{ string(status) }
+	</span>
+}
+
+templ AlertBadge(count int) {
+	if count > 0 {
+		<span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+			if count > 99 {
+				99+
+			} else {
+				{ fmt.Sprintf("%d", count) }
+			}
+		</span>
+	}
+}
+
+templ AlertToast(alert models.Alert) {
+	<div
+		class={
+			"p-4 rounded-lg shadow-lg border-l-4 max-w-md",
+			toastClass(alert.Severity),
+		}
+	>
+		<div class="flex items-start">
+			<div class="flex-shrink-0">
+				@AlertIcon(string(alert.Severity))
+			</div>
+			<div class="ml-3 flex-1">
+				<p class="text-sm font-medium text-gray-900 dark:text-white">
+					{ alert.Title }
+				</p>
+				<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+					{ alert.Message }
+				</p>
+				if alert.ValidatorIndex != nil {
+					<p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+						Validator #{ fmt.Sprintf("%d", *alert.ValidatorIndex) }
+					</p>
+				}
+			</div>
+			<button
+				type="button"
+				class="ml-3 inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+				onclick="this.parentElement.parentElement.remove()"
+			>
+				<span class="sr-only">Close</span>
+				<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+					<path
+						fill-rule="evenodd"
+						d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+						clip-rule="evenodd"
+					></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+}
+
+// Helper functions
+
+func alertStatusBadgeClass(status models.AlertStatus) string {
+	switch status {
+	case models.AlertStatusActive:
+		return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+	case models.AlertStatusAcknowledged:
+		return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+	case models.AlertStatusResolved:
+		return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+	case models.AlertStatusIgnored:
+		return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+	default:
+		return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+	}
+}
+
+func toastClass(severity models.Severity) string {
+	switch severity {
+	case models.SeverityCritical:
+		return "bg-red-50 dark:bg-red-900 border-red-500"
+	case models.SeverityWarning:
+		return "bg-yellow-50 dark:bg-yellow-900 border-yellow-500"
+	case models.SeverityInfo:
+		return "bg-blue-50 dark:bg-blue-900 border-blue-500"
+	default:
+		return "bg-gray-50 dark:bg-gray-900 border-gray-500"
+	}
+}
+
+func severityToString(severity *models.Severity) string {
+	if severity == nil {
+		return ""
+	}
+	return string(*severity)
+}
+
+func statusToString(status *models.AlertStatus) string {
+	if status == nil {
+		return ""
+	}
+	return string(*status)
+}
+
+func typeToString(alertType *string) string {
+	if alertType == nil {
+		return ""
+	}
+	return *alertType
+}
+
+func validatorToString(validatorIndex *int64) string {
+	if validatorIndex == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *validatorIndex)
+}

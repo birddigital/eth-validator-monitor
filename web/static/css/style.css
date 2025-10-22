@@ -486,3 +486,14 @@ body {
     opacity: 0.7;
   }
 }
+
+/* ============================================
+   ACCESSIBILITY - EXPORT BUTTONS
+   ============================================ */
+.btn-export {
+  padding: 0.75rem 1.5rem !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
