@@ -1,0 +1,302 @@
+================================================================================
+SETTINGS PAGE - ABSOLUTE FILE PATHS REFERENCE
+Task 27.1 - Ethereum Validator Monitor
+================================================================================
+
+PROJECT ROOT:
+/Users/bird/sources/standalone-projects/eth-validator-monitor
+
+================================================================================
+HANDLER FILES (New - Created in Task 27.1)
+================================================================================
+
+MAIN SETTINGS PAGE HANDLER:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/handlers/settings.go
+- Size: 51 lines
+- Type: Go HTTP Handler
+- Handler: SettingsHandler
+- Routes: GET /settings
+- Status: Complete
+
+SETTINGS CONTENT HANDLER (HTMX):
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/handlers/settings_content.go
+- Size: 60 lines
+- Type: Go HTTP Handler
+- Handler: SettingsContentHandler
+- Routes: GET /api/settings/content
+- Status: Complete
+
+================================================================================
+TEMPLATE FILES - SOURCE (Human-Readable)
+================================================================================
+
+MAIN PAGE TEMPLATE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/templates/pages/settings.templ
+- Size: ~200 lines
+- Type: Templ markup language
+- Components: SettingsPage(), SettingsPageWithLayout()
+- Data: SettingsPageData struct
+- Status: Complete
+- Regenerate: templ generate ./...
+
+TAB COMPONENTS TEMPLATE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/templates/components/settings_tabs.templ
+- Size: ~180 lines
+- Type: Templ markup language
+- Components: 7 tab functions (Profile, Notifications, APIKeys, UIPreferences, 2FA, Sessions, Account)
+- Status: Placeholder alerts only
+- Regenerate: templ generate ./...
+
+================================================================================
+TEMPLATE FILES - GENERATED (Auto-Generated, DO NOT EDIT)
+================================================================================
+
+COMPILED MAIN PAGE TEMPLATE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/templates/pages/settings_templ.go
+- Auto-generated from: settings.templ
+- Size: 300+ lines
+- Type: Go code (templ runtime)
+- Edit Source Instead: settings.templ
+- Regenerate: templ generate ./...
+
+COMPILED TAB COMPONENTS TEMPLATE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/templates/components/settings_tabs_templ.go
+- Auto-generated from: settings_tabs.templ
+- Size: 400+ lines
+- Type: Go code (templ runtime)
+- Edit Source Instead: settings_tabs.templ
+- Regenerate: templ generate ./...
+
+================================================================================
+ROUTING CONFIGURATION (Modified)
+================================================================================
+
+SERVER MAIN WITH SETTINGS ROUTES:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/cmd/server/main.go
+- Changes: ~20 lines added around line 500-530
+- Function: registerRoutes()
+- Added Code:
+  - settingsHandler := handlers.NewSettingsHandler()
+  - settingsContentHandler := handlers.NewSettingsContentHandler()
+  - Route registration with auth middleware
+- Status: Modified (routes registered)
+
+================================================================================
+AUTHENTICATION & SESSION (Pre-Existing, Referenced)
+================================================================================
+
+SESSION STORE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/auth/session.go
+- Type: Go session management
+- Class: SessionStore
+- Storage: Redis-backed with Gorilla Sessions
+- Cookie: eth-validator-session
+- Methods: Get, Save, SetUserSession, GetUserID, GetUsername, Destroy
+- Status: Pre-existing (used by settings)
+
+SESSION MIDDLEWARE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/auth/middleware_session.go
+- Type: Go middleware
+- Functions: SessionMiddleware(), RequireSessionAuth()
+- Context Keys: SessionUserIDKey, SessionUsernameKey
+- Status: Pre-existing (applied to settings routes)
+
+AUTH SERVICE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/auth/service.go
+- Type: Go business logic
+- Class: Service
+- Methods: Register, Login, LoginByEmail, GetUserByID, ChangePassword
+- Status: Pre-existing (referenced in settings context)
+
+PASSWORD UTILITIES:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/auth/password.go
+- Type: Go utilities
+- Functions: HashPassword(), VerifyPassword()
+- Status: Pre-existing (for future password changes)
+
+VALIDATION UTILITIES:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/auth/validator.go
+- Type: Go validation
+- Class: Validator
+- Status: Pre-existing (for future settings validation)
+
+================================================================================
+USER MODEL & DATABASE (Pre-Existing, Referenced)
+================================================================================
+
+USER REPOSITORY:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/storage/user_repository.go
+- Type: Go data access layer
+- Class: UserRepository
+- User Struct: id, username, email, password_hash, roles, is_active, created_at, updated_at, last_login
+- Methods: CreateUser, GetUserByUsername, GetUserByEmail, GetUserByID, UpdateLastLogin, UpdateUserRoles, DeactivateUser, ListUsers, CountUsers
+- Missing: UpdateProfile, UpdatePassword
+- Status: Pre-existing (provides user data)
+
+VALIDATOR MODEL (for blockchain data):
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/database/models/validator.go
+- Type: Go models
+- Note: This is for Ethereum validators, not users
+- Status: Pre-existing (not used for settings)
+
+DATABASE MIGRATIONS:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/database/migrate.go
+- Type: Go migration runner
+- Uses: golang-migrate library
+- Migrations Location: internal/database/migrations/
+- Table: users (created by migration)
+- Status: Pre-existing (includes users table)
+
+================================================================================
+ROUTER & FRAMEWORK
+================================================================================
+
+CHI ROUTER SETUP:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/server/router.go
+- Type: Go router setup
+- Framework: Chi (lightweight HTTP router)
+- Status: Pre-existing (provides router to registerRoutes)
+
+BASE LAYOUT TEMPLATE:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/web/templates/layouts/base.templ
+- Type: Templ markup
+- Used By: SettingsPageWithLayout()
+- Status: Pre-existing (wraps page with header/footer/nav)
+
+================================================================================
+RELATED CONFIG & INFRASTRUCTURE
+================================================================================
+
+REDIS CONFIGURATION:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/config/config.go
+- Type: Go configuration
+- Provides: Redis connection settings
+- Used By: SessionStore initialization
+- Status: Pre-existing
+
+DATABASE CONFIGURATION:
+/Users/bird/sources/standalone-projects/eth-validator-monitor/internal/database/config.go
+- Type: Go configuration
+- Provides: PostgreSQL connection settings
+- Used By: Pool creation for users table
+- Status: Pre-existing
+
+================================================================================
+DIRECTORY STRUCTURE
+================================================================================
+
+internal/
+├── auth/
+│   ├── jwt.go
+│   ├── password.go
+│   ├── middleware_session.go  [Referenced by settings]
+│   ├── service.go              [Referenced by settings]
+│   └── session.go              [Referenced by settings]
+│
+├── web/
+│   ├── handlers/
+│   │   ├── settings.go         [NEW - Task 27.1]
+│   │   ├── settings_content.go [NEW - Task 27.1]
+│   │   ├── dashboard.go
+│   │   ├── alerts.go
+│   │   └── ... (other handlers)
+│   │
+│   └── templates/
+│       ├── pages/
+│       │   ├── settings.templ      [NEW - Task 27.1]
+│       │   ├── settings_templ.go   [AUTO - DO NOT EDIT]
+│       │   ├── dashboard.templ
+│       │   └── ... (other pages)
+│       │
+│       ├── components/
+│       │   ├── settings_tabs.templ       [NEW - Task 27.1]
+│       │   ├── settings_tabs_templ.go    [AUTO - DO NOT EDIT]
+│       │   ├── alert_list.templ
+│       │   └── ... (other components)
+│       │
+│       └── layouts/
+│           └── base.templ         [Pre-existing - wraps settings]
+│
+├── storage/
+│   └── user_repository.go      [Pre-existing - user data]
+│
+├── database/
+│   ├── models/
+│   │   └── validator.go        [Pre-existing - blockchain data]
+│   ├── config.go               [Pre-existing]
+│   ├── migrate.go              [Pre-existing]
+│   └── migrations/             [Pre-existing - includes users table]
+│
+└── ... (other packages)
+
+cmd/
+└── server/
+    └── main.go                 [MODIFIED - added settings route registration]
+
+================================================================================
+KEY TAKEAWAYS
+================================================================================
+
+FILES TO EDIT FOR SETTINGS FEATURES:
+1. internal/web/handlers/settings.go - Add POST handlers for settings updates
+2. internal/web/handlers/settings_content.go - Add new tab cases as needed
+3. internal/web/templates/pages/settings.templ - Add new tabs to navigation
+4. internal/web/templates/components/settings_tabs.templ - Implement real forms
+5. internal/storage/user_repository.go - Add UpdateProfile, UpdatePassword, etc.
+
+FILES TO REGENERATE AFTER EDITING TEMPLATES:
+Command: cd /Users/bird/sources/standalone-projects/eth-validator-monitor && templ generate ./...
+Files affected:
+- internal/web/templates/pages/settings_templ.go
+- internal/web/templates/components/settings_tabs_templ.go
+
+FILES NEVER TO EDIT:
+- settings_templ.go (auto-generated)
+- settings_tabs_templ.go (auto-generated)
+- Any file with comment: "// Code generated by templ - DO NOT EDIT."
+
+ROUTES PROVIDED BY SETTINGS:
+- GET /settings (full page with layout)
+- GET /api/settings/content?tab=X (HTMX fragment)
+
+PROTECTED BY:
+- SessionMiddleware
+- RequireSessionAuth
+
+CONTEXT KEYS AVAILABLE:
+- auth.SessionUserIDKey (uuid.UUID)
+- auth.SessionUsernameKey (string)
+
+DATABASE TABLE:
+- users (PostgreSQL)
+  - Used for user authentication and settings
+
+================================================================================
+QUICK COMMANDS
+================================================================================
+
+Run server:
+cd /Users/bird/sources/standalone-projects/eth-validator-monitor
+go run cmd/server/main.go
+
+Regenerate templates:
+cd /Users/bird/sources/standalone-projects/eth-validator-monitor
+templ generate ./...
+
+Run tests:
+go test ./...
+
+Navigate to settings page (after login):
+http://localhost:8080/settings
+
+Navigate to specific tab:
+http://localhost:8080/settings?tab=notifications
+http://localhost:8080/settings?tab=api-keys
+http://localhost:8080/settings?tab=2fa
+http://localhost:8080/settings?tab=sessions
+http://localhost:8080/settings?tab=account
+http://localhost:8080/settings?tab=ui-preferences
+
+================================================================================
+END OF REFERENCE
+================================================================================

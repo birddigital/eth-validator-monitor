@@ -281,3 +281,48 @@ func (r *UserRepository) CountUsers(ctx context.Context) (int, error) {
 
 	return count, nil
 }
+
+// UpdateProfile updates a user's username and/or email
+func (r *UserRepository) UpdateProfile(ctx context.Context, userID uuid.UUID, username, email string) error {
+	query := `
+		UPDATE users
+		SET username = $1, email = $2, updated_at = NOW()
+		WHERE id = $3 AND is_active = true
+	`
+
+	result, err := r.pool.Exec(ctx, query, username, email, userID)
+	if err != nil {
+		// Check for unique constraint violation
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return ErrUserAlreadyExists
+		}
+		return fmt.Errorf("failed to update profile: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+}
+
+// UpdatePassword updates a user's password hash
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
+	query := `
+		UPDATE users
+		SET password_hash = $1, updated_at = NOW()
+		WHERE id = $2 AND is_active = true
+	`
+
+	result, err := r.pool.Exec(ctx, query, passwordHash, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+}

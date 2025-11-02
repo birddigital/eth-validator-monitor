@@ -149,6 +149,104 @@ func (h *AlertsHandler) HandleAlertCount(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// ServeJSON handles JSON API endpoint (for non-HTMX clients)
+func (h *AlertsHandler) ServeJSON(w http.ResponseWriter, r *http.Request) {
+	filter := h.parseFilterForAPI(r)
+
+	result, err := h.repo.ListAlertsWithPagination(r.Context(), filter)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Failed to fetch alerts for API")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to fetch alerts"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "private, max-age=30") // 30s cache
+	json.NewEncoder(w).Encode(result)
+}
+
+// parseFilterForAPI extracts filter parameters for JSON API with pagination metadata
+func (h *AlertsHandler) parseFilterForAPI(r *http.Request) repository.AlertListFilter {
+	query := r.URL.Query()
+	filter := repository.AlertListFilter{}
+
+	// Severity filter
+	if severity := query.Get("severity"); severity != "" {
+		sev := models.Severity(severity)
+		filter.Severity = &sev
+	}
+
+	// Status filter
+	if status := query.Get("status"); status != "" {
+		st := models.AlertStatus(status)
+		filter.Status = &st
+	}
+
+	// Alert type filter
+	if alertType := query.Get("type"); alertType != "" {
+		filter.AlertType = &alertType
+	}
+
+	// Validator index filter
+	if valIndexStr := query.Get("validator"); valIndexStr != "" {
+		if valIndex, err := strconv.ParseInt(valIndexStr, 10, 64); err == nil {
+			filter.ValidatorIndex = &valIndex
+		}
+	}
+
+	// Time range filter
+	if since := query.Get("since"); since != "" {
+		if duration, err := time.ParseDuration(since); err == nil {
+			sinceTime := time.Now().Add(-duration)
+			filter.StartTime = &sinceTime
+		}
+	}
+
+	if until := query.Get("until"); until != "" {
+		if untilTime, err := time.Parse(time.RFC3339, until); err == nil {
+			filter.EndTime = &untilTime
+		}
+	}
+
+	// Pagination
+	limit, _ := strconv.Atoi(query.Get("limit"))
+	if limit <= 0 || limit > 100 {
+		limit = 50 // Default to 50 as per task requirements
+	}
+	filter.Limit = limit
+
+	offset, _ := strconv.Atoi(query.Get("offset"))
+	if offset < 0 {
+		offset = 0
+	}
+	filter.Offset = offset
+
+	// Page number (for metadata)
+	page, _ := strconv.Atoi(query.Get("page"))
+	if page > 0 {
+		// Allow page-based pagination (convert to offset)
+		filter.Offset = (page - 1) * limit
+		filter.Page = page
+	} else {
+		filter.Page = (offset / limit) + 1
+	}
+
+	// Sorting
+	filter.SortBy = query.Get("sort")
+	if filter.SortBy == "" {
+		filter.SortBy = "created_at"
+	}
+
+	filter.SortOrder = query.Get("order")
+	if filter.SortOrder == "" {
+		filter.SortOrder = "desc"
+	}
+
+	return filter
+}
+
 // parseFilter extracts filter parameters from request
 func (h *AlertsHandler) parseFilter(r *http.Request) models.AlertFilter {
 	query := r.URL.Query()

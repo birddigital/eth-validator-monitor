@@ -202,6 +202,10 @@ func main() {
 	// Initialize SSE handler
 	sseHandler := handlers.NewSSEHandler(ctx)
 
+	// Initialize settings handlers
+	settingsHandler := handlers.NewSettingsHandler()
+	settingsContentHandler := handlers.NewSettingsContentHandler()
+
 	// Initialize beacon client (mock for development)
 	beaconClient := beacon.NewMockClient()
 	logger.Logger.Info().Msg("Mock beacon client initialized for development")
@@ -262,7 +266,7 @@ func main() {
 	}()
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, settingsHandler, settingsContentHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -305,6 +309,8 @@ func registerRoutes(
 	validatorListHandler *handlers.ValidatorListHandler,
 	validatorDetailHandler *handlers.ValidatorDetailHandler,
 	alertsHandler *handlers.AlertsHandler,
+	settingsHandler *handlers.SettingsHandler,
+	settingsContentHandler *handlers.SettingsContentHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -391,6 +397,11 @@ func registerRoutes(
 	logger.Info().Str("route", "/alerts/count").
 		Msg("Alerts count route registered")
 
+	// Alerts API route (JSON) with pagination
+	r.Get("/api/alerts", alertsHandler.ServeJSON)
+	logger.Info().Str("route", "/api/alerts").
+		Msg("Alerts JSON API route with pagination registered")
+
 	// Validator detail page routes
 	r.Route("/validators/{index}", func(r chi.Router) {
 		r.Get("/", validatorDetailHandler.ServeHTTP)
@@ -410,6 +421,24 @@ func registerRoutes(
 	r.Get("/register", registerHandler.ServeHTTP)
 	logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/register", cfg.Server.HTTPPort)).
 		Msg("Registration page route registered")
+
+	// Settings page routes (protected - requires authentication)
+	if sessionStore != nil {
+		r.Group(func(r chi.Router) {
+			r.Use(auth.SessionMiddleware(sessionStore))
+			r.Use(auth.RequireSessionAuth)
+
+			// Settings page route
+			r.Get("/settings", settingsHandler.ServeHTTP)
+			logger.Info().Str("url", fmt.Sprintf("http://localhost:%s/settings", cfg.Server.HTTPPort)).
+				Msg("Settings page route registered")
+
+			// Settings content API route (HTMX)
+			r.Get("/api/settings/content", settingsContentHandler.ServeHTTP)
+			logger.Info().Str("route", "/api/settings/content").
+				Msg("Settings content API route registered")
+		})
+	}
 
 	// HTML Form submission routes (require session store and auth service)
 	if sessionStore != nil && authService != nil {

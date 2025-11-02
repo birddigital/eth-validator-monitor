@@ -1,0 +1,150 @@
+package components
+
+// SettingsProfileTab renders the profile settings tab content
+templ SettingsProfileTab(username string) {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Profile Information</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Update your account profile information and password</p>
+		</div>
+
+		<!-- Profile Form Placeholder -->
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">Profile Section</h3>
+				<div class="text-xs">Welcome, { username }! Profile management will be implemented in subtask 27.2</div>
+			</div>
+		</div>
+
+		<!-- Password Change Placeholder -->
+		<div class="card bg-base-200">
+			<div class="card-body">
+				<h3 class="card-title">Change Password</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400">Password management functionality will be added in the next subtask</p>
+			</div>
+		</div>
+	</div>
+}
+
+// SettingsNotificationsTab renders the notifications settings tab content
+templ SettingsNotificationsTab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Notification Preferences</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Manage how and when you receive notifications</p>
+		</div>
+
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">Notification Settings</h3>
+				<div class="text-xs">Notification preferences will be implemented in subtask 27.5</div>
+			</div>
+		</div>
+	</div>
+}
+
+// SettingsAPIKeysTab renders the API keys settings tab content
+templ SettingsAPIKeysTab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">API Keys</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Manage API keys for programmatic access to your account</p>
+		</div>
+
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">API Key Management</h3>
+				<div class="text-xs">API key generation and management will be implemented in subtask 27.4</div>
+			</div>
+		</div>
+	</div>
+}
+
+// SettingsUIPreferencesTab renders the UI preferences settings tab content
+templ SettingsUIPreferencesTab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">UI Customization</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Customize the appearance and behavior of the interface</p>
+		</div>
+
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">UI Preferences</h3>
+				<div class="text-xs">Theme selection and UI preferences will be implemented in subtask 27.6</div>
+			</div>
+		</div>
+	</div>
+}
+
+// Settings2FATab renders the 2FA settings tab content
+templ Settings2FATab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Two-Factor Authentication</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Enhance your account security with TOTP-based 2FA</p>
+		</div>
+
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">2FA Setup</h3>
+				<div class="text-xs">Two-factor authentication setup will be implemented in subtask 27.3</div>
+			</div>
+		</div>
+	</div>
+}
+
+// SettingsSessionsTab renders the sessions settings tab content
+templ SettingsSessionsTab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Active Sessions</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">View and manage devices where you're currently logged in</p>
+		</div>
+
+		<div class="alert alert-info">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">Session Management</h3>
+				<div class="text-xs">Active session management will be implemented in subtask 27.7</div>
+			</div>
+		</div>
+	</div>
+}
+
+// SettingsAccountTab renders the account settings tab content
+templ SettingsAccountTab() {
+	<div class="space-y-6">
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Account Management</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Manage your account settings and deletion</p>
+		</div>
+
+		<div class="alert alert-warning">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">Account Deletion</h3>
+				<div class="text-xs">Secure account deletion functionality will be implemented in subtask 27.8</div>
+			</div>
+		</div>
+	</div>
+}
