@@ -4,17 +4,20 @@ import (
 	"net/http"
 
 	"github.com/birddigital/eth-validator-monitor/internal/auth"
+	"github.com/birddigital/eth-validator-monitor/internal/storage"
 	"github.com/birddigital/eth-validator-monitor/internal/web/templates/components"
 )
 
 // SettingsContentHandler handles the dynamic content loading for settings tabs
 type SettingsContentHandler struct {
-	// Add dependencies as needed
+	userRepo *storage.UserRepository
 }
 
 // NewSettingsContentHandler creates a new settings content handler
-func NewSettingsContentHandler() *SettingsContentHandler {
-	return &SettingsContentHandler{}
+func NewSettingsContentHandler(userRepo *storage.UserRepository) *SettingsContentHandler {
+	return &SettingsContentHandler{
+		userRepo: userRepo,
+	}
 }
 
 // ServeHTTP handles GET /api/settings/content
@@ -25,22 +28,27 @@ func (h *SettingsContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		tab = "profile"
 	}
 
-	// Get user info from session context
-	username := ""
-	if userID := r.Context().Value(auth.SessionUsernameKey); userID != nil {
-		if u, ok := userID.(string); ok {
-			username = u
-		}
+	// Get user ID from session context
+	userID, ok := auth.GetSessionUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Fetch user from database
+	user, err := h.userRepo.GetUserByID(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "Failed to load user profile", http.StatusInternalServerError)
+		return
 	}
 
 	// Set content type to HTML for HTMX
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Render the appropriate component based on the tab
-	var err error
 	switch tab {
 	case "profile":
-		err = components.SettingsProfileTab(username).Render(r.Context(), w)
+		err = components.SettingsProfileTab(user.Username, user.Email).Render(r.Context(), w)
 	case "notifications":
 		err = components.SettingsNotificationsTab().Render(r.Context(), w)
 	case "api-keys":
@@ -55,7 +63,7 @@ func (h *SettingsContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		err = components.SettingsAccountTab().Render(r.Context(), w)
 	default:
 		// Default to profile tab
-		err = components.SettingsProfileTab(username).Render(r.Context(), w)
+		err = components.SettingsProfileTab(user.Username, user.Email).Render(r.Context(), w)
 	}
 
 	if err != nil {

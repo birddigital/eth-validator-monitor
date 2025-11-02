@@ -1,29 +1,151 @@
 package components
 
 // SettingsProfileTab renders the profile settings tab content
-templ SettingsProfileTab(username string) {
+templ SettingsProfileTab(username, email string) {
 	<div class="space-y-6">
+		<!-- Profile Information Section -->
 		<div>
 			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Profile Information</h2>
-			<p class="text-sm text-gray-600 dark:text-gray-400">Update your account profile information and password</p>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Update your account profile information</p>
 		</div>
 
-		<!-- Profile Form Placeholder -->
-		<div class="alert alert-info">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-			</svg>
-			<div>
-				<h3 class="font-bold">Profile Section</h3>
-				<div class="text-xs">Welcome, { username }! Profile management will be implemented in subtask 27.2</div>
+		<!-- Profile Update Form -->
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<h3 class="card-title mb-4">Update Profile</h3>
+				<form
+					id="profile-form"
+					hx-post="/api/settings/profile"
+					hx-target="#profile-message"
+					hx-swap="innerHTML"
+					class="space-y-4"
+				>
+					<!-- Username Field -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">Username</span>
+						</label>
+						<input
+							type="text"
+							name="username"
+							value={ username }
+							class="input input-bordered w-full"
+							placeholder="Enter username"
+							required
+							minlength="3"
+							maxlength="255"
+						/>
+						<label class="label">
+							<span class="label-text-alt text-gray-500">Minimum 3 characters</span>
+						</label>
+					</div>
+
+					<!-- Email Field -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">Email</span>
+						</label>
+						<input
+							type="email"
+							name="email"
+							value={ email }
+							class="input input-bordered w-full"
+							placeholder="Enter email"
+							required
+						/>
+						<label class="label">
+							<span class="label-text-alt text-gray-500">We'll never share your email</span>
+						</label>
+					</div>
+
+					<!-- Submit Button -->
+					<div class="form-control mt-6">
+						<button type="submit" class="btn btn-primary">
+							Update Profile
+						</button>
+					</div>
+
+					<!-- Message Display Area -->
+					<div id="profile-message" class="mt-4"></div>
+				</form>
 			</div>
 		</div>
 
-		<!-- Password Change Placeholder -->
-		<div class="card bg-base-200">
+		<!-- Password Change Section -->
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Change Password</h2>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Update your password to keep your account secure</p>
+		</div>
+
+		<!-- Password Change Form -->
+		<div class="card bg-base-100 shadow-xl">
 			<div class="card-body">
-				<h3 class="card-title">Change Password</h3>
-				<p class="text-sm text-gray-600 dark:text-gray-400">Password management functionality will be added in the next subtask</p>
+				<h3 class="card-title mb-4">Update Password</h3>
+				<form
+					id="password-form"
+					hx-post="/api/settings/password"
+					hx-target="#password-message"
+					hx-swap="innerHTML"
+					class="space-y-4"
+				>
+					<!-- Current Password Field -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">Current Password</span>
+						</label>
+						<input
+							type="password"
+							name="currentPassword"
+							class="input input-bordered w-full"
+							placeholder="Enter current password"
+							required
+						/>
+					</div>
+
+					<!-- New Password Field -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">New Password</span>
+						</label>
+						<input
+							type="password"
+							name="newPassword"
+							class="input input-bordered w-full"
+							placeholder="Enter new password"
+							required
+							minlength="8"
+						/>
+						<label class="label">
+							<span class="label-text-alt text-gray-500">
+								Must be at least 8 characters with uppercase, lowercase, number, and special character
+							</span>
+						</label>
+					</div>
+
+					<!-- Confirm Password Field -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">Confirm New Password</span>
+						</label>
+						<input
+							type="password"
+							name="confirmPassword"
+							class="input input-bordered w-full"
+							placeholder="Confirm new password"
+							required
+						/>
+					</div>
+
+					<!-- Submit Button -->
+					<div class="form-control mt-6">
+						<button type="submit" class="btn btn-warning">
+							Change Password
+						</button>
+					</div>
+
+					<!-- Message Display Area -->
+					<div id="password-message" class="mt-4"></div>
+				</form>
 			</div>
 		</div>
 	</div>

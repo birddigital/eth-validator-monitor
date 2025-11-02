@@ -207,7 +207,7 @@ func main() {
 
 	// Initialize settings handlers
 	settingsHandler := handlers.NewSettingsHandler()
-	settingsContentHandler := handlers.NewSettingsContentHandler()
+	settingsContentHandler := handlers.NewSettingsContentHandler(userRepo)
 	settingsProfileHandler := handlers.NewSettingsProfileHandler(userRepo, validator)
 	settingsPasswordHandler := handlers.NewPasswordChangeHandler(userRepo, validator)
 
