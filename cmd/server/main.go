@@ -107,6 +107,9 @@ func main() {
 	validatorDetailRepo := repository.NewValidatorDetailRepository(pool)
 	alertRepo := repository.NewAlertRepository(pool)
 
+	// Initialize validator for form validation
+	validator := auth.NewValidator()
+
 	// Initialize JWT service (optional - only if secret key is configured)
 	var jwtService *auth.JWTService
 	if cfg.JWT.SecretKey != "" {
@@ -205,6 +208,8 @@ func main() {
 	// Initialize settings handlers
 	settingsHandler := handlers.NewSettingsHandler()
 	settingsContentHandler := handlers.NewSettingsContentHandler()
+	settingsProfileHandler := handlers.NewSettingsProfileHandler(userRepo, validator)
+	settingsPasswordHandler := handlers.NewPasswordChangeHandler(userRepo, validator)
 
 	// Initialize beacon client (mock for development)
 	beaconClient := beacon.NewMockClient()
@@ -266,7 +271,7 @@ func main() {
 	}()
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, settingsHandler, settingsContentHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, settingsHandler, settingsContentHandler, settingsProfileHandler, settingsPasswordHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -311,6 +316,8 @@ func registerRoutes(
 	alertsHandler *handlers.AlertsHandler,
 	settingsHandler *handlers.SettingsHandler,
 	settingsContentHandler *handlers.SettingsContentHandler,
+	settingsProfileHandler *handlers.SettingsProfileHandler,
+	settingsPasswordHandler *handlers.PasswordChangeHandler,
 	logger *zerolog.Logger,
 ) {
 	// Health check endpoint (no additional middleware needed - router already has security headers)
@@ -437,6 +444,16 @@ func registerRoutes(
 			r.Get("/api/settings/content", settingsContentHandler.ServeHTTP)
 			logger.Info().Str("route", "/api/settings/content").
 				Msg("Settings content API route registered")
+
+			// Settings profile update API route
+			r.Post("/api/settings/profile", settingsProfileHandler.ServeHTTP)
+			logger.Info().Str("route", "POST /api/settings/profile").
+				Msg("Settings profile update route registered")
+
+			// Settings password change API route
+			r.Post("/api/settings/password", settingsPasswordHandler.ServeHTTP)
+			logger.Info().Str("route", "POST /api/settings/password").
+				Msg("Settings password change route registered")
 		})
 	}
 
