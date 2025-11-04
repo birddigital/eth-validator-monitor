@@ -102,6 +102,7 @@ func main() {
 
 	// Initialize repositories
 	userRepo := storage.NewUserRepository(pool)
+	apiKeyRepo := storage.NewAPIKeyRepository(pool)
 	dashboardRepo := repository.NewDashboardRepository(pool)
 	validatorListRepo := repository.NewValidatorListRepository(pool)
 	validatorDetailRepo := repository.NewValidatorDetailRepository(pool)
@@ -211,6 +212,9 @@ func main() {
 	settingsProfileHandler := handlers.NewSettingsProfileHandler(userRepo, validator)
 	settingsPasswordHandler := handlers.NewPasswordChangeHandler(userRepo, validator)
 
+	// Initialize API key handlers
+	apiKeyHandlers := server.NewAPIKeyHandlers(apiKeyRepo)
+
 	// Initialize beacon client (mock for development)
 	beaconClient := beacon.NewMockClient()
 	logger.Logger.Info().Msg("Mock beacon client initialized for development")
@@ -271,7 +275,7 @@ func main() {
 	}()
 
 	// Register routes
-	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, settingsHandler, settingsContentHandler, settingsProfileHandler, settingsPasswordHandler, &logger.Logger)
+	registerRoutes(router, gqlSrv, cfg, jwtService, sessionStore, authService, authHandlers, apiKeyHandlers, apiKeyRepo, dashboardHandler, sseHandler, validatorListHandler, validatorDetailHandler, alertsHandler, settingsHandler, settingsContentHandler, settingsProfileHandler, settingsPasswordHandler, &logger.Logger)
 
 	// Create HTTP server with graceful shutdown
 	port, _ := strconv.Atoi(cfg.Server.HTTPPort)
@@ -309,6 +313,8 @@ func registerRoutes(
 	sessionStore *auth.SessionStore,
 	authService *auth.Service,
 	authHandlers *server.AuthHandlers,
+	apiKeyHandlers *server.APIKeyHandlers,
+	apiKeyRepo *storage.APIKeyRepository,
 	dashboardHandler *handlers.DashboardHandler,
 	sseHandler *handlers.SSEHandler,
 	validatorListHandler *handlers.ValidatorListHandler,
@@ -345,6 +351,26 @@ func registerRoutes(
 		logger.Info().Str("route_group", "/api/auth/*").
 			Msg("Session authentication routes registered")
 	}
+
+	// API Key management routes (require authentication)
+	r.Route("/api/keys", func(r chi.Router) {
+		// Add session and API key middleware to all routes
+		if sessionStore != nil {
+			r.Use(auth.SessionMiddleware(sessionStore))
+		}
+		r.Use(auth.APIKeyMiddleware(apiKeyRepo))
+
+		// All routes require authentication (session, JWT, or API key)
+		r.Use(auth.RequireAnyAuth)
+
+		// API key management endpoints
+		r.Post("/", apiKeyHandlers.CreateAPIKey)     // Create new API key
+		r.Get("/", apiKeyHandlers.ListAPIKeys)       // List user's API keys
+		r.Delete("/{id}", apiKeyHandlers.RevokeAPIKey) // Revoke API key
+	})
+
+	logger.Info().Str("route_group", "/api/keys").
+		Msg("API key management routes registered")
 
 	// GraphQL routes group with optional auth
 	r.Group(func(r chi.Router) {
